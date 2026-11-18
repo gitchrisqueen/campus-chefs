@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}How it works · Campus Chefs{% endblock title %}
+{% block content %}
+  <header class="page-head">
+    <span class="eyebrow">How it works</span>
+    <h1>Register, search, eat. Chip in for the groceries.</h1>
+    <p class="lede">
+      Campus Chefs keeps the three steps of the 2008 original. A student who likes to cook shares a meal,
+      and the students who eat it help pay for the groceries.
+    </p>
+  </header>
+  <div class="step-cards">
+    <section id="register" class="section card" aria-labelledby="register-heading">
+      <h2 id="register-heading">
+        <span class="section-num" aria-hidden="true">1</span>Register.
+      </h2>
+      <p>
+        Make an account with your email, a password, your name and your campus. Choose “I want to eat” or
+        “I also cook”. You must be 18 or older. This is a demo, so use made-up details.
+      </p>
+      <p>
+        Cooks set up a kitchen: a short bio and a menu of breakfast, lunch and dinner dishes. Every dish lists its
+        ingredients and its allergens, and the cook confirms that the allergen list is complete.
+      </p>
+    </section>
+    <section id="search-help" class="section card" aria-labelledby="search-help-heading">
+      <h2 id="search-help-heading">
+        <span class="section-num" aria-hidden="true">2</span>Search.
+      </h2>
+      <p>
+        Search by a cook's first name, or by a dish or ingredient. Filter by campus, meal, date and dietary tag,
+        or leave out dishes that contain an allergen. Allergen and dietary details are declared by the cook,
+        so they are not a safety guarantee.
+      </p>
+    </section>
+    <section id="booking" class="section card" aria-labelledby="booking-heading">
+      <h2 id="booking-heading">
+        <span class="section-num" aria-hidden="true">3</span>Eat!
+      </h2>
+      <p>
+        Request 1 to 4 seats at a meal and confirm that you have read its allergens. The cook confirms or declines.
+        After the meal, you can leave a review in two parts: “The good” and “The bad”.
+      </p>
+      <p>When you book, you choose how to chip in toward the groceries:</p>
+      <ul class="badges">
+        <li class="badge badge-share">$4.00 grocery share per seat</li>
+        <li class="badge badge-bring">or bring an item</li>
+        <li class="badge badge-free">Free</li>
+      </ul>
+      <p class="small muted">
+        Example amounts. The cook sets the share; the site suggests the grocery estimate divided by the seats plus one,
+        because the cook eats too.
+      </p>
+    </section>
+  </div>
+  <section class="two-col" aria-label="Chipping in">
+    <div class="card">
+      <h2>What chipping in means</h2>
+      <ul>
+        <li>A per-seat share of the grocery cost, or one item from the cook's bring list.</li>
+        <li>The shares for a meal can never add up to more than the cook's grocery estimate.</li>
+        <li>You settle up in person, at pickup. The cook marks your share as received.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>What the site never does</h2>
+      <ul>
+        <li>It never takes payments, card details or payment handles.</li>
+        <li>It never lets a cook charge for profit.</li>
+        <li>It never shows your email or your pickup address to the public.</li>
+      </ul>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Questions</h2>
+    <div class="faq">
+      <details>
+        <summary>Is this a real service?</summary>
+        <p>
+          No. It is a portfolio demo with fictional students and campuses. No real meals are served.
+          Read the <a href="{% url 'safety' %}">safety notes</a>.
+        </p>
+      </details>
+      <details>
+        <summary>Can a cook make money?</summary>
+        <p>No. Shares cover the groceries only, and the database refuses any share that would add up to more.</p>
+      </details>
+      <details>
+        <summary>I have a food allergy. Can I rely on the allergen list?</summary>
+        <p>
+          No. Cooks declare allergens themselves and nobody checks them. If you have a severe allergy,
+          do not rely on this site.
+        </p>
+      </details>
+      <details>
+        <summary>What happens to my data?</summary>
+        <p>
+          The site keeps as little as it can, and you can delete your account. See the
+          <a href="{% url 'privacy' %}">privacy page</a>.
+        </p>
+      </details>
+    </div>
+  </section>
+{% endblock content %}

@@ -21,6 +21,21 @@ def home(request):
 
 
 @require_GET
+def how_it_works(request):
+    return render(request, "core/how_it_works.html")
+
+
+@require_GET
+def safety(request):
+    return render(request, "core/safety.html")
+
+
+@require_GET
+def privacy(request):
+    return render(request, "core/privacy.html")
+
+
+@require_GET
 def search_stub(request):
     q = request.GET.get("q", "").strip().lower()
     results = [d for d in STUB_DISHES if q and q in d.lower()]

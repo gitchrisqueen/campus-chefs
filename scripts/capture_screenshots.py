@@ -1,81 +1,86 @@
-"""Capture documentation screenshots with Playwright Chromium.
+"""Capture design-review screenshots of the running demo with Playwright.
 
-Run it inside the `tests` container (the repo is mounted read-only at /src; only
-test-results/ and docs/screenshots/ are writable):
+Run inside the tests container, which has Chromium and can reach the web service:
 
-    docker compose --profile test run --rm tests python scripts/capture_screenshots.py --before
+    docker compose --profile test run --rm tests python scripts/capture_screenshots.py --design
 
---before  Screenshots the statically rendered 2008 landing page. Run
-          legacy-support/render-static.sh first. The page is opened through
-          file:// so the relative ../css and ../img paths resolve. No server runs.
-          Output: docs/screenshots/before/welcome.png (desktop, 1280 px wide) and
-          docs/screenshots/before/welcome-phone.png (phone, 390 px wide).
-
-Each mode is a function registered in MODES, so phase 11 can add an "after" mode
-by adding one function and one entry. It is not implemented here.
+--design saves full-page PNGs of /, /how-it-works and /safety at 1280 px and 390 px wide,
+in light and dark mode, plus the live search with results, to docs/screenshots/design/.
+It also checks each page for CSP violations and for horizontal scroll at 320 px,
+and exits 1 if it finds either.
 """
 
-from __future__ import annotations
-
 import argparse
+import os
 import sys
-from collections.abc import Callable
 from pathlib import Path
 
-from playwright.sync_api import Browser, sync_playwright
+from playwright.sync_api import sync_playwright
 
-REPO = Path(__file__).resolve().parent.parent
-RENDERED_WELCOME = REPO / "test-results" / "legacy-render" / "view" / "welcome.html"
-SHOTS = REPO / "docs" / "screenshots"
-
-DESKTOP = {"width": 1280, "height": 900}
-PHONE = {"width": 390, "height": 844}
-
-
-def shoot_before(browser: Browser) -> list[Path]:
-    """Desktop and phone screenshots of the rendered 2008 welcome page."""
-    if not RENDERED_WELCOME.is_file():
-        sys.exit(f"missing {RENDERED_WELCOME}: run legacy-support/render-static.sh first")
-    out_dir = SHOTS / "before"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    written = []
-    for name, viewport in (("welcome.png", DESKTOP), ("welcome-phone.png", PHONE)):
-        context = browser.new_context(viewport=viewport, device_scale_factor=1)
-        page = context.new_page()
-        page.goto(RENDERED_WELCOME.as_uri())
-        page.wait_for_load_state("load")
-        target = out_dir / name
-        # full_page keeps the whole 2008 layout, including any horizontal overflow
-        # at phone width, which is part of what the screenshot shows.
-        page.screenshot(path=str(target), full_page=True)
-        context.close()
-        written.append(target)
-    return written
+ROOT = Path(__file__).resolve().parent.parent
+DESIGN_PAGES = {"home": "/", "how-it-works": "/how-it-works", "safety": "/safety"}
+WIDTHS = {"desktop": (1280, 800), "phone": (390, 844)}
+SCHEMES = ["light", "dark"]
+RECORD_CSP = (
+    "window.__csp = [];"
+    "document.addEventListener('securitypolicyviolation',"
+    " e => window.__csp.push(e.violatedDirective + ' ' + e.blockedURI));"
+)
 
 
-# Mode flag -> function. Phase 11 adds "after" here.
-MODES: dict[str, Callable[[Browser], list[Path]]] = {
-    "before": shoot_before,
-}
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    group = parser.add_mutually_exclusive_group(required=True)
-    for mode in MODES:
-        group.add_argument(f"--{mode}", dest="mode", action="store_const", const=mode)
-    args = parser.parse_args(argv)
-
+def capture_design(base_url: str, out: Path) -> int:
+    out.mkdir(parents=True, exist_ok=True)
+    problems: list[str] = []
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
-        try:
-            written = MODES[args.mode](browser)
-        finally:
-            browser.close()
-    for path in written:
-        print(path.relative_to(REPO))
-    return 0
+        for scheme in SCHEMES:
+            for label, (width, height) in WIDTHS.items():
+                context = browser.new_context(
+                    viewport={"width": width, "height": height}, color_scheme=scheme, device_scale_factor=1
+                )
+                context.add_init_script(RECORD_CSP)
+                page = context.new_page()
+                for name, path in DESIGN_PAGES.items():
+                    page.goto(f"{base_url}{path}", wait_until="networkidle")
+                    if page.evaluate("window.__csp"):
+                        problems.append(f"CSP violation on {path} ({scheme}, {label})")
+                    target = out / f"{name}-{label}-{scheme}.png"
+                    page.screenshot(path=str(target), full_page=True)
+                    print(target.relative_to(ROOT))
+                # The live search with results swapped in by htmx.
+                page.goto(f"{base_url}/", wait_until="networkidle")
+                page.fill("#q", "che")
+                page.locator("#results li").first.wait_for()
+                page.locator("#search").scroll_into_view_if_needed()
+                target = out / f"home-search-{label}-{scheme}.png"
+                page.screenshot(path=str(target))
+                print(target.relative_to(ROOT))
+                context.close()
+
+        context = browser.new_context(viewport={"width": 320, "height": 800})
+        page = context.new_page()
+        for path in DESIGN_PAGES.values():
+            page.goto(f"{base_url}{path}", wait_until="networkidle")
+            scroll_width = page.evaluate("document.documentElement.scrollWidth")
+            if scroll_width > 320:
+                problems.append(f"horizontal scroll on {path} at 320 px: scrollWidth={scroll_width}")
+        context.close()
+        browser.close()
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    return 1 if problems else 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--design", action="store_true", help="capture the design-review set")
+    parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8000"))
+    parser.add_argument("--out", type=Path, default=ROOT / "docs" / "screenshots" / "design")
+    args = parser.parse_args()
+    if not args.design:
+        parser.error("choose a capture set, for example --design")
+    return capture_design(args.base_url.rstrip("/"), args.out)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

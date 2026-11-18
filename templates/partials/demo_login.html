@@ -4,11 +4,11 @@
     <p>Log in as a made-up student. No password needed.</p>
     <form class="inline-form" method="post" action="{% url 'demo_login' 'cook' %}">
       {% csrf_token %}
-      <button type="submit">Try as demo cook</button>
+      <button type="submit" class="btn btn-primary">Try as demo cook</button>
     </form>
     <form class="inline-form" method="post" action="{% url 'demo_login' 'diner' %}">
       {% csrf_token %}
-      <button type="submit">Try as demo diner</button>
+      <button type="submit" class="btn btn-secondary">Try as demo diner</button>
     </form>
   </section>
 {% endif %}

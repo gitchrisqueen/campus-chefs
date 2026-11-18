@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="error-page" aria-labelledby="error-heading">
+    <span class="error-code" aria-hidden="true">500</span>
+    <h1 id="error-heading">Something went wrong in the kitchen.</h1>
+    <p class="lede">The error has been logged. Please try again in a minute.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="{% url 'home' %}">Back to the home page</a>
+    </div>
+  </section>
+{% endblock content %}

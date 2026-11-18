@@ -9,6 +9,9 @@ admin.site.login = limit_failed_logins(admin.site.login)
 
 urlpatterns = [
     path("", core_views.home, name="home"),
+    path("how-it-works", core_views.how_it_works, name="how_it_works"),
+    path("safety", core_views.safety, name="safety"),
+    path("privacy", core_views.privacy, name="privacy"),
     path("search/stub", core_views.search_stub, name="search_stub"),
     path("safety", core_views.safety, name="safety"),
     path("healthz", core_views.healthz, name="healthz"),
