@@ -137,3 +137,38 @@ def test_data_03_valid_rows_pass_the_same_constraints():
         share_cents=300,
     )
     assert booking.pk and offering.pk
+
+
+@pytest.mark.django_db
+def test_data_01_reset_keeps_staff_and_their_campus(settings, monkeypatch):
+    """Operator flow from docs/OPERATIONS.md: createsuperuser on a seeded campus, then reseed."""
+    call_command("seed_demo")
+    campus = Campus.objects.get(slug="larkspur")
+    monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "a-long-admin-password-42")
+    call_command(
+        "createsuperuser",
+        interactive=False,
+        email="admin@larkspur.example",
+        first_name="Ada",
+        last_name="Min",
+        campus=campus.pk,
+    )
+    admin = User.objects.get(email="admin@larkspur.example")
+    assert admin.is_superuser and admin.adult_attested_at is not None
+
+    settings.CC_DEMO_MODE = True
+    call_command("seed_demo", reset=True)
+    assert User.objects.filter(email="admin@larkspur.example").exists()
+    assert Campus.objects.count() == 3
+    assert Offering.objects.count() == 16
+    assert Review.objects.count() == 12
+
+
+@pytest.mark.django_db(transaction=True)
+def test_data_01_bootstrap_seeds_only_in_demo_mode(settings):
+    settings.CC_DEMO_MODE = False
+    call_command("bootstrap_demo")
+    assert not Campus.objects.exists()
+    settings.CC_DEMO_MODE = True
+    call_command("bootstrap_demo")
+    assert Offering.objects.count() == 16

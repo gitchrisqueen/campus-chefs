@@ -206,7 +206,10 @@ class Command(BaseCommand):
 
     def _seed(self, now: datetime) -> dict[str, int]:
         rng = random.Random(2008)  # noqa: S311 - deterministic demo data, not security  # nosec B311
-        campuses = {slug: Campus.objects.create(name=name, slug=slug) for name, slug in data.CAMPUSES}
+        # get_or_create: a reset keeps campuses that staff accounts still belong to.
+        campuses = {
+            slug: Campus.objects.get_or_create(slug=slug, defaults={"name": name})[0] for name, slug in data.CAMPUSES
+        }
 
         def make_user(row, joined_days_ago: int) -> User:
             email, first, last, campus_slug, classification = row

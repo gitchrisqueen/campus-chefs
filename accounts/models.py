@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
@@ -10,6 +11,10 @@ class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra):
         if not email:
             raise ValueError("Email is required")
+        campus = extra.get("campus")
+        if campus is not None and not isinstance(campus, models.Model):
+            # createsuperuser --noinput passes the campus as its primary key.
+            extra["campus_id"] = extra.pop("campus")
         user = self.model(email=self.normalize_email(email), **extra)
         user.set_password(password)
         user.save(using=self._db)
@@ -23,6 +28,8 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
+        # Staff are created by the operator (docs/OPERATIONS.md), who attests they are an adult.
+        extra.setdefault("adult_attested_at", timezone.now())
         return self._create_user(email, password, **extra)
 
 
@@ -48,7 +55,8 @@ class User(AbstractUser):
     adult_attested_at = models.DateTimeField()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: list[str] = []
+    # createsuperuser prompts for these; campus is asked for by id (see docs/OPERATIONS.md).
+    REQUIRED_FIELDS = ["first_name", "last_name", "campus"]
 
     objects = UserManager()
 
