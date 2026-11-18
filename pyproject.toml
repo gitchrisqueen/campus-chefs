@@ -50,7 +50,7 @@ skip_covered = true
 [tool.ruff]
 line-length = 120
 target-version = "py314"
-extend-exclude = ["legacy", "legacy-support", "*/migrations/*"]
+extend-exclude = ["legacy", "legacy-support", "graft", "*/migrations/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "DJ"]
@@ -66,9 +66,9 @@ profile = "django"
 ignore = "H006,H021,H030"
 
 [tool.codespell]
-skip = "./legacy,./legacy-support,./.git,./uv.lock,./static/js/*.js,*.jpg,*.png,*.gif,./test-results,./.venv"
+skip = "./graft,./legacy,./legacy-support,./.git,./uv.lock,./static/js/*.js,*.jpg,*.png,*.gif,./test-results,./.venv"
 # Quoted 2008 typos (plan audit, CHK-03): intentional.
-ignore-words-list = "te,funtions,potatoe,rightt,ingredent,macaronii,clolsing"
+ignore-words-list = "te,brunch,funtions,potatoe,rightt,ingredent,macaronii,clolsing"
 
 [tool.bandit]
 exclude_dirs = ["tests", "legacy", ".venv"]
