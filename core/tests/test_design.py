@@ -208,6 +208,22 @@ def test_home_keeps_live_search_hooks_and_chip_in_line(client):
 
 
 @pytest.mark.django_db
+def test_home_design_review_fixes(client):
+    """Art-director fixes: no middle-dot strings in the listing card or the footer, no tracked
+    eyebrows except the hero's, one filled button in the demo card, and a descriptive title."""
+    html = client.get("/").content.decode("utf-8")
+    ticket = html[html.index('<article class="ticket"') : html.index("</article>")]
+    footer = html[html.index("<footer") : html.index("</footer>")]
+    assert " · " not in ticket and " · " not in footer
+    assert "Sat, 9:30, Breakfast" in ticket and "Marcus B., Larkspur State (Demo)" in ticket
+    assert html.count('class="eyebrow"') == 1 and "step-kicker" not in html
+    demo = html[html.index('class="demo-login') : html.index("</section>", html.index('class="demo-login'))]
+    assert demo.count("btn-primary") == 1 and 'class="link-button">Try as demo cook' in demo
+    assert "Campus Chefs · Home-cooked meals made by students" in html[: html.index("</title>")]
+    assert "Cook's first name, dish or ingredient" in html
+
+
+@pytest.mark.django_db
 def test_safety_page_says_all_five_points_and_not_legal_advice(client):
     html = client.get("/safety").content.decode("utf-8")
     for phrase in (
