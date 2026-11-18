@@ -1,0 +1,30 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="htmx-config" content='{"includeIndicatorCSS": false}'>
+    <title>{% block title %}Campus Chefs{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% if demo_mode %}
+      <div class="demo-banner" role="region" aria-label="Demo notice">
+        Portfolio demo with fictional people and campuses. No real meals, no money moves through this site, no food-safety vetting.
+      </div>
+    {% endif %}
+    <header class="site-header">
+      <a class="brand" href="{% url 'home' %}">Campus Chefs</a>
+    </header>
+    <main id="main">
+      {% block content %}
+      {% endblock content %}
+    </main>
+    <footer class="site-footer">
+      <p>© 2008–2026 Campus Chefs · a portfolio rebuild of a 2008 student project</p>
+    </footer>
+  </body>
+</html>

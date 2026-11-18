@@ -1,0 +1,75 @@
+[project]
+name = "campus-chefs"
+version = "0.1.0"
+description = "Campus Chefs: a 2008 student meal-sharing app, rebuilt for 2026"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "django>=6.1.3,<6.2",
+    "psycopg[binary]>=3.2,<4",
+    "argon2-cffi>=23.1",
+    "gunicorn>=23.0",
+    "whitenoise>=6.8",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=6.0",
+    "pytest-playwright>=0.6",
+    "ruff>=0.8",
+    "djlint>=1.36",
+    "codespell>=2.3",
+    "bandit[toml]>=1.8",
+    "pip-audit>=2.7",
+    "tinycss2>=1.4",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["."]
+testpaths = ["core", "accounts", "meals", "bookings", "tests"]
+python_files = ["test_*.py"]
+addopts = "--strict-markers --output test-results/playwright"
+markers = ["e2e: browser tests against the running compose stack"]
+filterwarnings = ["ignore:No directory at:UserWarning"]
+
+[tool.coverage.run]
+source = ["accounts", "meals", "bookings", "core"]
+omit = ["*/migrations/*", "*/tests/*", "*/apps.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+extend-exclude = ["legacy", "legacy-support", "*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "DJ"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests/*" = ["S"]
+"tests/*" = ["S"]
+"scripts/*" = ["S"]
+
+[tool.djlint]
+profile = "django"
+ignore = "H006,H021,H030"
+
+[tool.codespell]
+skip = "./legacy,./legacy-support,./.git,./uv.lock,./static/js/*.js,*.jpg,*.png,*.gif,./test-results,./.venv"
+# Quoted 2008 typos (plan audit, CHK-03): intentional.
+ignore-words-list = "te,funtions,potatoe,rightt,ingredent,macaronii,clolsing"
+
+[tool.bandit]
+exclude_dirs = ["tests", "legacy", ".venv"]
+skips = ["B101"]

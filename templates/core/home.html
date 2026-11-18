@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="hero">
+    <h1>Home-cooked meals from students who love to cook</h1>
+    <p>
+      Campus Chefs matches students who want a good home-cooked meal with students who like to cook.
+      Diners chip in toward the groceries.
+    </p>
+  </section>
+  <section class="search" aria-labelledby="search-heading">
+    <h2 id="search-heading">Find a meal</h2>
+    <form action="{% url 'search_stub' %}" method="get" role="search">
+      <label for="q">Dish or ingredient</label>
+      <input id="q"
+             name="q"
+             type="search"
+             value="{{ q|default:'' }}"
+             autocomplete="off"
+             hx-get="{% url 'search_stub' %}"
+             hx-trigger="input changed delay:300ms, search"
+             hx-target="#results"
+             hx-indicator="#search-indicator">
+      <button type="submit">Search</button>
+      <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching</span>
+    </form>
+    <div id="results" aria-live="polite">
+      {% include "partials/search_stub_results.html" %}
+    </div>
+  </section>
+{% endblock content %}
