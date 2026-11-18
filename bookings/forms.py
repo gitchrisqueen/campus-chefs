@@ -23,15 +23,15 @@ class BookingRequestForm(forms.Form):
         required=False,
         max_length=280,
         widget=forms.Textarea(attrs={"rows": 2}),
-        help_text="Only for custom terms, for example “a salad and $2”. Only the cook sees them.",
+        help_text="For example “a salad and $2”. Only the cook sees them.",
     )
     amount = forms.DecimalField(
-        label="Amount you offer ($, optional)",
+        label="Amount you offer ($)",
         required=False,
         min_value=0,
         max_digits=5,
         decimal_places=2,
-        help_text="Only for custom terms. You pay the cook in person; nothing is paid on this site.",
+        help_text="You pay the cook in person; nothing is paid on this site.",
     )
     allergen_ack = forms.BooleanField(
         error_messages={"required": "Confirm that you have read the allergens for this meal."},

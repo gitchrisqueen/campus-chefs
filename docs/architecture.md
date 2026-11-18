@@ -123,3 +123,43 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | The cook sees a "Diners" list on the offering page, and the kitchen page shows the totals too | The cook needs a way to reach each booking, to complete it and mark it received |
 | — | The seed sets each booking's `created_at` to its request time | `auto_now_add` stamped seed time, so the timeline showed "Requested" after "Confirmed" |
 | — | The booking form has no `note` field | The brief lists none; terms cover what a diner wants to tell the cook |
+
+## Phase 8 records (2026-11-18)
+
+### axe-core (A11Y-01)
+
+| Item | Value |
+|---|---|
+| Package | npm `axe-core` 4.14.0, published 2026-10-05. Not 4.14.1 (2026-11-16), because it is less than 14 days old |
+| Tarball integrity | `sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==`. The downloaded `axe-core-4.14.0.tgz` hashes to the same value as the registry's `dist.integrity` |
+| Vendored file | `tests/e2e/vendor/axe.min.js` (the tarball's `package/axe.min.js`), SHA-256 `20c09fe157a8a34a30e241aaa1fcdade657734f08ab379ecfbeb7d45cc46e878` |
+| Licence | MPL-2.0, copied unchanged to `tests/e2e/vendor/axe-core.LICENSE`. The MIT `LICENSE` does not cover `tests/e2e/vendor/` |
+| Checked on | 2026-11-18, against `https://registry.npmjs.org/axe-core` |
+
+- **Injection:** `tests/e2e/helpers.py` passes the file's text to `page.evaluate`. Playwright runs it through the DevTools protocol, which the page's CSP does not govern, so the app's CSP stays as it is and no inline script is added. `add_script_tag` would add an inline `<script>`, which `script-src 'self'` blocks.
+- **Rules:** `axe.run` with `runOnly` tags `wcag2a`, `wcag2aa`, `wcag21aa` and `wcag22aa`. No rule is disabled, and there is no false positive to record. A planted image without `alt` and a planted low-contrast paragraph were both reported, which shows the run is live.
+- **Pages:** in light and in dark mode, at 1280 px: `/`, `/how-it-works`, `/safety`, `/privacy`, `/register` (empty and submitted empty), `/login`, `/search?q=pancakes`, the home live-search results, a cook page, an offering, the 404 page; as the demo diner `/me`, `/me/edit`, the offering's booking form (empty and with errors) and a booking; as the demo cook `/me`, `/kitchen`, the dish form, the meal form and the same booking.
+
+### What the browser tests found and fixed
+
+- **Focus on a date input (E2E-03):** Tab stops four times in `<input type="date">`: month, day, year, then the picker button inside the input's shadow tree. On that fourth stop the input matches neither `:focus` nor `:focus-visible`, only `:focus-within`, so the search page's date filter had no focus outline. `input[type="date"]:focus-within` now draws the same outline.
+- **axe:** no violations on the pages above. The design-system work had already fixed what an earlier pass would have caught.
+
+### UX pass on the newer screens
+
+- **Offering page:** the "Chip in" card moved to the left column, under the allergen notice, so the two columns balance and the booking form is no longer a long tail on the right. On a phone the order is dishes, allergens, chip in, when and where, then the form.
+- **Booking form:** the bring-list item shows only when "Bring an item" is picked, and the terms and amount only when "Propose your own terms" is picked (CSS `:has()`, no JavaScript; the server still checks every field). The amount label lost its doubled "optional", and the bring-list and terms fields no longer say "Optional", because the choice above them makes them required. The field partial takes `hide_optional` for this.
+- **Cook's view of an offering:** the panel heading reads "Your meal" instead of "Request a seat".
+- **Search filters:** they now use the design-system field partial instead of Django's default field group. The labels match the other forms, the rows have the same gap, and the allergen filter uses the checkbox tiles (two columns on a phone) instead of a native fieldset border.
+- **Kitchen:** quiet buttons in an action row keep their 44 px height but drop the wide button padding, and the "Delete" button names its meal for screen readers, as "Cancel meal" already did.
+- **Screenshots:** `scripts/capture_screenshots.py --design` now also captures search, a cook page, an offering (visitor, diner, diner with errors, cook), a booking (diner and cook) and the kitchen, at 1280 px and 390 px, light and dark. Run `make reseed` first.
+
+## Phase 8 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| LEG-06 checks `/` with an unreachable DB | The test sends a session cookie with that request | A visitor without a session cookie needs no query to render `/`, so that request returns 200 even with the DB down. A returning visitor reads the session table and gets the generic 500 page |
+| `test_leg_06a_…` | Replaced by `test_leg_06_…` | The plain ID owns the full test now. `test_leg_06b_…` (the 500 page content) stays |
+| A11Y-01 lists home, search, register, login, a cook page, an offering, a booking, `/me` and the menu form | Those pages plus `/how-it-works`, `/safety`, `/privacy`, the 404 page, `/kitchen`, the meal form and the error states, in light and dark | The brief asked for both colour schemes; the extra pages cost seconds |
+| Plan 4.3: each step links to `/register`, `/search` and `/how-it-works#booking` | A11Y-03 checks that each step has one link, not which | The phase 8a home page links to `/how-it-works#register`, `#search` and `/how-it-works#booking`. Changing that copy is a design decision for the UX review |
+| — | E2E tests fail on any console error, through the `new_page` fixture in `tests/e2e/conftest.py` | Plan 7.1 asks for a console-error listener on every page; Chromium reports each CSP violation as a console error. The deliberate 404 visit is the only error allowed |

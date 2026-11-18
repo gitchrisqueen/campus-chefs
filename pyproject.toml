@@ -66,7 +66,7 @@ profile = "django"
 ignore = "H006,H021,H030"
 
 [tool.codespell]
-skip = "./graft,./legacy,./legacy-support,./.git,./uv.lock,./static/js/*.js,*.jpg,*.png,*.gif,./test-results,./.venv"
+skip = "./graft,./legacy,./legacy-support,./.git,./uv.lock,./static/js/*.js,./tests/e2e/vendor,*.jpg,*.png,*.gif,./test-results,./.venv"
 # Quoted 2008 typos (plan audit, CHK-03): intentional.
 ignore-words-list = "te,brunch,funtions,potatoe,rightt,ingredent,macaronii,clolsing"
 

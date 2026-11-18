@@ -9,7 +9,11 @@ docs/screenshots/design/:
 - the public pages: /, /how-it-works, /safety, /login and /register;
 - the live search with results, and /register submitted empty (the error state);
 - /me as the demo diner and as the demo cook, each reached by clicking its "Try as demo ..." button;
-- /me/edit, /me/password and /me/delete as the demo diner.
+- /me/edit, /me/password and /me/delete as the demo diner;
+- the search page with results, the cook page and an offering (public);
+- the offering with its booking form (and that form submitted empty), and a booking, as the demo diner;
+- the kitchen, the offering with its diners list, and the same booking, as the demo cook.
+Run `make reseed` first, so the bookings look as seeded.
 It also checks each page for CSP violations and for horizontal scroll at 320 px,
 and exits 1 if it finds either.
 
@@ -33,11 +37,22 @@ DESIGN_PAGES = {
     "safety": "/safety",
     "login": "/login",
     "register": "/register",
+    "search": "/search?q=pancakes",
+    "cook": "{cook}",
+    "offering": "{offering}",
 }
-# Captured after the demo login; the diner also gets the three account forms.
+# Captured after the demo login; the diner also gets the three account forms. The {names} are
+# filled in from the seed: the Pancake Breakfast offering, its cook, and the diner's Steak Night booking.
 PERSONA_PAGES = {
-    "diner": {"me-diner": "/me", "edit": "/me/edit", "password": "/me/password", "delete": "/me/delete"},
-    "cook": {"me-cook": "/me"},
+    "diner": {
+        "me-diner": "/me",
+        "edit": "/me/edit",
+        "password": "/me/password",
+        "delete": "/me/delete",
+        "offering-diner": "{offering}",
+        "booking-diner": "{booking}",
+    },
+    "cook": {"me-cook": "/me", "kitchen": "/kitchen", "offering-cook": "{offering}", "booking-cook": "{booking}"},
 }
 WIDTHS = {"desktop": (1280, 800), "phone": (390, 844)}
 SCHEMES = ["light", "dark"]
@@ -56,11 +71,30 @@ def _shoot(page, out: Path, name: str, problems: list[str], where: str) -> None:
     print(target.relative_to(ROOT))
 
 
+def _seeded_paths(browser, base_url: str) -> dict[str, str]:
+    """Find the seeded pages whose ids change on every reseed."""
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(f"{base_url}/search?q=pancakes", wait_until="networkidle")
+    card = page.locator(".offer-card", has_text="Pancake Breakfast")
+    paths = {
+        "offering": card.locator(".offer-title a").get_attribute("href"),
+        "cook": card.locator(".offer-cook a").get_attribute("href"),
+    }
+    page.goto(f"{base_url}/login", wait_until="networkidle")
+    page.get_by_role("button", name="Try as demo diner").click()
+    page.wait_for_url(f"{base_url}/me")
+    paths["booking"] = page.get_by_role("link", name="Steak Night").get_attribute("href")
+    context.close()
+    return paths
+
+
 def capture_design(base_url: str, out: Path) -> int:
     out.mkdir(parents=True, exist_ok=True)
     problems: list[str] = []
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
+        seeded = _seeded_paths(browser, base_url)
         for scheme in SCHEMES:
             for label, (width, height) in WIDTHS.items():
                 context = browser.new_context(
@@ -70,7 +104,7 @@ def capture_design(base_url: str, out: Path) -> int:
                 page = context.new_page()
                 where = f"{scheme}, {label}"
                 for name, path in DESIGN_PAGES.items():
-                    page.goto(f"{base_url}{path}", wait_until="networkidle")
+                    page.goto(f"{base_url}{path.format(**seeded)}", wait_until="networkidle")
                     _shoot(page, out, f"{name}-{label}-{scheme}", problems, where)
                 # The register form submitted empty: the error summary and the field errors.
                 page.goto(f"{base_url}/register", wait_until="networkidle")
@@ -98,28 +132,33 @@ def capture_design(base_url: str, out: Path) -> int:
                     page.get_by_role("button", name=f"Try as demo {persona}").click()
                     page.wait_for_url(f"{base_url}/me")
                     for name, path in pages.items():
-                        page.goto(f"{base_url}{path}", wait_until="networkidle")
+                        page.goto(f"{base_url}{path.format(**seeded)}", wait_until="networkidle")
                         _shoot(page, out, f"{name}-{label}-{scheme}", problems, where)
+                    if persona == "diner":
+                        # The booking form submitted without the allergen box: its error state.
+                        page.goto(f"{base_url}{seeded['offering']}", wait_until="networkidle")
+                        page.locator('.booking-form button[type="submit"]').click()
+                        page.locator(".booking-form .error-summary").wait_for()
+                        _shoot(page, out, f"offering-errors-{label}-{scheme}", problems, where)
                     context.close()
 
-        # No horizontal scroll at 320 px: the public pages, then the diner's account pages.
-        context = browser.new_context(viewport={"width": 320, "height": 800})
-        page = context.new_page()
-
-        def check_320(path: str) -> None:
+        # No horizontal scroll at 320 px: the public pages, then each persona's pages.
+        def check_320(page, path: str) -> None:
             page.goto(f"{base_url}{path}", wait_until="networkidle")
             scroll_width = page.evaluate("document.documentElement.scrollWidth")
             if scroll_width > 320:
                 problems.append(f"horizontal scroll on {path} at 320 px: scrollWidth={scroll_width}")
 
-        for path in DESIGN_PAGES.values():
-            check_320(path)
-        page.goto(f"{base_url}/", wait_until="networkidle")
-        page.get_by_role("button", name="Try as demo diner").click()
-        page.wait_for_url(f"{base_url}/me")
-        for path in PERSONA_PAGES["diner"].values():
-            check_320(path)
-        context.close()
+        for persona, pages in {"visitor": DESIGN_PAGES, **PERSONA_PAGES}.items():
+            context = browser.new_context(viewport={"width": 320, "height": 800})
+            page = context.new_page()
+            if persona != "visitor":
+                page.goto(f"{base_url}/login", wait_until="networkidle")
+                page.get_by_role("button", name=f"Try as demo {persona}").click()
+                page.wait_for_url(f"{base_url}/me")
+            for path in pages.values():
+                check_320(page, path.format(**seeded))
+            context.close()
         browser.close()
     for problem in problems:
         print(problem, file=sys.stderr)

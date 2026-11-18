@@ -26,13 +26,13 @@
       <button class="btn btn-primary" type="submit">Search</button>
     </div>
     <div class="filters">
-      <div class="field">{{ form.campus.as_field_group }}</div>
-      <div class="field">{{ form.meal.as_field_group }}</div>
-      <div class="field">{{ form.date.as_field_group }}</div>
-      <div class="field">{{ form.diet.as_field_group }}</div>
-      <div class="field">{{ form.max_share.as_field_group }}</div>
+      {% include "partials/field.html" with field=form.campus hide_optional=True %}
+      {% include "partials/field.html" with field=form.meal hide_optional=True %}
+      {% include "partials/field.html" with field=form.date hide_optional=True %}
+      {% include "partials/field.html" with field=form.diet hide_optional=True %}
+      {% include "partials/field.html" with field=form.max_share hide_optional=True %}
     </div>
-    <div class="filters-wide">{{ form.exclude.as_field_group }}</div>
+    {% include "partials/field.html" with field=form.exclude extra="field-compact" hide_optional=True %}
     <p class="search-status">
       <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching…</span>
     </p>

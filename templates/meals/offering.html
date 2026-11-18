@@ -31,6 +31,28 @@
             If you have a severe allergy, ask the cook before you book, or skip this meal. <a href="{% url 'safety' %}">Read the safety notes</a>.
           </p>
         </aside>
+        <section class="card" aria-labelledby="chip-heading">
+          <h2 id="chip-heading">Chip in</h2>
+          {% include "meals/_chip_in.html" %}
+          {% if offering.is_free %}
+            <p class="small muted">This meal is on the cook. Nothing to chip in.</p>
+          {% elif offering.share_per_seat_cents %}
+            <p class="small muted">
+              Pay the cook in person at pickup. The shares can never add up to more than the groceries cost ({{ offering.grocery_estimate_cents|money }}).
+            </p>
+          {% endif %}
+          {% if offering.needs.all %}
+            <h3>Bring list</h3>
+            <ul class="bring-list">
+              {% for need in offering.needs.all %}
+                <li>
+                  {{ need.label }}
+                  {% if need.claimed_by_booking_id %}<span class="muted">(taken)</span>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </section>
       </div>
       <div class="stack">
         <section class="card" aria-labelledby="when-heading">
@@ -60,36 +82,14 @@
             {% endif %}
           </dl>
         </section>
-        <section class="card" aria-labelledby="chip-heading">
-          <h2 id="chip-heading">Chip in</h2>
-          {% include "meals/_chip_in.html" %}
-          {% if offering.is_free %}
-            <p class="small muted">This meal is on the cook. Nothing to chip in.</p>
-          {% elif offering.share_per_seat_cents %}
-            <p class="small muted">
-              Pay the cook in person at pickup. The shares can never add up to more than the groceries cost ({{ offering.grocery_estimate_cents|money }}).
-            </p>
-          {% endif %}
-          {% if offering.needs.all %}
-            <h3>Bring list</h3>
-            <ul class="bring-list">
-              {% for need in offering.needs.all %}
-                <li>
-                  {{ need.label }}
-                  {% if need.claimed_by_booking_id %}<span class="muted">(taken)</span>{% endif %}
-                </li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </section>
         {% partialdef booking_panel inline %}
         <section id="booking-panel" class="card" aria-labelledby="booking-heading">
-          <h2 id="booking-heading">Request a seat</h2>
+          <h2 id="booking-heading">{% if is_cook %}Your meal{% else %}Request a seat{% endif %}</h2>
           {% if form and is_cook or form and my_booking %}
             {{ form.non_field_errors }}
           {% endif %}
           {% if is_cook %}
-            <p>This is your meal.</p>
+            <p>Open a diner's booking to confirm or decline the request.</p>
             <a class="btn btn-secondary"
                href="{% url 'offering_edit' offering.pk %}">Edit this meal</a>
             <h3>Diners</h3>
@@ -125,7 +125,20 @@
                   hx-swap="outerHTML"
                   novalidate>
               {% csrf_token %}
-              {% include "partials/form_fields.html" %}
+              {% include "partials/error_summary.html" %}
+              {% include "partials/field.html" with field=form.seats %}
+              {% if form.contribution %}
+                {% include "partials/field.html" with field=form.contribution %}
+              {% endif %}
+              {% comment %}The bring-list and custom-terms fields show only once their choice is picked (CSS :has); the server checks them either way.{% endcomment %}
+              {% if form.need %}
+                {% include "partials/field.html" with field=form.need extra="field-when-bring" hide_optional=True %}
+              {% endif %}
+              {% if form.terms %}
+                {% include "partials/field.html" with field=form.terms extra="field-when-custom" hide_optional=True %}
+                {% include "partials/field.html" with field=form.amount extra="field-when-custom" %}
+              {% endif %}
+              {% include "partials/field.html" with field=form.allergen_ack %}
               <button class="btn btn-primary" type="submit">Request seats</button>
             </form>
           {% elif bookable %}

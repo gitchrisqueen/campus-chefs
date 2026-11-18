@@ -60,7 +60,9 @@
                     method="post"
                     action="{% url 'offering_delete' offering.pk %}">
                 {% csrf_token %}
-                <button class="btn btn-quiet" type="submit">Delete</button>
+                <button class="btn btn-quiet" type="submit">
+                  Delete <span class="visually-hidden">{{ offering.title }}</span>
+                </button>
               </form>
             </div>
           </li>

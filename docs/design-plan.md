@@ -110,6 +110,18 @@ section 4:
 - **Changed after pass 2:** an optional select beside a field with an error stretched taller (rows now align on
   the bottom edge).
 
+## Booking, search and kitchen screens (design pass 3, phase 8b)
+
+- **Offering page:** two balanced columns. Left: dishes, the allergen notice, then "Chip in". Right: when and
+  where, then the booking panel. The booking form shows only the fields the chosen way of chipping in needs.
+- **Search filters** use the same field partial as every other form, and the allergen filter uses the checkbox
+  tiles: two columns on a phone, as many 10rem columns as fit on a desktop, every row the same height.
+- **Kitchen:** quiet actions ("Cancel meal", "Delete") sit close to the "Edit" button instead of spreading across
+  the row.
+- **Changed after pass 1:** the allergen tiles were one per row on a phone (now two), the tiles in the second
+  row were shorter than the first (now equal rows), and the cook's panel on their own offering was headed
+  "Request a seat" (now "Your meal").
+
 ## Open points
 
 - The error summary lists errors in the form's field order, which differs from the grouped visual order on
