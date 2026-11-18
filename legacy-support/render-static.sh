@@ -27,14 +27,15 @@ PHP_IMAGE="php:8.5.11-cli-trixie@sha256:8e5d746f87655d89573e76d2b9125ed1b1578e47
 # Fresh scratch copy every run. legacy/ itself is never written to.
 rm -rf "${out}"
 mkdir -p "${out}"
-cp -R "${repo}/legacy/." "${out}/"
+cp -RP "${repo}/legacy/." "${out}/"   # -P: copy symlinks as links, never follow them
 # Let the tests container (uid 10001) read everything.
 chmod -R a+rX "${out}"
 
 # The scratch copy is mounted read-only, so PHP cannot change it. The HTML comes
 # back on stdout and the host shell writes it. PHP warnings go to stderr, which
-# is kept in render.log (PHP 8 warns about code written for PHP 5).
-docker run --rm \
+# is kept in test-results/legacy-render.log (PHP 8 warns about code written for PHP 5).
+log="${out}/../legacy-render.log"
+if ! docker run --rm \
   --network none \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=16m \
@@ -47,7 +48,11 @@ docker run --rm \
   -w /work/view \
   "${PHP_IMAGE}" \
   php -d display_errors=0 welcome.php \
-  > "${out}/view/welcome.html" 2> "${out}/../legacy-render.log"
+  > "${out}/view/welcome.html" 2> "${log}"; then
+  rm -f "${out}/view/welcome.html"
+  echo "render-static: PHP render failed; see test-results/legacy-render.log" >&2
+  exit 1
+fi
 
 # The rendered file is the only thing the screenshot step needs.
 test -s "${out}/view/welcome.html"

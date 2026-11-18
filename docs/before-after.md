@@ -18,7 +18,7 @@ What the captures show:
 - The rounded corners are images, not CSS (`src/main_corners.php`, `src/header.php`).
 - The login form is in the header. Its `method` is `GET` (`src/header.php:11`), so the email and password end up in the URL.
 
-The captures are made with Chromium from the HTML that PHP 8.5 produces for `welcome.php`. That page only includes other PHP files and prints HTML, so the markup is the same one PHP 5 produced. The fonts, the form controls and the scrollbars are Chromium's, not those of a 2008 browser.
+The captures are made with Chromium from the HTML that PHP 8.5 produces for `welcome.php`. That page only includes other PHP files and prints HTML, so the markup should match what PHP 5 produced. This was read from the source, not checked against a PHP 5 run. The fonts, the form controls and the scrollbars are Chromium's, not those of a 2008 browser.
 
 The original images the page uses:
 
@@ -61,7 +61,7 @@ Send this as the email, with any password:
 ' OR 1=1 -- 
 ```
 
-The payload ends with a space. MySQL treats `--` as a comment start only when a whitespace character follows it. With `x` as the password, the string built at `sqlQueries.php:58` is:
+The payload ends with a space (`--` then a space; some editors strip trailing spaces, so retype it if you copy it). MySQL treats `--` as a comment start only when a whitespace character follows it. With `x` as the password, the string built at `sqlQueries.php:58` is:
 
 ```sql
 SELECT * FROM user_info WHERE first_name = '' OR 1=1 -- ' && password = 'x';
@@ -83,7 +83,7 @@ Two separate facts:
    - `ENT_NOQUOTES` converts neither.
    - The 8.1.0 changelog row says the default changed from `ENT_COMPAT` to `ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401`.
 
-   The 2008 code was written for PHP 5, so it ran with the `ENT_COMPAT` behaviour. The payload has no `&`, `"`, `<` or `>`, and `ENT_COMPAT` does not touch `'`, so it passed through unchanged. As a check, with the pinned `php:8.5.11-cli-trixie` image and the flag named explicitly, `htmlentities("' OR 1=1 -- ", ENT_COMPAT)` returned `' OR 1=1 -- `. With `ENT_QUOTES` it returned `&#039; OR 1=1 -- `.
+   The 2008 code was written for PHP 5, so it ran with the `ENT_COMPAT` behaviour. The payload has no `&`, `"`, `<` or `>`, and `ENT_COMPAT` does not touch `'`, so it passed through unchanged. As a check, with the pinned `php:8.5.11-cli-trixie` image and the flag named explicitly, `htmlentities("' OR 1=1 -- ", ENT_COMPAT)` returned `' OR 1=1 -- `. With `ENT_QUOTES` it returned `&#039; OR 1=1 -- `. To reproduce: `docker run --rm --network none php:8.5.11-cli-trixie@sha256:8e5d746f87655d89573e76d2b9125ed1b1578e47d3c466a2b2fdfc35593d9b41 php -r 'var_dump(htmlentities("\x27 OR 1=1 -- ", ENT_COMPAT), htmlentities("\x27 OR 1=1 -- ", ENT_QUOTES));'`.
 
 2. **Encoding quotes is still not SQL escaping.** Even with `ENT_QUOTES`, `htmlentities()` is the wrong tool here:
    - It does not touch backslashes. In the same check, a backslash came back unchanged. MySQL by default (without `NO_BACKSLASH_ESCAPES`) treats `\'` inside a string literal as a quote character that does not end the string. A backslash as the email and ` OR 1=1 -- ` as the password would, by the rules of MySQL string literals, turn the first literal into `' && password = ` and leave `OR 1=1 --` outside any string. This is reasoned from the query text and the MySQL rules, and was not run.
