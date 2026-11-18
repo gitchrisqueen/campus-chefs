@@ -6,6 +6,7 @@ Written before the phase 4 code that makes them pass.
 import re
 
 import pytest
+from django.core.management import call_command
 
 from tests import factories as f
 
@@ -45,3 +46,18 @@ def test_leg_03_me_shows_kitchen_panel_only_for_cooks(client):
     assert 'id="kitchen-panel"' in html
     assert "My kitchen" in html
     assert "Pancake Breakfast" in html
+
+
+@pytest.mark.django_db
+def test_srch_03_sql_injection_in_search_returns_no_rows_and_no_db_error(client):
+    """2008 `sqlQueries.php` concatenated user input into SQL, and `searchUsers()` was never built."""
+    call_command("seed_demo")
+    payload = "%' UNION SELECT password FROM accounts_user -- "
+    for headers in ({}, {"HX-Request": "true"}):
+        response = client.get("/search", {"q": payload}, headers=headers)
+        assert response.status_code == 200
+        html = response.content.decode()
+        assert len(response.context["page"].object_list) == 0
+        assert "argon2$" not in html
+        for leak in ("psycopg", "ProgrammingError", "syntax error", "Traceback"):
+            assert leak not in html

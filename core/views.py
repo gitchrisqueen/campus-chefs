@@ -4,16 +4,6 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
-# Phase 1 stub data for the live-search spike. Phase 5 replaces it with meals.search.
-STUB_DISHES = [
-    "French Toast",
-    "Pancakes",
-    "Grilled Cheese",
-    "Baked Potato",
-    "Macaroni and Cheese",
-    "Collard Greens",
-]
-
 
 @require_GET
 def home(request):
@@ -33,14 +23,6 @@ def safety(request):
 @require_GET
 def privacy(request):
     return render(request, "core/privacy.html")
-
-
-@require_GET
-def search_stub(request):
-    q = request.GET.get("q", "").strip().lower()
-    results = [d for d in STUB_DISHES if q and q in d.lower()]
-    template = "partials/search_stub_results.html" if request.headers.get("HX-Request") else "core/home.html"
-    return render(request, template, {"q": q, "results": results})
 
 
 @require_GET

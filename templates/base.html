@@ -22,6 +22,7 @@
     {% endif %}
     {% url 'home' as home_url %}
     {% url 'how_it_works' as how_url %}
+    {% url 'search' as search_url %}
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="{{ home_url }}">
@@ -36,6 +37,10 @@
               <li>
                 <a href="{{ home_url }}"
                    {% if request.path == home_url %}aria-current="page"{% endif %}>Home</a>
+              </li>
+              <li>
+                <a href="{{ search_url }}"
+                   {% if request.path == search_url %}aria-current="page"{% endif %}>Find a meal</a>
               </li>
               <li>
                 <a href="{{ how_url }}"

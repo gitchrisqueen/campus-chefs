@@ -81,18 +81,17 @@
     <span class="eyebrow">Live search</span>
     <h2 id="search-heading">Find a meal</h2>
     <form class="search-form"
-          action="{% url 'search_stub' %}"
+          action="{% url 'search' %}"
           method="get"
           role="search">
-      <label class="label" for="q">Dish or ingredient</label>
+      <label class="label" for="q">Cook's first name, dish or ingredient</label>
       <div class="search-row">
         <input id="q"
                name="q"
                type="search"
-               value="{{ q|default:'' }}"
-               placeholder="Try pancakes or cheese"
+               placeholder="Try pancakes or lentils"
                autocomplete="off"
-               hx-get="{% url 'search_stub' %}"
+               hx-get="{% url 'search' %}"
                hx-trigger="input changed delay:300ms, search"
                hx-target="#results"
                hx-indicator="#search-indicator">
@@ -100,10 +99,9 @@
       </div>
       <p class="search-status">
         <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching…</span>
+        <a href="{% url 'search' %}">More filters: campus, meal, date, diet and allergens</a>
       </p>
     </form>
-    <div id="results" aria-live="polite">
-      {% include "partials/search_stub_results.html" %}
-    </div>
+    <div id="results" aria-live="polite"></div>
   </section>
 {% endblock content %}

@@ -1978,3 +1978,44 @@
     }
   }
 }
+
+/* Search page (phase 5): the text box, then the filters in a grid; mobile first. */
+@layer components {
+  .search-page-form {
+    display: grid;
+    gap: var(--cc-space-2);
+    margin-bottom: var(--cc-space-6);
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+    gap: 0 var(--cc-space-4);
+  }
+
+  main form .filters > *,
+  main form .filters input,
+  main form .filters select {
+    max-width: none;
+  }
+
+  .results-count {
+    margin-top: var(--cc-space-4);
+  }
+
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--cc-space-4);
+    margin-top: var(--cc-space-5);
+  }
+
+  .pager a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--cc-tap);
+    font-weight: 700;
+  }
+}
