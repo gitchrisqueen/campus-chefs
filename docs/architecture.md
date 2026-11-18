@@ -123,3 +123,4 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | The cook sees a "Diners" list on the offering page, and the kitchen page shows the totals too | The cook needs a way to reach each booking, to complete it and mark it received |
 | — | The seed sets each booking's `created_at` to its request time | `auto_now_add` stamped seed time, so the timeline showed "Requested" after "Confirmed" |
 | — | The booking form has no `note` field | The brief lists none; terms cover what a diner wants to tell the cook |
+| — | Account deletion blanks `terms` and `note` on all the diner's bookings, the text of their reviews and a cook's bio; the CHECK `booking_custom_needs_terms` now applies only to requested and confirmed bookings (migration `0003_relax_custom_terms_check`) | Deleted users' free text must not stay. Deletion cancels active bookings first, so every remaining row is non-active; an empty custom term reads "Custom terms (removed)" |

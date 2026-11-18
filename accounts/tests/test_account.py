@@ -1,8 +1,9 @@
 import pytest
+from django.db import IntegrityError, transaction
 from django.test import Client
 
 from accounts.models import User
-from bookings.models import Review
+from bookings.models import Booking, Review
 from meals.models import OfferingNeed
 from tests import factories as f
 
@@ -46,7 +47,18 @@ def test_acct_01_delete_cancels_bookings_anonymizes_and_keeps_reviews(client, di
     upcoming = f.booking(f.offering(cook), diner, status="requested", contribution="ingredients")
     need = OfferingNeed.objects.create(offering=upcoming.offering, label="1 lb spaghetti", claimed_by_booking=upcoming)
     past = f.booking(f.offering(cook, days_ahead=-3, title="Past Dinner"), diner, status="completed")
-    review = Review.objects.create(booking=past, rating=5, the_good="Great pancakes")
+    review = Review.objects.create(booking=past, rating=5, the_good="Great pancakes", the_bad="Too loud")
+    past.note = "Allergic to nothing"
+    past.save()
+    custom = f.booking(
+        f.offering(cook, days_ahead=-5, title="Custom Dinner"),
+        diner,
+        status="completed",
+        contribution="custom",
+        share_cents=200,
+        terms="a salad and $2",
+        note="I will bring a friend",
+    )
     other_session = Client()
     other_session.force_login(diner)
     client.force_login(diner)
@@ -72,6 +84,16 @@ def test_acct_01_delete_cancels_bookings_anonymizes_and_keeps_reviews(client, di
     assert "Ava" not in diner.first_name and diner.last_name == ""
     review.refresh_from_db()
     assert review.booking.diner.public_name == "Former student"
+    assert (review.rating, review.the_good, review.the_bad) == (5, "", "")
+    assert not Booking.objects.filter(diner=diner).exclude(terms="", note="").exists()
+    custom.refresh_from_db()
+    assert (custom.contribution, custom.share_cents) == ("custom", 200)
+    assert custom.contribution_text == "Agreed: $2.00 + Custom terms (removed)"
+    cook_page = client.get(f"/cooks/{cook.pk}").content.decode()
+    assert "Former student" in cook_page and "5 out of 5" in cook_page
+    assert "Great pancakes" not in cook_page
+    client.force_login(cook.user)
+    assert client.get(f"/bookings/{custom.pk}").status_code == 200
     assert other_session.get("/me").status_code == 302
     assert client.post("/login", {"username": "ava.r@larkspur.example", "password": PASSWORD}).status_code == 200
 
@@ -147,6 +169,8 @@ def test_acct_04_name_change_needs_no_password_but_email_must_be_free(client, di
 @pytest.mark.django_db
 def test_acct_03_cook_deletion_cancels_offerings_and_bookings_and_hides_cook(client):
     cook = f.cook(first="Marcus", email="marcus@larkspur.example", password=PASSWORD)
+    cook.bio = "I cook for my floor every Sunday."
+    cook.save()
     item = f.menu_item(cook, "Buttermilk Pancakes", is_specialty=True)
     future = f.offering(cook)
     future.items.add(item)
@@ -170,3 +194,15 @@ def test_acct_03_cook_deletion_cancels_offerings_and_bookings_and_hides_cook(cli
     assert (item.is_active, item.is_specialty) == (False, False)
     assert done.status == "completed"
     assert client.get(f"/cooks/{cook.pk}").status_code == 404
+    cook.refresh_from_db()
+    assert cook.bio == ""
+
+
+@pytest.mark.django_db
+def test_acct_01_constraint_still_rejects_active_custom_booking_without_terms(diner):
+    cook = f.cook(first="Marcus", email="marcus@larkspur.example")
+    offering = f.offering(cook)
+    for status in ("requested", "confirmed"):
+        with pytest.raises(IntegrityError), transaction.atomic():
+            f.booking(offering, diner, status=status, contribution="custom", terms="")
+    f.booking(offering, diner, status="completed", contribution="custom", terms="")
