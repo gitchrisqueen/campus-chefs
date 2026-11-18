@@ -50,7 +50,7 @@ These are set in `compose.yaml` (`x-app-env`). Override them in `.env` or on the
 | `CC_REGISTRATION_OPEN` | `true` | With `false`, `/register` returns 404. Use this for any hosted demo |
 
 - **Logged-in pages** (`/me`, account edit, password, delete) send `Cache-Control: private, no-store`.
-- **Account deletion** needs the current password. It anonymizes the user and cancels their bookings. Cook accounts cannot be deleted yet; the page answers 409 until the cook path lands in phase 6.
+- **Account deletion** needs the current password. It anonymizes the user and cancels their bookings. Deleting a cook account also cancels their upcoming meals (bookings on them are system-cancelled and bring-list claims released) and retires their dishes, so the cook page disappears (ACCT-03).
 - **Failed logins:** see the 429 row below. The cause of a failed login is never logged per user, by design.
 - **Parallel stacks** (other worktrees): set `COMPOSE_PROJECT_NAME`, `WEB_PORT` and `CC_IMAGE` so stacks never share containers, ports or images.
 

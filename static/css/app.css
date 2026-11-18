@@ -2019,3 +2019,38 @@
     font-weight: 700;
   }
 }
+
+/* Bookings (phase 6): the request form, the contribution line and the timeline; mobile first. */
+@layer components {
+  .booking-form {
+    display: grid;
+    gap: var(--cc-space-3);
+  }
+
+  .booking-form .btn {
+    justify-self: start;
+  }
+
+  .contribution {
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-1);
+    font-weight: 700;
+  }
+
+  .timeline {
+    margin: 0;
+    padding-inline-start: var(--cc-space-5);
+    display: grid;
+    gap: var(--cc-space-2);
+  }
+
+  .timeline time {
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+  }
+
+  .plain-list .badge {
+    margin-inline-start: var(--cc-space-2);
+    vertical-align: middle;
+  }
+}

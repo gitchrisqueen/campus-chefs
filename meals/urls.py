@@ -11,6 +11,7 @@ urlpatterns = [
     path("kitchen/items/<int:pk>/archive", views.item_archive, name="item_archive"),
     path("kitchen/offerings/new", views.offering_create, name="offering_create"),
     path("kitchen/offerings/<int:pk>/edit", views.offering_edit, name="offering_edit"),
+    path("kitchen/offerings/<int:pk>/cancel", views.offering_cancel, name="offering_cancel"),
     path("kitchen/offerings/<int:pk>/delete", views.offering_delete, name="offering_delete"),
     path("search", views.search, name="search"),
     path("cooks/<int:pk>", views.cook_page, name="cook_page"),

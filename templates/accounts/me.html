@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tz %}
 {% block title %}My account · Campus Chefs{% endblock title %}
 {% block content %}
   <header class="account-head">
@@ -60,11 +61,28 @@
     {% endif %}
     <section class="card" aria-labelledby="bookings-heading">
       <h2 id="bookings-heading">My bookings</h2>
-      <div class="empty-state">
-        <p>No bookings yet.</p>
-        <p class="small muted">Find a dish you like, book a seat and chip in toward the groceries.</p>
-        <a class="btn btn-primary" href="{% url 'home' %}#search">Find a meal</a>
-      </div>
+      {% if my_bookings %}
+        <ul class="plain-list">
+          {% for booking in my_bookings %}
+            <li>
+              <a href="{{ booking.get_absolute_url }}">{{ booking.offering.title }}</a>
+              <span class="badge">{{ booking.status_label }}</span>
+              <span class="small muted">
+                {% timezone booking.offering.cook.user.campus.timezone %}
+                  {{ booking.offering.serve_at|date:"D j M · g:i A" }}
+                {% endtimezone %}
+                · {{ booking.seats }} seat{{ booking.seats|pluralize }} with {{ booking.offering.cook.user.public_name }} · {{ booking.contribution_text }}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          <p>No bookings yet.</p>
+          <p class="small muted">Find a dish you like, book a seat and chip in toward the groceries.</p>
+          <a class="btn btn-primary" href="{% url 'search' %}">Find a meal</a>
+        </div>
+      {% endif %}
     </section>
   </div>
 {% endblock content %}

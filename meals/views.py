@@ -9,6 +9,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from bookings import services as booking_services
+from bookings.contributions import with_totals
+from bookings.errors import BookingError
+from bookings.forms import BookingRequestForm
 from bookings.models import Booking, Review
 
 from .forms import CookBioForm, CookSetupForm, MenuItemForm, OfferingForm, SearchForm
@@ -63,7 +67,7 @@ def kitchen(request):
     if cook is None:
         return redirect("kitchen_setup")
     now = timezone.now()
-    offerings = cook.offerings.for_listing()
+    offerings = with_totals(cook.offerings.for_listing())
     context = {
         "cook": cook,
         "menu": _menu_grid(cook.menu_items.filter(is_active=True)),
@@ -144,6 +148,20 @@ def offering_edit(request, cook, pk):
 
 @cook_required
 @require_POST
+def offering_cancel(request, cook, pk):
+    """Call off a meal. Its bookings are system-cancelled and their bring-list claims released (BOOK-12)."""
+    offering = get_object_or_404(Offering, pk=pk, cook=cook)
+    try:
+        booking_services.cancel_offering(offering)
+    except BookingError as error:
+        messages.error(request, error.message)
+    else:
+        messages.success(request, f"“{offering.title}” was cancelled. Its diners will see that on their bookings.")
+    return redirect("kitchen")
+
+
+@cook_required
+@require_POST
 def offering_delete(request, cook, pk):
     offering = get_object_or_404(Offering, pk=pk, cook=cook)
     if offering.bookings.exists():
@@ -186,16 +204,39 @@ def cook_page(request, pk):
     return render(request, "meals/cook.html", context)
 
 
+def offering_context(request, offering, *, form=None, new_booking=None) -> dict:
+    """What the offering page and its booking panel need (plan 2.3)."""
+    user = request.user
+    is_cook = user.is_authenticated and offering.cook_id == user.pk
+    my_booking = new_booking
+    if my_booking is None and user.is_authenticated and not is_cook:
+        my_booking = offering.bookings.filter(diner=user, status__in=Booking.ACTIVE).first()
+    bookable = (
+        offering.status == Offering.Status.OPEN
+        and timezone.now() < offering.booking_cutoff_at
+        and offering.seats_left > 0
+        and not is_cook
+        and my_booking is None
+    )
+    if form is None and bookable and user.is_authenticated:
+        form = BookingRequestForm(offering)
+    return {
+        "offering": offering,
+        "is_cook": is_cook,
+        "my_booking": my_booking,
+        "new_booking": new_booking,
+        "form": form,
+        "bookable": bookable,
+        # The pickup note is for the cook and confirmed diners only (BOOK-14).
+        "show_pickup_note": is_cook or (my_booking is not None and my_booking.status == Booking.Status.CONFIRMED),
+        "diners": offering.bookings.select_related("diner", "claimed_need") if is_cook else [],
+    }
+
+
 @require_GET
 def offering_detail(request, pk):
     offering = get_object_or_404(Offering.objects.for_listing(), pk=pk, cook__user__is_active=True)
-    user = request.user
-    is_cook = user.is_authenticated and offering.cook_id == user.pk
-    is_confirmed_diner = (
-        user.is_authenticated and offering.bookings.filter(diner=user, status=Booking.Status.CONFIRMED).exists()
-    )
-    context = {"offering": offering, "show_pickup_note": is_cook or is_confirmed_diner, "is_cook": is_cook}
-    return render(request, "meals/offering.html", context)
+    return render(request, "meals/offering.html", offering_context(request, offering))
 
 
 @require_GET

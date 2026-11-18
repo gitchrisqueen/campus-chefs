@@ -316,6 +316,8 @@ class Command(BaseCommand):
                     cancelled_by=cancelled_by,
                     contribution_received_at=closed if status == C and contribution != "none" else None,
                 )
+                # created_at is auto_now_add; set it to the request time so the timeline reads in order.
+                Booking.objects.filter(pk=booking.pk).update(created_at=booking.allergen_ack_at)
                 booking_count += 1
                 if contribution == "ingredients" and open_needs and status in (R, K, C):
                     need = open_needs.pop(0)

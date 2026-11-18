@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_http_methods
 
+from bookings.contributions import with_totals
+from bookings.models import Booking
 from core import seed_data
 
 from . import services
@@ -70,10 +72,22 @@ def demo_login(request, persona):
 def me(request):
     """The dashboard branches on whether a cook profile exists (LEG-03), never on a hardcoded type."""
     cook = getattr(request.user, "cook_profile", None)
-    context = {"is_cook": cook is not None, "cook": cook}
+    now = timezone.now()
+    bookings = Booking.objects.select_related("offering__cook__user__campus", "claimed_need")
+    context = {
+        "is_cook": cook is not None,
+        "cook": cook,
+        # Only this user's own bookings, never a hardcoded id (LEG-02).
+        "my_bookings": bookings.filter(diner=request.user).order_by("-offering__serve_at")[:20],
+    }
     if cook is not None:
-        context["upcoming"] = cook.offerings.for_listing().filter(serve_at__gte=timezone.now())[:5]
+        context["upcoming"] = with_totals(cook.offerings.for_listing()).filter(serve_at__gte=now)[:5]
         context["dish_count"] = cook.menu_items.filter(is_active=True).count()
+        context["requests"] = (
+            bookings.filter(offering__cook=cook, status=Booking.Status.REQUESTED, offering__serve_at__gt=now)
+            .select_related("diner")
+            .order_by("offering__serve_at")
+        )
     return render(request, "accounts/me.html", context)
 
 
@@ -96,11 +110,6 @@ def account_edit(request):
 @require_http_methods(["GET", "POST"])
 def account_delete(request):
     form = DeleteAccountForm(request.user, request.POST if request.method == "POST" else None)
-    if form.is_bound and hasattr(request.user, "cook_profile"):
-        # The cook path (cancel open offerings, release bookings, clear the bio) lands with
-        # ACCT-03 in phase 6. Until then, refuse rather than leave orphaned live offerings.
-        messages.error(request, "Cook accounts cannot be deleted yet. This arrives with bookings (phase 6).")
-        return render(request, "accounts/delete.html", {"form": form}, status=409)
     if form.is_bound and form.is_valid():
         services.delete_account(request.user)
         logout(request)

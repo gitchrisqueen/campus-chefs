@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Can't change this booking · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="error-page" aria-labelledby="error-heading">
+    <span class="error-code" aria-hidden="true">{{ status }}</span>
+    <h1 id="error-heading">That change isn't possible.</h1>
+    <p class="lede">{{ message }}</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="{{ booking.get_absolute_url }}">Back to the booking</a>
+    </div>
+  </section>
+{% endblock content %}

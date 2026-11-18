@@ -102,3 +102,24 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | Invalid filter values are listed above the results and ignored; the valid filters still apply | A tampered `campus` or `max_share` should not blank the whole page |
 | — | An empty query lists every open meal | `/search` doubles as "browse meals"; the same holds when the home box is cleared |
 | — | Supporting tests without a plan ID in `meals/tests/test_search.py` | They cover the meal and date filters, invalid input and pagination |
+
+## Phase 6 records (2026-11-18)
+
+- **State machine:** `bookings/services.py` holds `ALLOWED` (the 5 edges of plan 3.3), `request_booking`, `transition`, `available` (the action buttons) and `cancel_offering`. Each write locks the offering with `select_for_update` and runs in one transaction. The checks run in the order of the status-code rule: edge (409), then role (403), then time guard (409). The views return 404 to anyone who is not the diner or the cook before the service runs.
+- **Contributions:** `bookings/contributions.py` holds the share snapshot, the custom no-profit cap (`seats × floor(estimate / capacity)`), the bring-list claim and its release, mark-received, and `with_totals` (subqueries for "Expected $X · Received $Y · Groceries $Z"). The claim is a conditional `UPDATE … WHERE claimed_by_booking IS NULL`, so two claims can never both win, even without the offering lock.
+- **Races:** BOOK-06 and CONTRIB-04 run with `transaction=True` and two threads. Each thread has its own DB connection, and a barrier releases both at once.
+- **Booking form:** `BookingRequestForm` is a plain `Form`. Status, diner and offering never come from the POST (AZ-08). The htmx path renders `meals/offering.html#booking_panel` (Django's built-in `{% partialdef %}`); without htmx, a successful request gets a 303 to `/bookings/<id>`. A rejected request re-renders with 200 and the error next to its field, so htmx swaps it in.
+
+## Phase 6 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| `services.py` and `contributions.py` | Also `bookings/errors.py` (`BookingError` 409, `Forbidden` 403, `NotParticipant` 404, `BookingRejected`) | Both modules raise the same errors; a third module avoids a circular import |
+| — | `test_leg_02a_…` became `test_leg_02_…` with the bookings part; the phase 4 supporting test `test_allergen_lock_while_item_has_active_bookings` became `test_menu_05_…` | The plain IDs own those tests now |
+| Cook deletion cancels "the offering" (ACCT-03) | Only open offerings with a future serve time are cancelled; past meals and their bookings stay as they are | A meal already served cannot be cancelled (the system cancel needs `now < serve_at`) |
+| — | A cook cannot cancel a meal after its serve time | Same time guard as the system cancel |
+| "Expected" in the kitchen totals | The shares of confirmed and completed bookings; requested ones are not counted | A request is not yet an agreement |
+| — | Marking a contribution received twice returns 409; a booking with `contribution=none` cannot be marked | Nothing changes, and there is nothing to receive |
+| — | The cook sees a "Diners" list on the offering page, and the kitchen page shows the totals too | The cook needs a way to reach each booking, to complete it and mark it received |
+| — | The seed sets each booking's `created_at` to its request time | `auto_now_add` stamped seed time, so the timeline showed "Requested" after "Confirmed" |
+| — | The booking form has no `note` field | The brief lists none; terms cover what a diner wants to tell the cook |

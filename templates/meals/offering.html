@@ -82,16 +82,64 @@
             </ul>
           {% endif %}
         </section>
+        {% partialdef booking_panel inline %}
         <section id="booking-panel" class="card" aria-labelledby="booking-heading">
           <h2 id="booking-heading">Request a seat</h2>
+          {% if form and is_cook or form and my_booking %}
+            {{ form.non_field_errors }}
+          {% endif %}
           {% if is_cook %}
             <p>This is your meal.</p>
             <a class="btn btn-secondary"
                href="{% url 'offering_edit' offering.pk %}">Edit this meal</a>
+            <h3>Diners</h3>
+            {% if diners %}
+              <ul class="plain-list">
+                {% for booking in diners %}
+                  <li>
+                    <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>
+                    · {{ booking.seats }} seat{{ booking.seats|pluralize }} · {{ booking.status_label }}
+                    <span class="small muted">{{ booking.contribution_text }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted">No requests yet.</p>
+            {% endif %}
+          {% elif my_booking %}
+            <p role="status">
+              {% if new_booking %}
+                Request sent. The cook will confirm or decline it.
+              {% else %}
+                You have a {{ my_booking.status_label|lower }} booking for {{ my_booking.seats }} seat{{ my_booking.seats|pluralize }}.
+              {% endif %}
+            </p>
+            <p>{{ my_booking.contribution_text }}</p>
+            <a class="btn btn-secondary" href="{{ my_booking.get_absolute_url }}">View your booking</a>
+          {% elif form %}
+            <form class="booking-form"
+                  method="post"
+                  action="{% url 'book' offering.pk %}"
+                  hx-post="{% url 'book' offering.pk %}"
+                  hx-target="#booking-panel"
+                  hx-swap="outerHTML"
+                  novalidate>
+              {% csrf_token %}
+              {% include "partials/form_fields.html" %}
+              <button class="btn btn-primary" type="submit">Request seats</button>
+            </form>
+          {% elif bookable %}
+            <p>
+              <a class="btn btn-primary"
+                 href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to request a seat</a>
+            </p>
+          {% elif offering.seats_left == 0 and offering.status == "open" %}
+            <p class="muted">This meal is full.</p>
           {% else %}
-            <p class="muted">Seat requests are not open yet in this demo.</p>
+            <p class="muted">Requests for this meal are closed.</p>
           {% endif %}
         </section>
+        {% endpartialdef %}
       </div>
     </div>
   {% endtimezone %}
