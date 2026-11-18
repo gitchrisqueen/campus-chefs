@@ -13,7 +13,6 @@ urlpatterns = [
     path("safety", core_views.safety, name="safety"),
     path("privacy", core_views.privacy, name="privacy"),
     path("search/stub", core_views.search_stub, name="search_stub"),
-    path("safety", core_views.safety, name="safety"),
     path("healthz", core_views.healthz, name="healthz"),
     path("robots.txt", core_views.robots, name="robots"),
     path("", include("accounts.urls")),

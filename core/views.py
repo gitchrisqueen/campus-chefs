@@ -44,11 +44,6 @@ def search_stub(request):
 
 
 @require_GET
-def safety(request):
-    return render(request, "core/safety.html")
-
-
-@require_GET
 @never_cache
 def healthz(request):
     try:
