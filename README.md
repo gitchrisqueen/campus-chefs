@@ -4,7 +4,7 @@
 
 Campus Chefs started in 2008 as a student web project. This repository holds that original code and a plan to rebuild it as a 2026 web app with the same idea. The rebuild will be secure, accessible, tested and Docker-deployable.
 
-**Status:** work in progress. The original 2008 code is here, and the modernization is planned but has not started. See [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md). The repository is public from its first commit, so the whole 2008-to-2026 history can be followed.
+**Status:** work in progress. Phase 1 of [the plan](docs/MODERNIZATION_PLAN.md) is built: the Django skeleton, the one-command Docker demo and CI. The app features arrive phase by phase. The repository is public from its first commit, so the whole 2008-to-2026 history can be followed.
 
 ---
 
@@ -72,23 +72,39 @@ It no longer runs on any current PHP release. It uses the `mysql_*` extension, w
 ## Repository layout (today)
 
 ```
+compose.yaml, Dockerfile, Makefile   the one-command demo and the dev commands
+docker/          keygen.sh (secrets), entrypoint.sh, postgres-init/01-roles.sh (DB roles)
+config/          Django settings and URLs
+core/            health check, home page, security middleware, management commands
+accounts/        the email-login user model
+meals/, bookings/  the domain apps (filled in by phases 2 to 7)
+templates/, static/  HTML templates, CSS, vendored htmx 4.0.1
+tests/           end-to-end browser tests (Playwright)
+scripts/         denylist.sh, check-image-metadata.sh, static_checks.py, smoke.sh, ops-checks.sh, wait-healthy.sh
+.github/         workflows/ci.yml (one CI job), dependabot.yml
+docs/            MODERNIZATION_PLAN.md, LEGACY-MAP.md, architecture.md, OPERATIONS.md
 legacy/          the 2008 code, read-only and redacted; no license granted (see legacy/README.md)
 legacy-support/  SHA256SUMS for legacy/, REDACTIONS.md, placeholder images
-scripts/         denylist.sh (public-safety scan), check-image-metadata.sh
-docs/            MODERNIZATION_PLAN.md, LEGACY-MAP.md
 ```
-
-The new Django app is built next to `legacy/`, phase by phase.
 
 ## Running it
 
-There is nothing to run yet. From plan phase 1 on, the demo runs with this command:
+You need Docker with Compose v2, `make`, `curl` and `jq`.
 
 ```sh
-make demo   # then open http://127.0.0.1:8000
+make demo                               # build and start; waits until healthy
+curl http://127.0.0.1:8000/healthz      # prints: ok
+docker compose logs -f web              # follow the app logs
+docker compose down                     # stop, keeping data
+docker compose down -v                  # reset: wipes the synthetic data and the generated secrets
+make test                               # unit and integration tests
 ```
 
-**Do not deploy the 2008 code.** Its login can be bypassed with SQL injection.
+The data is synthetic and disposable, so there are no backups. [docs/OPERATIONS.md](docs/OPERATIONS.md) covers what to do when something breaks.
+
+**Do not deploy the 2008 code in `legacy/`.** Its login can be bypassed with SQL injection.
+
+**Contributing:** CI's public-safety denylist step fails closed on pull requests from forks, because forks cannot read the secret it needs. A maintainer re-runs such changes from a branch.
 
 ## License
 
