@@ -18,6 +18,8 @@ def test_a11y_02_register_errors_are_linked_and_summarised(client):
     fieldset = re.search(r"<fieldset[^>]*>", html).group(0)
     assert "id_role_error" in fieldset
     assert 'href="#id_role_0"' in html
+    assert "Choose how you will use Campus Chefs." in html
+    assert "This field is required." not in html.split('id="id_role_error"')[1].split("</ul>")[0]
 
 
 @pytest.mark.django_db

@@ -325,10 +325,11 @@ def test_offering_edit_keeps_claimed_needs_and_validates_times(client, cook):
     html = client.get(f"/kitchen/offerings/{offering.pk}/edit").content.decode()
     assert "1 lb spaghetti" in html and "1 dozen eggs" in html
 
-    data = offering_data([item], title="Pancake Brunch", bring_list="1 bag of rice", share_per_seat="0")
+    # The meal has a booking, so the serve time and share stay as they were (menu_07).
+    data = _edit_data(item, offering, title="Pancake Brunch", bring_list="1 bag of rice")
     assert client.post(f"/kitchen/offerings/{offering.pk}/edit", data).status_code == 302
     offering.refresh_from_db()
-    assert offering.title == "Pancake Brunch" and offering.share_per_seat_cents == 0
+    assert offering.title == "Pancake Brunch" and offering.share_per_seat_cents == 400
     assert sorted(offering.needs.values_list("label", flat=True)) == ["1 bag of rice", "1 dozen eggs"]
     assert OfferingNeed.objects.filter(pk=claimed.pk).exists()
 
@@ -372,3 +373,62 @@ def test_claimed_bring_list_label_is_escaped_on_edit_form(client, cook):
     html = client.get(f"/kitchen/offerings/{offering.pk}/edit").content.decode()
     assert "&lt;b&gt;eggs&lt;/b&gt;" in html
     assert "<b>eggs</b>" not in html
+
+
+def _booked_meal(cook, seats=5, capacity=6):
+    item = f.menu_item(cook, "Buttermilk Pancakes", allergens=["wheat"])
+    offering = f.offering(cook, capacity=capacity, grocery_estimate_cents=3000, share_per_seat_cents=400)
+    offering.items.add(item)
+    f.booking(offering, f.user(first="Jordan", last="Kim"), status="confirmed", seats=min(seats, 4))
+    if seats > 4:
+        f.booking(offering, f.user(first="Sam", last="Lee"), status="requested", seats=seats - 4)
+    return item, offering
+
+
+def _edit_data(item, offering, **overrides):
+    serve_at = timezone.localtime(offering.serve_at)
+    base = {
+        "title": offering.title,
+        "serve_at": serve_at.strftime("%Y-%m-%dT%H:%M"),
+        "booking_cutoff_at": (serve_at - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M"),
+        "capacity": str(offering.capacity),
+        "grocery_estimate": "30.00",
+        "share_per_seat": "4.00",
+    }
+    return offering_data([item], **{**base, **overrides})
+
+
+@pytest.mark.django_db
+def test_menu_06_capacity_below_held_seats_is_rejected(cook):
+    item, offering = _booked_meal(cook)
+    form = OfferingForm(cook, instance=offering, data=_edit_data(item, offering, capacity="2"))
+    assert not form.is_valid()
+    assert "5 seats are already requested or confirmed." in form.errors["capacity"]
+    offering.refresh_from_db()
+    assert offering.capacity == 6
+
+
+@pytest.mark.django_db
+def test_menu_07_booked_meal_locks_share_time_and_fulfillment_but_not_estimate(cook):
+    item, offering = _booked_meal(cook)
+    form = OfferingForm(cook, instance=offering, data=_edit_data(item, offering, share_per_seat="3.00"))
+    assert not form.is_valid() and "share_per_seat" in form.errors
+    form = OfferingForm(cook, instance=offering, data=_edit_data(item, offering, fulfillment="dine_in"))
+    assert not form.is_valid() and "fulfillment" in form.errors
+    later = timezone.localtime(offering.serve_at) + timedelta(hours=1)
+    form = OfferingForm(
+        cook, instance=offering, data=_edit_data(item, offering, serve_at=later.strftime("%Y-%m-%dT%H:%M"))
+    )
+    assert not form.is_valid() and "serve_at" in form.errors
+    form = OfferingForm(cook, instance=offering, data=_edit_data(item, offering, grocery_estimate="40.00"))
+    assert form.is_valid(), form.errors
+
+
+@pytest.mark.django_db
+def test_menu_08_retyping_a_dish_that_is_on_a_meal_is_rejected(cook):
+    item = f.menu_item(cook, "Buttermilk Pancakes", allergens=["wheat"])
+    f.offering(cook).items.add(item)
+    form = MenuItemForm(cook, instance=item, data=item_data(name=item.name, meal_type="lunch", allergens=["wheat"]))
+    assert not form.is_valid() and "meal_type" in form.errors
+    item.refresh_from_db()
+    assert item.meal_type == "breakfast"

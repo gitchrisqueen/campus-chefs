@@ -3,7 +3,6 @@
 {% block content %}
   <section class="card auth" aria-labelledby="delete-heading">
     <header class="auth-head">
-      <span class="eyebrow">My account</span>
       <h1 id="delete-heading">Delete account</h1>
     </header>
     <div class="callout callout-danger">
@@ -11,6 +10,7 @@
         <strong>You cannot undo this.</strong>
       </p>
       <p>This cancels your open bookings and removes your name and email. Past reviews stay and show “Former student”.</p>
+      <p>If you cook, your upcoming meals are cancelled and your menu is hidden.</p>
     </div>
     <form class="form" method="post" action="{% url 'account_delete' %}" novalidate>
       {% csrf_token %}
