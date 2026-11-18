@@ -12,6 +12,11 @@ docs/screenshots/design/:
 - /me/edit, /me/password and /me/delete as the demo diner.
 It also checks each page for CSP violations and for horizontal scroll at 320 px,
 and exits 1 if it finds either.
+
+--before screenshots the statically rendered original landing page (run
+legacy-support/render-static.sh first). It opens the file through file:// so the
+relative ../css and ../img paths resolve; no server runs. Output:
+docs/screenshots/before/welcome.png (1280 px) and welcome-phone.png (390 px).
 """
 
 import argparse
@@ -121,14 +126,41 @@ def capture_design(base_url: str, out: Path) -> int:
     return 1 if problems else 0
 
 
+def capture_before() -> int:
+    """Desktop and phone screenshots of the statically rendered original welcome page."""
+    rendered = ROOT / "test-results" / "legacy-render" / "view" / "welcome.html"
+    if not rendered.is_file():
+        sys.exit(f"missing {rendered}: run legacy-support/render-static.sh first")
+    out_dir = ROOT / "docs" / "screenshots" / "before"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        try:
+            for name, viewport in (("welcome.png", (1280, 900)), ("welcome-phone.png", (390, 844))):
+                context = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]})
+                page = context.new_page()
+                page.goto(rendered.as_uri())
+                page.wait_for_load_state("load")
+                # full_page keeps the whole fixed-width layout, including its overflow on a phone.
+                page.screenshot(path=str(out_dir / name), full_page=True)
+                context.close()
+                print((out_dir / name).relative_to(ROOT))
+        finally:
+            browser.close()
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--design", action="store_true", help="capture the design-review set")
+    parser.add_argument("--before", action="store_true", help="capture the rendered original landing page")
     parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8000"))
     parser.add_argument("--out", type=Path, default=ROOT / "docs" / "screenshots" / "design")
     args = parser.parse_args()
+    if args.before:
+        return capture_before()
     if not args.design:
-        parser.error("choose a capture set, for example --design")
+        parser.error("choose a capture set: --design or --before")
     return capture_design(args.base_url.rstrip("/"), args.out)
 
 
