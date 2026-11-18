@@ -1,81 +1,168 @@
-"""Capture documentation screenshots with Playwright Chromium.
+"""Capture design-review screenshots of the running demo with Playwright.
 
-Run it inside the `tests` container (the repo is mounted read-only at /src; only
-test-results/ and docs/screenshots/ are writable):
+Run inside the tests container, which has Chromium and can reach the web service:
 
-    docker compose --profile test run --rm tests python scripts/capture_screenshots.py --before
+    docker compose --profile test run --rm tests python scripts/capture_screenshots.py --design
 
---before  Screenshots the statically rendered 2008 landing page. Run
-          legacy-support/render-static.sh first. The page is opened through
-          file:// so the relative ../css and ../img paths resolve. No server runs.
-          Output: docs/screenshots/before/welcome.png (desktop, 1280 px wide) and
-          docs/screenshots/before/welcome-phone.png (phone, 390 px wide).
+--design saves full-page PNGs at 1280 px and 390 px wide, in light and dark mode, to
+docs/screenshots/design/:
+- the public pages: /, /how-it-works, /safety, /login and /register;
+- the live search with results, and /register submitted empty (the error state);
+- /me as the demo diner and as the demo cook, each reached by clicking its "Try as demo ..." button;
+- /me/edit, /me/password and /me/delete as the demo diner.
+It also checks each page for CSP violations and for horizontal scroll at 320 px,
+and exits 1 if it finds either.
 
-Each mode is a function registered in MODES, so phase 11 can add an "after" mode
-by adding one function and one entry. It is not implemented here.
+--before screenshots the statically rendered original landing page (run
+legacy-support/render-static.sh first). It opens the file through file:// so the
+relative ../css and ../img paths resolve; no server runs. Output:
+docs/screenshots/before/welcome.png (1280 px) and welcome-phone.png (390 px).
 """
 
-from __future__ import annotations
-
 import argparse
+import os
 import sys
-from collections.abc import Callable
 from pathlib import Path
 
-from playwright.sync_api import Browser, sync_playwright
+from playwright.sync_api import sync_playwright
 
-REPO = Path(__file__).resolve().parent.parent
-RENDERED_WELCOME = REPO / "test-results" / "legacy-render" / "view" / "welcome.html"
-SHOTS = REPO / "docs" / "screenshots"
-
-DESKTOP = {"width": 1280, "height": 900}
-PHONE = {"width": 390, "height": 844}
-
-
-def shoot_before(browser: Browser) -> list[Path]:
-    """Desktop and phone screenshots of the rendered 2008 welcome page."""
-    if not RENDERED_WELCOME.is_file():
-        sys.exit(f"missing {RENDERED_WELCOME}: run legacy-support/render-static.sh first")
-    out_dir = SHOTS / "before"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    written = []
-    for name, viewport in (("welcome.png", DESKTOP), ("welcome-phone.png", PHONE)):
-        context = browser.new_context(viewport=viewport, device_scale_factor=1)
-        page = context.new_page()
-        page.goto(RENDERED_WELCOME.as_uri())
-        page.wait_for_load_state("load")
-        target = out_dir / name
-        # full_page keeps the whole 2008 layout, including any horizontal overflow
-        # at phone width, which is part of what the screenshot shows.
-        page.screenshot(path=str(target), full_page=True)
-        context.close()
-        written.append(target)
-    return written
-
-
-# Mode flag -> function. Phase 11 adds "after" here.
-MODES: dict[str, Callable[[Browser], list[Path]]] = {
-    "before": shoot_before,
+ROOT = Path(__file__).resolve().parent.parent
+DESIGN_PAGES = {
+    "home": "/",
+    "how-it-works": "/how-it-works",
+    "safety": "/safety",
+    "login": "/login",
+    "register": "/register",
 }
+# Captured after the demo login; the diner also gets the three account forms.
+PERSONA_PAGES = {
+    "diner": {"me-diner": "/me", "edit": "/me/edit", "password": "/me/password", "delete": "/me/delete"},
+    "cook": {"me-cook": "/me"},
+}
+WIDTHS = {"desktop": (1280, 800), "phone": (390, 844)}
+SCHEMES = ["light", "dark"]
+RECORD_CSP = (
+    "window.__csp = [];"
+    "document.addEventListener('securitypolicyviolation',"
+    " e => window.__csp.push(e.violatedDirective + ' ' + e.blockedURI));"
+)
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    group = parser.add_mutually_exclusive_group(required=True)
-    for mode in MODES:
-        group.add_argument(f"--{mode}", dest="mode", action="store_const", const=mode)
-    args = parser.parse_args(argv)
+def _shoot(page, out: Path, name: str, problems: list[str], where: str) -> None:
+    if page.evaluate("window.__csp"):
+        problems.append(f"CSP violation on {page.url} ({where})")
+    target = out / f"{name}.png"
+    page.screenshot(path=str(target), full_page=True)
+    print(target.relative_to(ROOT))
 
+
+def capture_design(base_url: str, out: Path) -> int:
+    out.mkdir(parents=True, exist_ok=True)
+    problems: list[str] = []
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        for scheme in SCHEMES:
+            for label, (width, height) in WIDTHS.items():
+                context = browser.new_context(
+                    viewport={"width": width, "height": height}, color_scheme=scheme, device_scale_factor=1
+                )
+                context.add_init_script(RECORD_CSP)
+                page = context.new_page()
+                where = f"{scheme}, {label}"
+                for name, path in DESIGN_PAGES.items():
+                    page.goto(f"{base_url}{path}", wait_until="networkidle")
+                    _shoot(page, out, f"{name}-{label}-{scheme}", problems, where)
+                # The register form submitted empty: the error summary and the field errors.
+                page.goto(f"{base_url}/register", wait_until="networkidle")
+                page.locator('main form[action="/register"] button[type="submit"]').click()
+                page.wait_for_load_state("networkidle")
+                _shoot(page, out, f"register-errors-{label}-{scheme}", problems, where)
+                # The live search with results swapped in by htmx.
+                page.goto(f"{base_url}/", wait_until="networkidle")
+                page.fill("#q", "che")
+                page.locator("#results li").first.wait_for()
+                page.locator("#search").scroll_into_view_if_needed()
+                target = out / f"home-search-{label}-{scheme}.png"
+                page.screenshot(path=str(target))
+                print(target.relative_to(ROOT))
+                context.close()
+
+                # Each persona in a fresh context, logged in by its demo button on the home page.
+                for persona, pages in PERSONA_PAGES.items():
+                    context = browser.new_context(
+                        viewport={"width": width, "height": height}, color_scheme=scheme, device_scale_factor=1
+                    )
+                    context.add_init_script(RECORD_CSP)
+                    page = context.new_page()
+                    page.goto(f"{base_url}/", wait_until="networkidle")
+                    page.get_by_role("button", name=f"Try as demo {persona}").click()
+                    page.wait_for_url(f"{base_url}/me")
+                    for name, path in pages.items():
+                        page.goto(f"{base_url}{path}", wait_until="networkidle")
+                        _shoot(page, out, f"{name}-{label}-{scheme}", problems, where)
+                    context.close()
+
+        # No horizontal scroll at 320 px: the public pages, then the diner's account pages.
+        context = browser.new_context(viewport={"width": 320, "height": 800})
+        page = context.new_page()
+
+        def check_320(path: str) -> None:
+            page.goto(f"{base_url}{path}", wait_until="networkidle")
+            scroll_width = page.evaluate("document.documentElement.scrollWidth")
+            if scroll_width > 320:
+                problems.append(f"horizontal scroll on {path} at 320 px: scrollWidth={scroll_width}")
+
+        for path in DESIGN_PAGES.values():
+            check_320(path)
+        page.goto(f"{base_url}/", wait_until="networkidle")
+        page.get_by_role("button", name="Try as demo diner").click()
+        page.wait_for_url(f"{base_url}/me")
+        for path in PERSONA_PAGES["diner"].values():
+            check_320(path)
+        context.close()
+        browser.close()
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    return 1 if problems else 0
+
+
+def capture_before() -> int:
+    """Desktop and phone screenshots of the statically rendered original welcome page."""
+    rendered = ROOT / "test-results" / "legacy-render" / "view" / "welcome.html"
+    if not rendered.is_file():
+        sys.exit(f"missing {rendered}: run legacy-support/render-static.sh first")
+    out_dir = ROOT / "docs" / "screenshots" / "before"
+    out_dir.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         try:
-            written = MODES[args.mode](browser)
+            for name, viewport in (("welcome.png", (1280, 900)), ("welcome-phone.png", (390, 844))):
+                context = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]})
+                page = context.new_page()
+                page.goto(rendered.as_uri())
+                page.wait_for_load_state("load")
+                # full_page keeps the whole fixed-width layout, including its overflow on a phone.
+                page.screenshot(path=str(out_dir / name), full_page=True)
+                context.close()
+                print((out_dir / name).relative_to(ROOT))
         finally:
             browser.close()
-    for path in written:
-        print(path.relative_to(REPO))
     return 0
 
 
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--design", action="store_true", help="capture the design-review set")
+    parser.add_argument("--before", action="store_true", help="capture the rendered original landing page")
+    parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8000"))
+    parser.add_argument("--out", type=Path, default=ROOT / "docs" / "screenshots" / "design")
+    args = parser.parse_args()
+    if args.before:
+        return capture_before()
+    if not args.design:
+        parser.error("choose a capture set: --design or --before")
+    return capture_design(args.base_url.rstrip("/"), args.out)
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

@@ -1,13 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Register · Campus Chefs{% endblock title %}
 {% block content %}
-  <section class="card">
-    <h1>Register</h1>
-    <p class="note">Use made-up details. This is a portfolio demo, and everything here is fictional.</p>
-    <form method="post" action="{% url 'register' %}" novalidate>
+  <section class="card auth auth-wide" aria-labelledby="register-heading">
+    <header class="auth-head">
+      <h1 id="register-heading">Register</h1>
+      <p class="note">Use made-up details. This is a portfolio demo, and everything here is fictional.</p>
+    </header>
+    <form class="form" method="post" action="{% url 'register' %}" novalidate>
       {% csrf_token %}
-      {% include "partials/form_fields.html" %}
-      <button type="submit">Create account</button>
+      {% include "partials/error_summary.html" %}
+      <div class="form-group" role="group" aria-labelledby="group-account">
+        <h2 class="form-group-title" id="group-account">Your account</h2>
+        {% include "partials/field.html" with field=form.email %}
+        {% include "partials/field.html" with field=form.password1 %}
+        {% include "partials/field.html" with field=form.password2 %}
+      </div>
+      <div class="form-group" role="group" aria-labelledby="group-profile">
+        <h2 class="form-group-title" id="group-profile">Your profile</h2>
+        <div class="field-row">
+          {% include "partials/field.html" with field=form.first_name %}
+          {% include "partials/field.html" with field=form.last_name %}
+        </div>
+        <div class="field-row">
+          {% include "partials/field.html" with field=form.campus %}
+          {% include "partials/field.html" with field=form.classification %}
+        </div>
+        {% include "partials/field.html" with field=form.role %}
+      </div>
+      <div class="form-group" role="group" aria-labelledby="group-confirm">
+        <h2 class="form-group-title" id="group-confirm">Before you start</h2>
+        {% include "partials/field.html" with field=form.adult %}
+        {% include "partials/field.html" with field=form.food_safety extra="field-cook-only" %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create account</button>
+      </div>
     </form>
+    <p class="auth-foot">
+      Already registered? <a href="{% url 'login' %}">Log in</a>.
+    </p>
   </section>
 {% endblock content %}

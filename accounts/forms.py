@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, BaseUserCreationForm, UsernameField
+from django.contrib.auth.forms import AuthenticationForm, BaseUserCreationForm, PasswordChangeForm, UsernameField
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -9,6 +9,15 @@ from meals.models import CookProfile
 from .models import User
 
 ALREADY_REGISTERED = "This email is already registered."
+# One short line instead of Django's five-item validator list; it states the same rules (settings).
+STRENGTH_HELP = "12 to 128 characters. Avoid common passwords, only numbers, or anything close to your name or email."
+NAME_AUTOCOMPLETE = {"email": "email", "first_name": "given-name", "last_name": "family-name"}
+
+
+def _set_autocomplete(form: forms.BaseForm) -> None:
+    for name, token in NAME_AUTOCOMPLETE.items():
+        if name in form.fields:
+            form.fields[name].widget.attrs.setdefault("autocomplete", token)
 
 
 def _email_taken(email: str, exclude_pk: int | None = None) -> bool:
@@ -32,7 +41,12 @@ class RegistrationForm(BaseUserCreationForm):
         label="I am 18 or older",
         error_messages={"required": "You must be 18 or older to use Campus Chefs."},
     )
-    role = forms.ChoiceField(label="How will you use Campus Chefs?", choices=ROLE_CHOICES, widget=forms.RadioSelect)
+    role = forms.ChoiceField(
+        label="How will you use Campus Chefs?",
+        choices=ROLE_CHOICES,
+        widget=forms.RadioSelect,
+        error_messages={"required": "Choose how you will use Campus Chefs."},
+    )
     food_safety = forms.BooleanField(
         label="Cooks: I will cook in a clean kitchen and declare every allergen in my dishes",
         required=False,
@@ -41,6 +55,13 @@ class RegistrationForm(BaseUserCreationForm):
     class Meta:
         model = User
         fields = ["email", "first_name", "last_name", "campus", "classification"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _set_autocomplete(self)
+        self.fields["password1"].help_text = STRENGTH_HELP
+        self.fields["password2"].label = "Confirm password"
+        self.fields["password2"].help_text = ""
 
     def clean_email(self) -> str:
         email = self.cleaned_data["email"]
@@ -79,6 +100,10 @@ class AccountForm(forms.ModelForm):
         model = User
         fields = ["email", "first_name", "last_name", "campus", "classification"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _set_autocomplete(self)
+
     def clean_email(self) -> str:
         email = self.cleaned_data["email"]
         if _email_taken(email, exclude_pk=self.instance.pk):
@@ -90,6 +115,15 @@ class AccountForm(forms.ModelForm):
         if "email" in self.changed_data and not self.instance.check_password(cleaned.get("current_password") or ""):
             self.add_error("current_password", "Enter your current password to change your email.")
         return cleaned
+
+
+class ShortHelpPasswordChangeForm(PasswordChangeForm):
+    """Django's password change form with the one-line password help used at registration."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].help_text = STRENGTH_HELP
+        self.fields["new_password2"].label = "Confirm new password"
 
 
 class DeleteAccountForm(forms.Form):

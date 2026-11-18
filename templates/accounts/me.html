@@ -1,37 +1,60 @@
 {% extends "base.html" %}
 {% block title %}My account · Campus Chefs{% endblock title %}
 {% block content %}
-  <h1>My account</h1>
-  <section class="card" aria-labelledby="profile-heading">
-    <h2 id="profile-heading">Profile</h2>
-    <dl class="summary">
-      <dt>Name</dt>
-      <dd>{{ user.first_name }} {{ user.last_name }}</dd>
-      <dt>Shown to others as</dt>
-      <dd>{{ user.public_name }}</dd>
-      <dt>Email (never shown to others)</dt>
-      <dd>{{ user.email }}</dd>
-      <dt>Campus</dt>
-      <dd>{{ user.campus.name }}</dd>
-      <dt>Classification</dt>
-      <dd>{{ user.get_classification_display|default:"Not given" }}</dd>
-      <dt>Role</dt>
-      <dd>
-        {% if is_cook %}
-          Cook and diner
-        {% else %}
-          Diner
-        {% endif %}
-      </dd>
-    </dl>
-    <p class="actions">
-      <a href="{% url 'account_edit' %}">Edit account</a>
-      <a href="{% url 'password_change' %}">Change password</a>
-      <a href="{% url 'account_delete' %}">Delete account</a>
-    </p>
-  </section>
-  <section class="card" aria-labelledby="bookings-heading">
-    <h2 id="bookings-heading">My bookings</h2>
-    <p>No bookings yet.</p>
-  </section>
+  <header class="account-head">
+    <span class="avatar" aria-hidden="true">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+    <div>
+      <h1>{{ user.public_name }}</h1>
+      <p>
+        {{ user.campus.name }}
+        <span class="badge{% if is_cook %} badge-share{% endif %} role-badge">
+          {% if is_cook %}
+            Cook and diner
+          {% else %}
+            Diner
+          {% endif %}
+        </span>
+      </p>
+    </div>
+  </header>
+  <div class="account-grid">
+    <section class="card" aria-labelledby="profile-heading">
+      <h2 id="profile-heading">Profile</h2>
+      <dl class="summary">
+        <div>
+          <dt>Name</dt>
+          <dd>{{ user.first_name }} {{ user.last_name }}</dd>
+        </div>
+        <div>
+          <dt>Shown to others as</dt>
+          <dd>{{ user.public_name }}</dd>
+        </div>
+        <div>
+          <dt>Email (never shown to others)</dt>
+          <dd>{{ user.email }}</dd>
+        </div>
+        <div>
+          <dt>Campus</dt>
+          <dd>{{ user.campus.name }}</dd>
+        </div>
+        <div>
+          <dt>Classification</dt>
+          <dd>{{ user.get_classification_display|default:"Not given" }}</dd>
+        </div>
+      </dl>
+      <p class="actions">
+        <a class="btn btn-secondary" href="{% url 'account_edit' %}">Edit account</a>
+        <a class="btn btn-secondary" href="{% url 'password_change' %}">Change password</a>
+        <a class="danger-link" href="{% url 'account_delete' %}">Delete account</a>
+      </p>
+    </section>
+    <section class="card" aria-labelledby="bookings-heading">
+      <h2 id="bookings-heading">My bookings</h2>
+      <div class="empty-state">
+        <p>No bookings yet.</p>
+        <p class="small muted">Find a dish you like, book a seat and chip in toward the groceries.</p>
+        <a class="btn btn-primary" href="{% url 'home' %}#search">Find a meal</a>
+      </div>
+    </section>
+  </div>
 {% endblock content %}

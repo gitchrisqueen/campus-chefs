@@ -1,17 +1,51 @@
 {% extends "base.html" %}
 {% block title %}Safety · Campus Chefs{% endblock title %}
 {% block content %}
-  <section class="card">
-    <h1>Safety</h1>
-    <p>Campus Chefs is a portfolio demo. The people and campuses are made up.</p>
-    <ul>
-      <li>Rules for selling or sharing home-cooked food vary by place. This is not a real service.</li>
-      <li>Cooks declare their own allergens. Nobody checks them.</li>
-      <li>If you have a severe allergy, do not rely on this site.</li>
-      <li>Nobody inspects the kitchens.</li>
-      <li>
-        Grocery shares are cost-sharing, capped at what the groceries cost. Some places may still treat them as a sale of food. This is not legal advice.
-      </li>
-    </ul>
-  </section>
+  <header class="page-head">
+    <span class="eyebrow">Safety</span>
+    <h1>Read this before you share a meal.</h1>
+    <p class="lede">
+      Campus Chefs is a portfolio demo. The people and campuses are fictional, no real meals are served,
+      and no money moves through this site.
+    </p>
+  </header>
+  <ol class="notice-list">
+    <li>
+      <h2>This is not a real service.</h2>
+      <p>
+        Rules on home-cooked food made for other people (often called cottage-food rules) vary by state, county,
+        city and campus. Campus Chefs does not check them, so it is a demo and not a service to use.
+      </p>
+    </li>
+    <li>
+      <h2>Allergens are self-declared.</h2>
+      <p>
+        Each cook lists the allergens in their own dishes. Nobody checks those lists, and the allergen filter
+        only hides dishes based on what the cook declared.
+      </p>
+    </li>
+    <li>
+      <h2>Severe allergies: do not rely on this site.</h2>
+      <p>
+        If you have a severe allergy, do not rely on any listing here. Talk to the cook directly, or skip the meal.
+      </p>
+    </li>
+    <li>
+      <h2>Nobody inspects the kitchens.</h2>
+      <p>No health inspector, campus office or anyone else has looked at a cook's kitchen or food handling.</p>
+    </li>
+    <li>
+      <h2>Grocery shares are cost-sharing, capped at the grocery cost.</h2>
+      <p>
+        Diners chip in toward the groceries, and the shares for a meal can never add up to more than the cook's
+        grocery estimate. Some places may still treat this as a sale of food.
+      </p>
+    </li>
+  </ol>
+  <div class="callout prose">
+    <p>
+      <strong>This is not legal advice.</strong> If you build something like this for real, check the food and
+      business rules where you live.
+    </p>
+  </div>
 {% endblock content %}

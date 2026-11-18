@@ -1,16 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Delete account · Campus Chefs{% endblock title %}
 {% block content %}
-  <section class="card">
-    <h1>Delete account</h1>
-    <p>This cancels your open bookings and removes your name and email. Past reviews stay and show “Former student”. You cannot undo this.</p>
-    <form method="post" action="{% url 'account_delete' %}" novalidate>
+  <section class="card auth" aria-labelledby="delete-heading">
+    <header class="auth-head">
+      <h1 id="delete-heading">Delete account</h1>
+    </header>
+    <div class="callout callout-danger">
+      <p>
+        <strong>You cannot undo this.</strong>
+      </p>
+      <p>This cancels your open bookings and removes your name and email. Past reviews stay and show “Former student”.</p>
+      <p>If you cook, your upcoming meals are cancelled and your menu is hidden.</p>
+    </div>
+    <form class="form" method="post" action="{% url 'account_delete' %}" novalidate>
       {% csrf_token %}
       {% include "partials/form_fields.html" %}
-      <button type="submit">Delete my account</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Delete my account</button>
+        <a href="{% url 'me' %}">Keep my account</a>
+      </div>
     </form>
-    <p>
-      <a href="{% url 'me' %}">Keep my account</a>
-    </p>
   </section>
 {% endblock content %}

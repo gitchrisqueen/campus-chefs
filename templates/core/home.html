@@ -1,31 +1,97 @@
 {% extends "base.html" %}
+{% block title %}Campus Chefs · Home-cooked meals made by students{% endblock title %}
 {% block content %}
-  <section class="hero">
-    <h1>Home-cooked meals from students who love to cook</h1>
-    <p>
-      Campus Chefs matches students who want a good home-cooked meal with students who like to cook.
-      Diners chip in toward the groceries.
-    </p>
+  <section class="hero" aria-labelledby="hero-heading">
+    <div>
+      <span class="eyebrow">Student meal sharing</span>
+      <h1 id="hero-heading">
+        Home-cooked meals, <em>made by students</em> who love to cook.
+      </h1>
+      <p class="lede">
+        Campus Chefs matches students who want a good home-cooked meal with students who know how to cook.
+        Want a home-cooked meal without cooking it? Find a meal.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="#search">Find a meal</a>
+        <a class="btn btn-secondary" href="{% url 'how_it_works' %}">How it works</a>
+      </div>
+      <p class="chip-in">
+        <strong>Chip in for groceries.</strong>
+        <span>Diners share the grocery cost or bring an ingredient. Cooks never make a profit.</span>
+      </p>
+    </div>
+    <div class="ticket-stack">
+      <article class="ticket" aria-label="Example listing">
+        <p class="ticket-label">Example listing</p>
+        <p class="ticket-dish">Buttermilk Pancakes</p>
+        <p class="ticket-meta">
+          <span>Sat, 9:30, Breakfast</span>
+          <span>Marcus B., Larkspur State (Demo)</span>
+        </p>
+        <ul class="badges" aria-label="Chip in and dietary info">
+          <li class="badge badge-share">$4.00 grocery share per seat</li>
+          <li class="badge badge-bring">or bring an item</li>
+          <li class="badge badge-diet">Vegetarian</li>
+          <li class="badge badge-allergen">Contains: milk, egg, wheat</li>
+        </ul>
+        <div class="ticket-foot">
+          <p>
+            <strong>3 of 4 seats left</strong>
+          </p>
+          <span class="seats" aria-hidden="true">
+            <span class="seat seat-taken"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </span>
+        </div>
+      </article>
+    </div>
   </section>
-  {% include "partials/demo_login.html" %}
-  <section class="search" aria-labelledby="search-heading">
+  <section class="steps-strip" aria-labelledby="steps-heading">
+    <h2 id="steps-heading">How it works</h2>
+    <ol class="steps" role="list">
+      <li class="step">
+        <h3>Register.</h3>
+      </li>
+      <li class="step">
+        <h3>Search.</h3>
+      </li>
+      <li class="step">
+        <h3>Eat!</h3>
+      </li>
+    </ol>
+    <a class="steps-more" href="{% url 'how_it_works' %}">Read the details</a>
+  </section>
+  <section id="search"
+           class="panel search-section"
+           aria-labelledby="search-heading">
     <h2 id="search-heading">Find a meal</h2>
-    <form action="{% url 'search_stub' %}" method="get" role="search">
-      <label for="q">Dish or ingredient</label>
-      <input id="q"
-             name="q"
-             type="search"
-             value="{{ q|default:'' }}"
-             autocomplete="off"
-             hx-get="{% url 'search_stub' %}"
-             hx-trigger="input changed delay:300ms, search"
-             hx-target="#results"
-             hx-indicator="#search-indicator">
-      <button type="submit">Search</button>
-      <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching</span>
+    <form class="search-form"
+          action="{% url 'search_stub' %}"
+          method="get"
+          role="search">
+      <label class="label" for="q">Cook's first name, dish or ingredient</label>
+      <div class="search-row">
+        <input id="q"
+               name="q"
+               type="search"
+               value="{{ q|default:'' }}"
+               placeholder="Try pancakes or cheese"
+               autocomplete="off"
+               hx-get="{% url 'search_stub' %}"
+               hx-trigger="input changed delay:300ms, search"
+               hx-target="#results"
+               hx-indicator="#search-indicator">
+        <button class="btn btn-secondary" type="submit">Search</button>
+      </div>
+      <p class="search-status">
+        <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching…</span>
+      </p>
     </form>
     <div id="results" aria-live="polite">
       {% include "partials/search_stub_results.html" %}
     </div>
   </section>
+  {% include "partials/demo_login.html" with home=True %}
 {% endblock content %}

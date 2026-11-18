@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Privacy · Campus Chefs{% endblock title %}
+{% block content %}
+  <header class="page-head">
+    <span class="eyebrow">Privacy</span>
+    <h1>We keep as little as we can.</h1>
+    <p class="lede">
+      This is a demo, so use made-up details. Here is what the site stores, what it never asks for,
+      and how to delete your account.
+    </p>
+  </header>
+  <div class="two-col">
+    <section class="card" aria-labelledby="stored-heading">
+      <h2 id="stored-heading">What we store</h2>
+      <ul>
+        <li>Your email, used only to log in. It is never shown to other students.</li>
+        <li>Your first and last name, shown publicly as your first name and last initial, for example “Marcus B.”</li>
+        <li>Your campus, and your class year if you add it.</li>
+        <li>The time you confirmed you are 18 or older.</li>
+        <li>Your password, stored only as an Argon2id hash.</li>
+        <li>For cooks: your bio, menus and meals. A pickup note is shown only to diners the cook has confirmed.</li>
+        <li>Your bookings, grocery shares and reviews.</li>
+      </ul>
+    </section>
+    <section class="card" aria-labelledby="not-stored-heading">
+      <h2 id="not-stored-heading">What we never ask for</h2>
+      <ul>
+        <li>Gender, age or date of birth.</li>
+        <li>Your home address or room number.</li>
+        <li>Photos.</li>
+        <li>Your own allergies or health details.</li>
+        <li>Card numbers, bank details or payment handles. No money moves through this site.</li>
+      </ul>
+      <p class="small muted">The site sets a session cookie to keep you logged in. It has no analytics and no trackers.</p>
+    </section>
+  </div>
+  <section class="section" aria-labelledby="delete-heading">
+    <h2 id="delete-heading">Delete your account</h2>
+    <p>From your account page, choose “Delete account” and enter your current password. Then:</p>
+    <ul>
+      <li>your open bookings are cancelled;</li>
+      <li>if you cook, your upcoming meals are cancelled and your menu is hidden;</li>
+      <li>your email and name are removed, and your past reviews show “Former student”.</li>
+    </ul>
+  </section>
+{% endblock content %}

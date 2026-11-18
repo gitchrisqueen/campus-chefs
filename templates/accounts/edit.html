@@ -1,15 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Edit account · Campus Chefs{% endblock title %}
 {% block content %}
-  <section class="card">
-    <h1>Edit account</h1>
-    <form method="post" action="{% url 'account_edit' %}" novalidate>
+  <section class="card auth auth-wide" aria-labelledby="edit-heading">
+    <header class="auth-head">
+      <h1 id="edit-heading">Edit account</h1>
+      <p>Other students only ever see your first name and last initial.</p>
+    </header>
+    <form class="form" method="post" action="{% url 'account_edit' %}" novalidate>
       {% csrf_token %}
-      {% include "partials/form_fields.html" %}
-      <button type="submit">Save changes</button>
+      {% include "partials/error_summary.html" %}
+      <div class="field-row">
+        {% include "partials/field.html" with field=form.first_name %}
+        {% include "partials/field.html" with field=form.last_name %}
+      </div>
+      <div class="field-row">
+        {% include "partials/field.html" with field=form.campus %}
+        {% include "partials/field.html" with field=form.classification %}
+      </div>
+      <div class="form-group">
+        {% include "partials/field.html" with field=form.email %}
+        {% include "partials/field.html" with field=form.current_password %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a href="{% url 'me' %}">Back to my account</a>
+      </div>
     </form>
-    <p>
-      <a href="{% url 'me' %}">Back to my account</a>
-    </p>
   </section>
 {% endblock content %}

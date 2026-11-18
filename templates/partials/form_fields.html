@@ -1,7 +1,4 @@
-{% if form.errors %}
-  <div class="error-summary" role="alert">
-    <p>Please fix the problems below.</p>
-    {{ form.non_field_errors }}
-  </div>
-{% endif %}
-{% for field in form.visible_fields %}{{ field.as_field_group }}{% endfor %}
+{% include "partials/error_summary.html" %}
+{% for field in form.visible_fields %}
+  {% include "partials/field.html" with field=field %}
+{% endfor %}

@@ -1,0 +1,47 @@
+{% comment %}
+  One form field. Django puts aria-describedby on the control (help text, then the error list),
+  so the ids below must stay "<auto_id>_helptext" and "<auto_id>_error".
+  `extra` adds a class to the wrapper, for example "field-cook-only".
+{% endcomment %}
+{% if field.widget_type == "checkbox" %}
+  <div class="field check{% if field.errors %} has-error{% endif %}{% if extra %} {{ extra }}{% endif %}">
+    {{ field }}
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% if field.help_text %}
+      <p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>
+    {% endif %}
+    {% include "partials/field_errors.html" %}
+  </div>
+{% elif field.use_fieldset %}
+  <fieldset class="field{% if field.errors %} has-error{% endif %}{% if extra %} {{ extra }}{% endif %}"
+            {% if field.aria_describedby %}aria-describedby="{{ field.aria_describedby }}"{% endif %}>
+    <legend class="field-label">
+      {{ field.label }}
+      {% if not field.field.required %}<span class="field-optional">Optional</span>{% endif %}
+    </legend>
+    {% if field.help_text %}
+      <p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>
+    {% endif %}
+    {% include "partials/field_errors.html" %}
+    <div class="choices">
+      {% for option in field %}
+        <label class="choice" for="{{ option.id_for_label }}">
+          {{ option.tag }}
+          <span>{{ option.choice_label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+{% else %}
+  <div class="field{% if field.errors %} has-error{% endif %}{% if extra %} {{ extra }}{% endif %}">
+    <label class="field-label" for="{{ field.id_for_label }}">
+      {{ field.label }}
+      {% if not field.field.required %}<span class="field-optional">Optional</span>{% endif %}
+    </label>
+    {% if field.help_text %}
+      <p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>
+    {% endif %}
+    {% include "partials/field_errors.html" %}
+    {{ field }}
+  </div>
+{% endif %}
