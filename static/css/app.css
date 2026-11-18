@@ -3,8 +3,8 @@
 
 @layer tokens {
   :root {
-    --brand: #a40408;          /* the 2008 header red */
-    --bg: #e5ecf3;             /* the 2008 page background */
+    --brand: #a40408;          /* the original header red */
+    --bg: #e5ecf3;             /* the original page background */
     --surface: #ffffff;
     --text: #1a1a1a;
     --muted: #4a4f55;

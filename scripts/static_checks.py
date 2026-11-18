@@ -186,7 +186,8 @@ def chk_08() -> None:
         fail("CHK-08", f"Postgres image references differ: {sorted(pg_refs)}")
     for n, line in enumerate(compose.splitlines(), 1):
         m = re.search(r"^\s*image:\s*(\S+)", line)
-        if m and not m.group(1).startswith("campuschefs:") and "@sha256:" not in m.group(1):
+        local_build = m and m.group(1).startswith(("campuschefs:", "${CC_IMAGE:-campuschefs}:"))
+        if m and not local_build and "@sha256:" not in m.group(1):
             fail("CHK-08", f"compose.yaml:{n} image without digest")
 
 
