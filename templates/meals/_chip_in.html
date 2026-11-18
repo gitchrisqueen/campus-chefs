@@ -1,0 +1,19 @@
+{% load money %}
+<ul class="badges" aria-label="How diners chip in">
+  {% if offering.is_free %}
+    <li class="badge badge-free">Free</li>
+  {% else %}
+    {% if offering.share_per_seat_cents %}
+      <li class="badge badge-share">{{ offering.share_per_seat_cents|money }} grocery share per seat</li>
+    {% endif %}
+    {% if offering.open_needs %}
+      <li class="badge badge-bring">
+        {% if offering.share_per_seat_cents %}
+          or bring an item
+        {% else %}
+          Bring an item
+        {% endif %}
+      </li>
+    {% endif %}
+  {% endif %}
+</ul>

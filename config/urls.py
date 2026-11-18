@@ -16,5 +16,6 @@ urlpatterns = [
     path("healthz", core_views.healthz, name="healthz"),
     path("robots.txt", core_views.robots, name="robots"),
     path("", include("accounts.urls")),
+    path("", include("meals.urls")),
     path("admin/", admin.site.urls),
 ]

@@ -49,6 +49,15 @@
         <a class="danger-link" href="{% url 'account_delete' %}">Delete account</a>
       </p>
     </section>
+    {% if is_cook %}
+      {% include "meals/_kitchen_panel.html" %}
+    {% else %}
+      <section class="card" aria-labelledby="cook-cta-heading">
+        <h2 id="cook-cta-heading">Like to cook?</h2>
+        <p>Share your meals with other students and get help with the grocery bill.</p>
+        <a class="btn btn-secondary" href="{% url 'kitchen_setup' %}">Set up a kitchen</a>
+      </section>
+    {% endif %}
     <section class="card" aria-labelledby="bookings-heading">
       <h2 id="bookings-heading">My bookings</h2>
       <div class="empty-state">

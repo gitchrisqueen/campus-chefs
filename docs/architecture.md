@@ -66,3 +66,24 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | "Try as demo cook" and "Try as demo diner" buttons on `/` and `/login` | Plan 1.2 demo layer; they make the demo login reachable without curl |
 | — | codespell: `brunch` added to the ignore list, and the local `graft/` index skipped | `make lint` already failed on the phase 2 base: codespell reads the meal-type example "brunch" (seed and DATA-03) as a typo. `graft/` is a git-ignored local code index |
 | — | `test_leg_02a_…` (letter suffix) | `/me` exists now, so the part of LEG-02 that phase 3 can prove (own profile shown, another user's never) runs now. Phase 6 adds the bookings part under the plain ID |
+
+## Phase 4 records (2026-11-18)
+
+- **Money:** `meals/money.py` holds `format_cents` (`400` → `$4.00`) and `suggested_share_cents` (estimate ÷ (seats + 1), rounded down to $0.25). The `money` template filter wraps `format_cents`. Forms take dollars (`DecimalField`, 2 places) and store integer cents; no model has a float or decimal column (CONTRIB-10).
+- **Constraint checks in forms:** a ModelForm skips any model constraint that touches a field outside the form (`cook`, the `*_cents` fields). So `MenuItemForm.clean` checks the duplicate-name and one-specialty rules itself, and `OfferingForm.clean` checks the no-profit rule itself. The DB CHECK and unique constraints still back all three.
+- **Help text is rendered unescaped** by Django's `django/forms/field.html` (`help_text|safe`). The one dynamic help text (claimed bring-list items on the offering form) passes the cook's labels through `django.utils.html.escape` first.
+- **Seats taken** come from a correlated subquery (`OfferingQuerySet.with_seats_taken`), not a join, so text and filter joins on dishes cannot inflate the sum.
+
+## Phase 4 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| The allergen lock is a phase 6 deliverable (MENU-05) | The lock is in `MenuItemForm` now, with a supporting test; MENU-05 itself stays in phase 6 | The phase 4 brief asked for it, and it needs only the existing `Booking` model |
+| Plan 4.1 lists `/kitchen/setup`, `/kitchen/items/…` and `/kitchen/offerings/…` | Also a `/kitchen` page (bio, meals, menu) and `/kitchen/bio`; `/me` shows a short kitchen panel that links to it | The menu and meal lists are too long for the `/me` panel |
+| Offering CRUD | Delete works only while a meal has no bookings; otherwise the cook gets a message | Offering cancellation (with system-cancelled bookings) is a phase 6 deliverable |
+| — | A blank grocery share takes the suggested share; the edit form shows "Suggested share: $X.XX" | Plan 3.5 says the form suggests the share; this needs no JavaScript |
+| — | An offering's dishes must match its meal type, and a new offering must be in the future | Search filters on the offering's meal type, so a lunch dish on a breakfast meal would mislead diners |
+| — | The pickup note is shown to the cook and to confirmed diners now | Plan 3.1 rule; BOOK-14 (phase 6) tests the full matrix |
+| — | `templates/403.html` | AZ-01 returns 403 to diners on kitchen routes; the page links to `/kitchen/setup` |
+| — | The phase 3 `.summary` list on `/me` stacks below 40rem | Its `max-content` label column made `/me` 430 px wide at a 320 px viewport (found by the phase 4 screenshot check) |
+| — | Supporting tests without a plan ID (`meals/tests/test_kitchen.py`, `test_public_pages.py`) | They cover the kitchen and public views for the 90% coverage gate |

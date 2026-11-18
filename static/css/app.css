@@ -1624,3 +1624,357 @@
     border: 1px solid var(--cc-border);
   }
 }
+
+/* Kitchen, cook page and offering page (phase 4), on the design tokens. Mobile first. */
+@layer components {
+  main > .card + .card,
+  main > .card + section,
+  main > section + .card {
+    margin-top: var(--cc-space-5);
+  }
+
+  .block {
+    margin-bottom: var(--cc-space-7);
+  }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cc-space-3);
+    margin-bottom: var(--cc-space-4);
+  }
+
+  .section-head h2 {
+    margin: 0;
+  }
+
+  .form-card {
+    max-width: 40rem;
+  }
+
+  div.check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: var(--cc-space-1) var(--cc-space-4);
+  }
+
+  div.check-grid label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cc-space-2);
+    min-height: var(--cc-tap);
+  }
+
+  .btn-quiet {
+    background: transparent;
+    color: var(--cc-accent);
+    border-color: transparent;
+    text-decoration: underline;
+  }
+
+  .link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cc-accent);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    min-height: 1.5rem;
+  }
+
+  .plain-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--cc-space-2);
+  }
+
+  .plain-list .small {
+    display: block;
+  }
+
+  /* Cook page header: initials avatar, name, facts. */
+  .cook-head {
+    display: grid;
+    gap: var(--cc-space-4);
+    max-width: 48rem;
+  }
+
+  @media (min-width: 40rem) {
+    .cook-head {
+      grid-template-columns: auto 1fr;
+      gap: var(--cc-space-5);
+    }
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: var(--cc-brand);
+    color: var(--cc-on-brand);
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-3);
+    font-weight: 700;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--cc-space-1) var(--cc-space-5);
+    margin-bottom: var(--cc-space-4);
+  }
+
+  .facts div,
+  .facts dt,
+  .facts dd {
+    margin: 0;
+  }
+
+  .facts dt {
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-basis: auto;
+  }
+
+  .facts dd {
+    font-weight: 600;
+    margin-inline-end: var(--cc-space-3);
+  }
+
+  .facts-stacked {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .facts-stacked dd {
+    margin-bottom: var(--cc-space-3);
+  }
+
+  /* Menu grid: one card per meal type; three columns on wide screens. */
+  .menu-grid {
+    display: grid;
+    gap: var(--cc-space-4);
+  }
+
+  @media (min-width: 56rem) {
+    .menu-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .menu-meal h3 {
+    font-size: var(--cc-step-2);
+    border-bottom: 2px solid var(--cc-brand);
+    padding-bottom: var(--cc-space-2);
+  }
+
+  .menu-meal h4 {
+    margin: var(--cc-space-4) 0 var(--cc-space-2);
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dish-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--cc-space-4);
+  }
+
+  .dish-name {
+    margin: 0;
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-1);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .dish-name .badge {
+    font-family: var(--cc-font-body);
+    vertical-align: middle;
+  }
+
+  .dish-desc {
+    margin: var(--cc-space-1) 0 var(--cc-space-2);
+    color: var(--cc-muted);
+  }
+
+  .row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cc-space-2) var(--cc-space-4);
+    margin-top: var(--cc-space-2);
+  }
+
+  .specialty-list,
+  .review-list,
+  .offer-list,
+  .row-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--cc-space-4);
+  }
+
+  @media (min-width: 48rem) {
+    .specialty-list,
+    .offer-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .review-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .specialty-list,
+    .offer-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .review-head {
+    display: grid;
+    gap: var(--cc-space-1);
+  }
+
+  .review-list p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Offering card: a real listing, styled like the home page's sample ticket but flat. */
+  .offer-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-2);
+    height: 100%;
+    padding: var(--cc-space-5);
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-border);
+    border-top: 4px solid var(--cc-brand);
+    border-radius: var(--cc-radius);
+    box-shadow: var(--cc-shadow);
+  }
+
+  .offer-card p {
+    margin: 0;
+  }
+
+  .offer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--cc-space-2);
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+  }
+
+  .offer-kind {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .offer-title {
+    margin: 0;
+    font-size: var(--cc-step-2);
+  }
+
+  .offer-title a {
+    color: var(--cc-text);
+    text-decoration: none;
+  }
+
+  .offer-title a:hover {
+    text-decoration: underline;
+  }
+
+  .offer-cook,
+  .offer-dishes {
+    color: var(--cc-muted);
+  }
+
+  .offer-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--cc-space-2);
+    margin-top: auto;
+    padding-top: var(--cc-space-3);
+    border-top: 1px dashed var(--cc-border);
+    font-size: var(--cc-step--1);
+  }
+
+  /* Offering page: details beside the dishes on wide screens. */
+  .offer-layout {
+    display: grid;
+    gap: var(--cc-space-5);
+  }
+
+  @media (min-width: 56rem) {
+    .offer-layout {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .offer-layout h3 {
+    margin-top: var(--cc-space-4);
+  }
+
+  .row-list + h3,
+  .empty + h3 {
+    margin-top: var(--cc-space-6);
+  }
+
+  .badges + p {
+    margin-top: var(--cc-space-3);
+  }
+
+  .bring-list {
+    padding-inline-start: var(--cc-space-5);
+    margin-bottom: 0;
+  }
+
+  .row {
+    display: grid;
+    gap: var(--cc-space-3);
+  }
+
+  .row p {
+    margin: 0;
+  }
+
+  .row-title {
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-1);
+    font-weight: 700;
+  }
+
+  @media (min-width: 40rem) {
+    .row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .row .row-actions {
+      margin-top: 0;
+    }
+  }
+}

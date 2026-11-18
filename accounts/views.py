@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_http_methods
 
@@ -67,7 +68,13 @@ def demo_login(request, persona):
 @login_required
 @require_GET
 def me(request):
-    return render(request, "accounts/me.html", {"is_cook": hasattr(request.user, "cook_profile")})
+    """The dashboard branches on whether a cook profile exists (LEG-03), never on a hardcoded type."""
+    cook = getattr(request.user, "cook_profile", None)
+    context = {"is_cook": cook is not None, "cook": cook}
+    if cook is not None:
+        context["upcoming"] = cook.offerings.for_listing().filter(serve_at__gte=timezone.now())[:5]
+        context["dish_count"] = cook.menu_items.filter(is_active=True).count()
+    return render(request, "accounts/me.html", context)
 
 
 @login_required

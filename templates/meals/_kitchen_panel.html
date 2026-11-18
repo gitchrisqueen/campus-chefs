@@ -1,0 +1,30 @@
+{% load money tz %}
+<section id="kitchen-panel" class="card" aria-labelledby="kitchen-heading">
+  <h2 id="kitchen-heading">My kitchen</h2>
+  <p>
+    {{ dish_count }} dish{{ dish_count|pluralize:"es" }} on your menu.
+    <a href="{% url 'kitchen' %}">Manage your kitchen</a>
+  </p>
+  <h3>Upcoming meals</h3>
+  {% if upcoming %}
+    <ul class="plain-list">
+      {% for offering in upcoming %}
+        <li>
+          <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
+          <span class="small muted">
+            {% timezone cook.user.campus.timezone %}
+              {{ offering.serve_at|date:"D j M · g:i A" }}
+            {% endtimezone %}
+            · {{ offering.seats_left }} of {{ offering.capacity }} seats left · Groceries {{ offering.grocery_estimate_cents|money }}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No upcoming meals.</p>
+  {% endif %}
+  <p class="btn-row">
+    <a class="btn btn-primary" href="{% url 'offering_create' %}">Open a meal</a>
+    <a class="btn btn-secondary" href="{% url 'item_create' %}">Add a dish</a>
+  </p>
+</section>
