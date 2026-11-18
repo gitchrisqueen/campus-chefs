@@ -71,7 +71,7 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 
 - **Money:** `meals/money.py` holds `format_cents` (`400` → `$4.00`) and `suggested_share_cents` (estimate ÷ (seats + 1), rounded down to $0.25). The `money` template filter wraps `format_cents`. Forms take dollars (`DecimalField`, 2 places) and store integer cents; no model has a float or decimal column (CONTRIB-10).
 - **Constraint checks in forms:** a ModelForm skips any model constraint that touches a field outside the form (`cook`, the `*_cents` fields). So `MenuItemForm.clean` checks the duplicate-name and one-specialty rules itself, and `OfferingForm.clean` checks the no-profit rule itself. The DB CHECK and unique constraints still back all three.
-- **Help text is rendered unescaped** by Django's `django/forms/field.html` (`help_text|safe`). The one dynamic help text (claimed bring-list items on the offering form) passes the cook's labels through `django.utils.html.escape` first.
+- **Help text is autoescaped.** The project partial `templates/partials/field.html` renders `help_text` without `|safe`, so the one dynamic help text (claimed bring-list items on the offering form) holds the cook's labels as plain text and the form does not call `escape`.
 - **Seats taken** come from a correlated subquery (`OfferingQuerySet.with_seats_taken`), not a join, so text and filter joins on dishes cannot inflate the sum.
 
 ## Phase 4 deviations from the plan
@@ -87,6 +87,8 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | `templates/403.html` | AZ-01 returns 403 to diners on kitchen routes; the page links to `/kitchen/setup` |
 | — | The phase 3 `.summary` list on `/me` stacks below 40rem | Its `max-content` label column made `/me` 430 px wide at a 320 px viewport (found by the phase 4 screenshot check) |
 | — | Supporting tests without a plan ID (`meals/tests/test_kitchen.py`, `test_public_pages.py`) | They cover the kitchen and public views for the 90% coverage gate |
+| — | While a meal has requested or confirmed bookings, `OfferingForm` rejects a new serve time, fulfillment or share per seat, and a capacity below the seats held. `grocery_estimate` stays editable | Diners agreed to what they saw. The estimate needs no lock because the no-profit check already bounds it against the share and capacity |
+| — | `MenuItemForm` rejects a meal-type change on a dish that is attached to any meal | Offerings require their dishes to match the meal type, so a re-typed dish would break the meals that use it |
 
 ## Phase 5 records (2026-11-18)
 

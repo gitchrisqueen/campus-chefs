@@ -2,7 +2,6 @@
 {% block title %}How it works · Campus Chefs{% endblock title %}
 {% block content %}
   <header class="page-head">
-    <span class="eyebrow">How it works</span>
     <h1>Register, search, eat. Chip in for the groceries.</h1>
     <p class="lede">
       A student who likes to cook shares a meal, and the students who eat it help pay for the groceries.
@@ -47,8 +46,8 @@
         <li class="badge badge-free">Free</li>
       </ul>
       <p class="small muted">
-        Example amounts. The cook sets the share; the site suggests the grocery estimate divided by the seats plus one,
-        because the cook eats too.
+        Example amounts. The cook sets the share, or the cook can waive it and the meal is free. The site suggests
+        the grocery estimate divided by the seats plus one, because the cook eats too.
       </p>
     </section>
   </div>
@@ -70,41 +69,43 @@
       </ul>
     </div>
   </section>
-  <section class="section" aria-labelledby="faq-heading">
-    <h2 id="faq-heading">Questions</h2>
-    <div class="faq">
-      <details>
-        <summary>Is this a real service?</summary>
-        <p>
-          No. It is a portfolio demo with fictional students and campuses. No real meals are served.
-          Read the <a href="{% url 'safety' %}">safety notes</a>.
-        </p>
-      </details>
-      <details>
-        <summary>Can a cook make money?</summary>
-        <p>No. Shares cover the groceries only, and the database refuses any share that would add up to more.</p>
-      </details>
-      <details>
-        <summary>I have a food allergy. Can I rely on the allergen list?</summary>
-        <p>
-          No. Cooks declare allergens themselves and nobody checks them. If you have a severe allergy,
-          do not rely on this site.
-        </p>
-      </details>
-      <details>
-        <summary>What happens to my data?</summary>
-        <p>
-          The site keeps as little as it can, and you can delete your account. See the
-          <a href="{% url 'privacy' %}">privacy page</a>.
-        </p>
-      </details>
-    </div>
-  </section>
-  <section class="section card" aria-labelledby="about-heading">
-    <h2 id="about-heading">About this project</h2>
-    <p>
-      The idea started as a student project in 2008: students who cook, students who eat, and groceries
-      shared between them. This version is a portfolio rebuild with fictional people and campuses.
-    </p>
-  </section>
+  <div class="faq-about">
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Questions</h2>
+      <div class="faq">
+        <details>
+          <summary>Is this a real service?</summary>
+          <p>
+            No. It is a portfolio demo with fictional students and campuses. No real meals are served.
+            Read the <a href="{% url 'safety' %}">safety notes</a>.
+          </p>
+        </details>
+        <details>
+          <summary>Can a cook make money?</summary>
+          <p>No. Shares cover the groceries only, and the database refuses any share that would add up to more.</p>
+        </details>
+        <details>
+          <summary>I have a food allergy. Can I rely on the allergen list?</summary>
+          <p>
+            No. Cooks declare allergens themselves and nobody checks them. If you have a severe allergy,
+            do not rely on this site.
+          </p>
+        </details>
+        <details>
+          <summary>What happens to my data?</summary>
+          <p>
+            The site keeps as little as it can, and you can delete your account. See the
+            <a href="{% url 'privacy' %}">privacy page</a>.
+          </p>
+        </details>
+      </div>
+    </section>
+    <section class="card about-card" aria-labelledby="about-heading">
+      <h2 id="about-heading">About this project</h2>
+      <p>
+        The idea started as a student project in 2008: students who cook, students who eat, and groceries
+        shared between them. This version is a portfolio rebuild with fictional people and campuses.
+      </p>
+    </section>
+  </div>
 {% endblock content %}

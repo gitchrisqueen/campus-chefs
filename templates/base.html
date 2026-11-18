@@ -17,7 +17,7 @@
     <a class="skip-link" href="#main">Skip to content</a>
     {% if demo_mode %}
       <div class="demo-banner" role="region" aria-label="Demo notice">
-        <strong>Demo</strong> Portfolio demo with fictional people and campuses. No real meals, no money moves through this site, no food-safety vetting.
+        <strong>Portfolio demo:</strong> fictional people and campuses. No real meals, no money moves through this site, no food-safety vetting.
       </div>
     {% endif %}
     {% url 'home' as home_url %}
@@ -101,7 +101,10 @@
             </li>
           </ul>
         </nav>
-        <p>© 2026 Campus Chefs · portfolio demo</p>
+        <p class="footer-note">
+          © 2026 Campus Chefs
+          <span>A portfolio demo</span>
+        </p>
       </div>
     </footer>
   </body>

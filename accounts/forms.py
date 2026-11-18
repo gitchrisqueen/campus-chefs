@@ -41,7 +41,12 @@ class RegistrationForm(BaseUserCreationForm):
         label="I am 18 or older",
         error_messages={"required": "You must be 18 or older to use Campus Chefs."},
     )
-    role = forms.ChoiceField(label="How will you use Campus Chefs?", choices=ROLE_CHOICES, widget=forms.RadioSelect)
+    role = forms.ChoiceField(
+        label="How will you use Campus Chefs?",
+        choices=ROLE_CHOICES,
+        widget=forms.RadioSelect,
+        error_messages={"required": "Choose how you will use Campus Chefs."},
+    )
     food_safety = forms.BooleanField(
         label="Cooks: I will cook in a clean kitchen and declare every allergen in my dishes",
         required=False,
