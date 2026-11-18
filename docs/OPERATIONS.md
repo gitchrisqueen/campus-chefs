@@ -19,10 +19,19 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 | Stop, keeping data | `docker compose down` |
 | **Reset: wipe all data and secrets** | `docker compose down -v`, then `make demo` |
 | Use another port | `WEB_PORT=8010 make demo` |
-| Reseed the demo data | `make reseed` (wipes and recreates the synthetic data, relative to now) |
+| Reseed the demo data | `make reseed` wipes and recreates the synthetic data, timed relative to now. It runs in one transaction, so a failure part-way leaves the old data in place. Staff accounts and their campuses are kept |
 | Check the seeded data | `docker compose exec web python manage.py shell -c "from meals.models import Offering; from bookings.models import Booking, Review; print(Offering.objects.count(), Booking.objects.count(), Review.objects.count())"` prints `16 26 12` on a fresh seed |
-| Create an admin account | `docker compose run --rm migrate python manage.py createsuperuser`. It asks for email, first name, last name, a campus id and a password. List the campus ids first with `docker compose exec web python manage.py shell -c "from meals.models import Campus; print(list(Campus.objects.values_list('id', 'name')))"`. Ids change after a reseed. The admin is at http://127.0.0.1:8000/admin/. Demo personas have no password and cannot log in there |
 | Run the tests | `make test` (unit and integration), `make e2e` (browser; reseeds first) |
+
+## Admin account
+
+No staff account is seeded, and the demo personas have no password, so they cannot log in to the admin.
+
+1. List the campus ids:
+   `docker compose exec web python manage.py shell -c "from meals.models import Campus; print(list(Campus.objects.values_list('id', 'name')))"`.
+   The ids change after a reseed, except for campuses that a staff account belongs to.
+2. Create the account: `docker compose run --rm migrate python manage.py createsuperuser`. It asks for email, first name, last name, a campus id and a password. For a scripted run, add `-e DJANGO_SUPERUSER_PASSWORD=...` and `--noinput --email ... --first_name ... --last_name ... --campus <id>`.
+3. Sign in at http://127.0.0.1:8000/admin/.
 
 ## What starts, in order
 
