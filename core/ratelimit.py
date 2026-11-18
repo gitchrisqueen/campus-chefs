@@ -1,6 +1,10 @@
 """Failed-login limiter (plan 5.2).
 
-- Counts failed logins only, keyed on sha256(lower(email)), so no raw email is stored.
+- Counts failed logins only, keyed on sha256 of the NFKC-normalized, stripped, lowercased
+  email: the same folding the login form and the case-insensitive lookup apply, so every
+  spelling that authenticates as one account shares one counter. No raw email is stored.
+- Logs a warning on each lockout with only a key prefix, never the email.
+- Fails open if the cache is unavailable: login keeps working and the error is logged.
 - 5 failures in 15 minutes return 429 with Retry-After.
 - Uses the "ratelimit" cache alias (its own table, so other keys cannot cull the counters).
 - Never reads X-Forwarded-For and has no per-IP limit: behind Docker port publishing
@@ -11,17 +15,22 @@ knows an email can lock that account out for 15 minutes.
 """
 
 import hashlib
+import logging
+import unicodedata
 from functools import wraps
 
 from django.core.cache import caches
 from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
 
 MAX_FAILURES = 5
 WINDOW_SECONDS = 15 * 60
 
 
 def _key(email: str) -> str:
-    return "login-fail:" + hashlib.sha256(email.strip().lower().encode()).hexdigest()
+    folded = unicodedata.normalize("NFKC", email).strip().lower()
+    return "login-fail:" + hashlib.sha256(folded.encode()).hexdigest()
 
 
 def limit_failed_logins(view):
@@ -33,8 +42,13 @@ def limit_failed_logins(view):
             return view(request, *args, **kwargs)
         cache = caches["ratelimit"]
         key = _key(request.POST.get("username", ""))
-        failures = cache.get(key, 0)
+        try:
+            failures = cache.get(key, 0)
+        except Exception:
+            logger.exception("rate limiter unavailable; allowing the login attempt")
+            return view(request, *args, **kwargs)
         if failures >= MAX_FAILURES:
+            logger.warning("login locked for key %s after %d failures", key[len("login-fail:") :][:12], failures)
             response = HttpResponse(
                 "Too many failed logins for this email. Try again in 15 minutes.\n",
                 status=429,
@@ -44,10 +58,13 @@ def limit_failed_logins(view):
             return response
         response = view(request, *args, **kwargs)
         # A successful login redirects; a failed one re-renders the form with 200.
-        if response.status_code == 200:
-            cache.set(key, failures + 1, WINDOW_SECONDS)
-        else:
-            cache.delete(key)
+        try:
+            if response.status_code == 200:
+                cache.set(key, failures + 1, WINDOW_SECONDS)
+            else:
+                cache.delete(key)
+        except Exception:
+            logger.exception("rate limiter unavailable; the attempt was not counted")
         return response
 
     return wrapped

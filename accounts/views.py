@@ -88,6 +88,11 @@ def account_edit(request):
 @require_http_methods(["GET", "POST"])
 def account_delete(request):
     form = DeleteAccountForm(request.user, request.POST if request.method == "POST" else None)
+    if form.is_bound and hasattr(request.user, "cook_profile"):
+        # The cook path (cancel open offerings, release bookings, clear the bio) lands with
+        # ACCT-03 in phase 6. Until then, refuse rather than leave orphaned live offerings.
+        messages.error(request, "Cook accounts cannot be deleted yet. This arrives with bookings (phase 6).")
+        return render(request, "accounts/delete.html", {"form": form}, status=409)
     if form.is_bound and form.is_valid():
         services.delete_account(request.user)
         logout(request)

@@ -158,3 +158,59 @@ def test_auth_11_password_change_keeps_this_session_and_ends_the_others(ava):
     assert ava.check_password(new)
     assert this.get("/me").status_code == 200
     assert other.get("/me").status_code == 302
+
+
+def _fullwidth(text: str) -> str:
+    """ASCII letters and digits as their fullwidth forms, which NFKC folds back to ASCII."""
+    return "".join(chr(ord(c) + 0xFEE0) if c.isascii() and c.isalnum() else c for c in text)
+
+
+@pytest.mark.django_db
+def test_auth_05_unicode_equivalent_emails_share_one_counter(client, ava):
+    """Security review: NFKC-equivalent spellings authenticate as one account, so they must share a key."""
+    variant = _fullwidth(EMAIL)
+    assert variant != EMAIL
+    for _ in range(MAX_FAILURES):
+        assert client.post("/login", {"username": variant, "password": "wrong-password-123"}).status_code == 200
+    response = client.post("/login", {"username": EMAIL, "password": PASSWORD})
+    assert response.status_code == 429
+    assert _logged_in_id(client) is None
+
+
+@pytest.mark.django_db
+def test_auth_05_mixed_spellings_trigger_the_limit(client, ava):
+    spellings = [EMAIL, EMAIL.upper(), _fullwidth(EMAIL), f"  {EMAIL}  ", _fullwidth(EMAIL.upper())]
+    assert len(spellings) == MAX_FAILURES
+    for spelling in spellings:
+        client.post("/login", {"username": spelling, "password": "wrong-password-123"})
+    assert client.post("/login", {"username": EMAIL, "password": PASSWORD}).status_code == 429
+
+
+@pytest.mark.django_db
+def test_auth_05_lockout_is_logged_without_the_email(client, ava, caplog):
+    for _ in range(MAX_FAILURES):
+        client.post("/login", {"username": EMAIL, "password": "wrong-password-123"})
+    with caplog.at_level("WARNING", logger="core.ratelimit"):
+        assert client.post("/login", {"username": EMAIL, "password": PASSWORD}).status_code == 429
+    messages = [r.getMessage() for r in caplog.records if r.name == "core.ratelimit"]
+    assert len(messages) == 1
+    assert "login locked" in messages[0]
+    assert "@" not in messages[0] and "ava" not in messages[0].lower()
+
+
+@pytest.mark.django_db
+def test_auth_05_cache_failure_fails_open_and_logs(client, ava, caplog, monkeypatch):
+    """If the limiter's cache table is unavailable, login still works and the error is logged."""
+    from django.core.cache import caches
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("cache table missing")
+
+    cache = caches["ratelimit"]
+    monkeypatch.setattr(cache, "get", boom)
+    monkeypatch.setattr(cache, "set", boom)
+    monkeypatch.setattr(cache, "delete", boom)
+    with caplog.at_level("ERROR", logger="core.ratelimit"):
+        response = client.post("/login", {"username": EMAIL, "password": PASSWORD})
+    assert response.status_code == 302
+    assert any("rate limiter unavailable" in r.getMessage() for r in caplog.records)

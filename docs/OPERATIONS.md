@@ -40,6 +40,20 @@ No staff account is seeded, and the demo personas have no password, so they cann
 3. `migrate` (one-shot) runs `python manage.py bootstrap_demo`. It applies migrations, prepares the cache table, clears expired sessions and, on a fresh database with `CC_DEMO_MODE=true` (the compose default), seeds the synthetic demo data.
 4. `web` (gunicorn) starts only after `migrate` has exited 0, and listens on `127.0.0.1:8000`.
 
+## Accounts and demo switches
+
+These are set in `compose.yaml` (`x-app-env`). Override them in `.env` or on the command line, then run `make demo`.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `CC_DEMO_MODE` | `true` | Shows the demo banner and the "Try as demo diner/cook" buttons. With `false`, `POST /demo/login/<persona>` returns 404 and `make reseed` is refused |
+| `CC_REGISTRATION_OPEN` | `true` | With `false`, `/register` returns 404. Use this for any hosted demo |
+
+- **Logged-in pages** (`/me`, account edit, password, delete) send `Cache-Control: private, no-store`.
+- **Account deletion** needs the current password. It anonymizes the user and cancels their bookings. Cook accounts cannot be deleted yet; the page answers 409 until the cook path lands in phase 6.
+- **Failed logins:** see the 429 row below. The cause of a failed login is never logged per user, by design.
+- **Parallel stacks** (other worktrees): set `COMPOSE_PROJECT_NAME`, `WEB_PORT` and `CC_IMAGE` so stacks never share containers, ports or images.
+
 ## When it breaks
 
 | Symptom | Meaning | What to do |
@@ -51,6 +65,8 @@ No staff account is seeded, and the demo personas have no password, so they cann
 | `docker compose logs migrate` shows `CommandError: data already present; use --reset (demo mode) to reseed` | `seed_demo` was run by hand on a database that already has data. `bootstrap_demo` itself only seeds an empty database | Use `make reseed` (wipes and reseeds), or leave the data as it is |
 | `make reseed` fails with `CommandError: --reset is only allowed with CC_DEMO_MODE=true` | The stack runs with `CC_DEMO_MODE=false`, so wiping data is refused on purpose | Set `CC_DEMO_MODE=true` (the default) and run `make demo`, or reset everything with `docker compose down -v` |
 | `migrate` exits non-zero right after you pull Phase 2, on a volume created in Phase 1 | Migrations `accounts.0002` and `0003` add required columns. They work only on an empty user table, and they cannot be reversed without losing data | Run `docker compose down -v`, then `make demo`. The data is synthetic |
+| Login returns 429 "Too many failed logins for this email" | 5 failed logins for one email within 15 minutes. The lockout also blocks the correct password until the window ends. `docker compose logs web` shows `login locked for key <prefix>` (no email is logged). The counters live in the `cc_ratelimit` cache table | Wait 15 minutes, or clear every counter: `docker compose exec web python manage.py shell -c "from django.core.cache import caches; caches['ratelimit'].clear()"` |
+| `docker compose logs web` shows `rate limiter unavailable` | The `cc_ratelimit` table is missing or the database errored. The limiter fails open, so logins keep working but are not counted | Run `make demo` (`bootstrap_demo` recreates the table with `createcachetable`), then check `docker compose logs migrate` |
 | Port 8000 is in use | Another process holds the port | Run `WEB_PORT=8010 make demo` |
 | CI fails on "Public-safety denylist" for a pull request from a fork | Fork PRs cannot read the `PUBLIC_DENYLIST_REGEX` secret, so the step fails closed on purpose | A maintainer re-runs the change from a branch in this repository |
 

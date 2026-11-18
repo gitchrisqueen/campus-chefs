@@ -133,3 +133,16 @@ def test_acct_04_name_change_needs_no_password_but_email_must_be_free(client, di
     assert taken.status_code == 200
     assert b"already registered" in taken.content
     assert User.objects.get(pk=diner.pk).email == "ava.r@larkspur.example"
+
+
+@pytest.mark.django_db
+def test_acct_04_cook_account_deletion_refused_until_cook_path_exists(client):
+    """Operator review: deleting a cook must not orphan offerings; the cook path lands with ACCT-03 in phase 6."""
+    cook = f.cook(email="cook.del@larkspur.example", password="a-long-test-password-1")
+    client.force_login(cook.user)
+    response = client.post("/me/delete", {"password": "a-long-test-password-1"})
+    assert response.status_code == 409
+    assert b"Cook accounts cannot be deleted yet" in response.content
+    cook.user.refresh_from_db()
+    assert cook.user.is_active
+    assert cook.user.email == "cook.del@larkspur.example"
