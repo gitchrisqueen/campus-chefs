@@ -4,7 +4,6 @@ from django import forms
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.html import escape
 
 from bookings.models import Booking
 
@@ -176,8 +175,8 @@ class OfferingForm(forms.ModelForm):
             self.initial.setdefault("bring_list", "\n".join(n.label for n in offering.open_needs))
             claimed = [n.label for n in offering.needs.all() if n.claimed_by_booking_id]
             if claimed:
-                # Django's field template marks help text safe, so escape the cook's own labels.
-                kept = escape("; ".join(claimed))
+                # Our field partial autoescapes help text, so the cook's own labels stay plain text here.
+                kept = "; ".join(claimed)
                 self.fields["bring_list"].help_text += f" Already claimed by a diner, so kept: {kept}."
             suggested = suggested_share_cents(offering.grocery_estimate_cents, offering.capacity)
             share_help = f"Suggested share: {format_cents(suggested)} (the grocery estimate ÷ (seats + 1))."
