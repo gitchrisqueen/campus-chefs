@@ -47,9 +47,7 @@
       </article>
     </div>
   </section>
-  <div class="wrap">
-    {% include "partials/demo_login.html" %}
-  </div>
+  {% include "partials/demo_login.html" with home=True %}
   <section class="panel steps-section" aria-labelledby="steps-heading">
     <span class="eyebrow">Three steps</span>
     <h2 id="steps-heading">How it works</h2>

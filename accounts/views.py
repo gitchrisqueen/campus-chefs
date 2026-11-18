@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 from core import seed_data
 
 from . import services
-from .forms import AccountForm, DeleteAccountForm, LoginForm, RegistrationForm
+from .forms import AccountForm, DeleteAccountForm, LoginForm, RegistrationForm, ShortHelpPasswordChangeForm
 from .models import User
 
 MODEL_BACKEND = "django.contrib.auth.backends.ModelBackend"
@@ -32,6 +32,7 @@ class PasswordChangeView(auth_views.PasswordChangeView):
     """Django's view keeps this session (update_session_auth_hash) and ends the others."""
 
     template_name = "accounts/password.html"
+    form_class = ShortHelpPasswordChangeForm
     success_url = reverse_lazy("me")
 
     def form_valid(self, form):

@@ -1,19 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Log in · Campus Chefs{% endblock title %}
 {% block content %}
-  <section class="card">
-    <h1>Log in</h1>
-    <form method="post" action="{% url 'login' %}" novalidate>
-      {% csrf_token %}
-      {% include "partials/form_fields.html" %}
-      <input type="hidden" name="next" value="{{ next }}">
-      <button type="submit">Log in</button>
-    </form>
-    {% if registration_open %}
-      <p>
-        New here? <a href="{% url 'register' %}">Create an account</a>.
-      </p>
-    {% endif %}
-  </section>
-  {% include "partials/demo_login.html" %}
+  <div class="auth-pair">
+    <section class="card auth" aria-labelledby="login-heading">
+      <header class="auth-head">
+        <span class="eyebrow">Welcome back</span>
+        <h1 id="login-heading">Log in</h1>
+        <p>Use the email you registered with.</p>
+      </header>
+      <form class="form" method="post" action="{% url 'login' %}" novalidate>
+        {% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Log in</button>
+        </div>
+      </form>
+      {% if registration_open %}
+        <p class="auth-foot">
+          New here? <a href="{% url 'register' %}">Create an account</a>.
+        </p>
+      {% endif %}
+    </section>
+    {% include "partials/demo_login.html" %}
+  </div>
 {% endblock content %}

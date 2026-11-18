@@ -95,6 +95,18 @@ CONTRAST_PAIRS = [
     ("--cc-share-text", "--cc-surface", 4.5),
     ("--cc-diet-text", "--cc-diet-bg", 4.5),
     ("--cc-allergen-text", "--cc-allergen-bg", 4.5),
+    # Form components (phase 8a design pass): input borders are non-text UI (3:1, WCAG 1.4.11),
+    # errors and the danger action are text.
+    ("--cc-input-border", "--cc-surface", 3.0),
+    ("--cc-input-border", "--cc-surface-sunk", 3.0),
+    ("--cc-danger-text", "--cc-surface", 4.5),
+    ("--cc-danger-text", "--cc-danger-bg", 4.5),
+    ("--cc-text", "--cc-danger-bg", 4.5),
+    ("--cc-danger-border", "--cc-danger-bg", 3.0),
+    ("--cc-danger-border", "--cc-surface", 3.0),
+    ("--cc-on-danger", "--cc-danger", 4.5),
+    ("--cc-on-danger", "--cc-danger-strong", 4.5),
+    ("--cc-accent", "--cc-surface-sunk", 3.0),
 ]
 
 

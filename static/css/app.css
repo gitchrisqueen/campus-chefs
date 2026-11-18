@@ -29,6 +29,13 @@
     --cc-diet-text: #1e3a5f;
     --cc-allergen-bg: #fce8e8;
     --cc-allergen-text: #7f0306;
+    --cc-input-border: #7b8794;
+    --cc-danger: #7f0306;
+    --cc-danger-strong: #5c0204;
+    --cc-on-danger: #ffffff;
+    --cc-danger-text: #a40408;
+    --cc-danger-bg: #fdf0f0;
+    --cc-danger-border: #a40408;
     --cc-shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 12px 32px -12px rgb(16 24 40 / 22%);
 
     /* Type: system stacks only (no font files, no CDN). Serif display echoes the original wordmark. */
@@ -87,6 +94,13 @@
       --cc-diet-text: #c5d8f2;
       --cc-allergen-bg: #3d1214;
       --cc-allergen-text: #ffc2be;
+      --cc-input-border: #737e8c;
+      --cc-danger: #ff9c94;
+      --cc-danger-strong: #ffc2bd;
+      --cc-on-danger: #2a0405;
+      --cc-danger-text: #ffb4ad;
+      --cc-danger-bg: #2c1719;
+      --cc-danger-border: #ff9c94;
       --cc-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 16px 40px -16px rgb(0 0 0 / 70%);
     }
   }
@@ -297,14 +311,32 @@
     display: inline-flex;
     align-items: center;
     min-height: var(--cc-tap);
-    padding-inline: var(--cc-space-3);
+    padding-inline: var(--cc-space-2);
     border-radius: var(--cc-radius-pill);
     color: var(--cc-text);
     font-weight: 550;
     text-decoration: none;
   }
 
-  .site-nav a:hover {
+  @media (min-width: 40rem) {
+    .site-nav a,
+    .site-nav button {
+      padding-inline: var(--cc-space-3);
+    }
+  }
+
+  /* Log out is a POST form, so its button is reset to read as one more nav item. */
+  .site-nav button {
+    margin: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: 550;
+    cursor: pointer;
+  }
+
+  .site-nav a:hover,
+  .site-nav button:hover {
     background: var(--cc-surface-sunk);
   }
 
@@ -397,62 +429,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--cc-space-3);
-  }
-
-  /* Form fields: visible label, 44 px target, clear focus ring. */
-  .field {
-    display: grid;
-    gap: var(--cc-space-1);
-  }
-
-  .field label,
-  .label {
-    font-weight: 700;
-  }
-
-  .hint {
-    color: var(--cc-muted);
-    font-size: var(--cc-step--1);
-  }
-
-  input:not([type="checkbox"], [type="radio"]),
-  select,
-  textarea {
-    width: 100%;
-    min-height: var(--cc-tap);
-    padding: var(--cc-space-2) var(--cc-space-3);
-    font: inherit;
-    color: var(--cc-text);
-    background: var(--cc-surface);
-    border: 1.5px solid var(--cc-muted);
-    border-radius: var(--cc-radius-sm);
-  }
-
-  input:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible {
-    outline: 3px solid var(--cc-focus);
-    outline-offset: 1px;
-    border-color: var(--cc-focus);
-  }
-
-  input[type="checkbox"],
-  input[type="radio"] {
-    width: 1.25rem;
-    height: 1.25rem;
-    accent-color: var(--cc-brand);
-  }
-
-  fieldset {
-    margin: 0;
-    padding: var(--cc-space-4);
-    border: 1px solid var(--cc-border);
-    border-radius: var(--cc-radius);
-  }
-
-  legend {
-    padding-inline: var(--cc-space-2);
-    font-weight: 700;
   }
 
   /* Cards and panels. */
@@ -1065,32 +1041,586 @@
   }
 }
 
-/* Account and form pages (phase 3), on the design tokens. */
+
+/* Forms and account pages. One field pattern everywhere: label, help, error, control.
+   The error sits above the control and is linked to it by aria-describedby (Django adds it). */
 @layer components {
-  .inline-form { display: inline-block; margin: 0; }
-  .demo-login .inline-form { margin-inline-end: var(--cc-space-2); margin-block-start: var(--cc-space-2); }
-  .messages {
-    list-style: none; margin: var(--cc-space-4) 0 0; padding: var(--cc-space-3) var(--cc-space-4);
-    background: var(--cc-notice-bg); color: var(--cc-notice-text); border-radius: var(--cc-radius);
+  /* Page shells for the account screens: a centred card, wider for registration. */
+  .auth {
+    width: 100%;
+    max-width: 34rem;
+    margin-inline: auto;
   }
-  .error-summary {
-    border: 2px solid var(--cc-brand); border-radius: var(--cc-radius);
-    padding: var(--cc-space-2) var(--cc-space-4); margin-block: var(--cc-space-4);
+
+  .auth-wide {
+    max-width: 44rem;
   }
-  .errorlist { color: var(--cc-brand-strong); padding-inline-start: 1.25rem; }
-  main form > div { margin-block: var(--cc-space-4); }
-  main form label { display: block; font-weight: 600; margin-block-end: var(--cc-space-1); }
-  main form input:not([type="checkbox"], [type="radio"]), main form select, main form textarea {
-    width: 100%; max-width: 30rem; min-height: var(--cc-tap); font: inherit; color: var(--cc-text);
-    background: var(--cc-surface); border: 1px solid var(--cc-border); border-radius: var(--cc-radius-sm);
+
+  .auth-head {
+    margin-bottom: var(--cc-space-6);
+  }
+
+  .auth-head h1 {
+    margin-bottom: var(--cc-space-2);
+  }
+
+  .auth-head p {
+    margin: 0;
+    color: var(--cc-muted);
+  }
+
+  .auth-foot {
+    margin: var(--cc-space-5) 0 0;
+    padding-top: var(--cc-space-5);
+    border-top: 1px solid var(--cc-border);
+    color: var(--cc-muted);
+  }
+
+  /* Login: the form and the one-click demo side by side on desktop. */
+  .auth-pair {
+    display: grid;
+    gap: var(--cc-space-5);
+    max-width: 62rem;
+    margin-inline: auto;
+    align-items: start;
+  }
+
+  .auth-pair .auth {
+    max-width: none;
+  }
+
+  @media (min-width: 56rem) {
+    .auth-pair {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      gap: var(--cc-space-6);
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .card.auth,
+    .auth > .card {
+      padding: var(--cc-space-7);
+    }
+  }
+
+  /* Form layout: groups stack with a hairline between them. */
+  .form {
+    display: grid;
+    gap: var(--cc-space-5);
+  }
+
+  .form-group {
+    display: grid;
+    gap: var(--cc-space-5);
+  }
+
+  .form-group + .form-group {
+    padding-top: var(--cc-space-6);
+    border-top: 1px solid var(--cc-border);
+  }
+
+  .form-group-title {
+    margin: 0;
+    font-family: var(--cc-font-body);
+    font-size: var(--cc-step--1);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cc-muted);
+  }
+
+  /* Controls line up on their bottom edge when only one field in the row shows an error. */
+  .field-row {
+    display: grid;
+    gap: var(--cc-space-5);
+    align-items: end;
+  }
+
+  @media (min-width: 40rem) {
+    .field-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--cc-space-4);
+    }
+  }
+
+  /* A field: label, optional help, error, control. */
+  .field {
+    display: grid;
+    gap: var(--cc-space-2);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .field-label,
+  .label {
+    display: block;
+    padding: 0;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .field > legend {
+    margin-bottom: var(--cc-space-2);
+  }
+
+  .field-optional {
+    margin-inline-start: var(--cc-space-2);
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+    font-weight: 400;
+  }
+
+  .field-help,
+  .hint {
+    margin: 0;
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+    line-height: 1.5;
+  }
+
+  input:not([type="checkbox"], [type="radio"]),
+  select,
+  textarea {
+    width: 100%;
+    min-height: var(--cc-tap);
     padding: var(--cc-space-2) var(--cc-space-3);
+    font: inherit;
+    color: var(--cc-text);
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-input-border);
+    border-radius: var(--cc-radius-sm);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
   }
-  main form fieldset { border: 0; padding: 0; margin: 0; }
-  main form fieldset label, main form input[type="checkbox"] + label { display: inline; font-weight: 400; }
-  main form button:not(.btn) { min-height: var(--cc-tap); }
-  .helptext { color: var(--cc-muted); font-size: var(--cc-step--1); }
-  .summary { display: grid; grid-template-columns: max-content 1fr; gap: var(--cc-space-1) var(--cc-space-4); }
-  .summary dt { font-weight: 600; }
-  .summary dd { margin: 0; }
-  .actions { display: flex; flex-wrap: wrap; gap: var(--cc-space-4); }
+
+  input:not([type="checkbox"], [type="radio"]):hover,
+  select:hover,
+  textarea:hover {
+    border-color: var(--cc-text);
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid var(--cc-focus);
+    outline-offset: 1px;
+    border-color: var(--cc-focus);
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    accent-color: var(--cc-brand);
+  }
+
+  /* Errors: text first ("Error:" is read out), colour second, plus a thicker border on the control. */
+  .errorlist {
+    display: grid;
+    gap: var(--cc-space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--cc-danger-text);
+    font-size: var(--cc-step--1);
+    font-weight: 650;
+    line-height: 1.45;
+  }
+
+  .field.has-error input:not([type="checkbox"], [type="radio"]),
+  .field.has-error select,
+  .field.has-error textarea {
+    border: 2px solid var(--cc-danger-border);
+  }
+
+  .field.has-error {
+    padding-inline-start: var(--cc-space-4);
+    border-inline-start: 3px solid var(--cc-danger-border);
+  }
+
+  .error-summary {
+    padding: var(--cc-space-4) var(--cc-space-5);
+    border: 2px solid var(--cc-danger-border);
+    border-radius: var(--cc-radius);
+    background: var(--cc-danger-bg);
+    color: var(--cc-text);
+  }
+
+  .error-summary h2 {
+    margin: 0 0 var(--cc-space-2);
+    font-size: var(--cc-step-1);
+  }
+
+  .error-summary ul {
+    margin: 0;
+    padding-inline-start: var(--cc-space-5);
+  }
+
+  .error-summary a {
+    color: var(--cc-danger-text);
+    font-weight: 650;
+  }
+
+  .error-summary .errorlist {
+    color: var(--cc-text);
+  }
+
+  /* Checkbox row: the box sits on the first line of its label, and the whole tile is the target. */
+  .check {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--cc-space-1) var(--cc-space-3);
+    align-items: start;
+    padding: var(--cc-space-3) var(--cc-space-4);
+    background: var(--cc-surface-sunk);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius);
+  }
+
+  .check input {
+    margin-top: 0.2rem;
+  }
+
+  .check label {
+    min-height: 1.6em;
+    font-weight: 550;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .check > .field-help,
+  .check > .errorlist {
+    grid-column: 2;
+  }
+
+  .check.has-error {
+    padding-inline-start: var(--cc-space-4);
+    border: 2px solid var(--cc-danger-border);
+    border-inline-start-width: 2px;
+    background: var(--cc-danger-bg);
+  }
+
+  /* Radio group: a fieldset with a legend; each option is a tile the same height as a button. */
+  .choices {
+    display: grid;
+    gap: var(--cc-space-3);
+  }
+
+  @media (min-width: 30rem) {
+    .choices {
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+  }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-3);
+    min-height: 3.25rem;
+    padding: var(--cc-space-2) var(--cc-space-4);
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-input-border);
+    border-radius: var(--cc-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .choice:hover {
+    border-color: var(--cc-text);
+  }
+
+  .choice:has(input:checked) {
+    border-color: var(--cc-accent);
+    box-shadow: inset 0 0 0 1px var(--cc-accent);
+    background: var(--cc-surface-sunk);
+  }
+
+  .choice:has(input:focus-visible) {
+    outline: 3px solid var(--cc-focus);
+    outline-offset: 2px;
+  }
+
+  .choice input:focus-visible {
+    outline: 0;
+  }
+
+  /* The cook acknowledgement only matters to cooks: hide it once "I want to eat" is chosen.
+     Without :has() support it simply stays visible, and the server still checks it. */
+  .form:has(input[name="role"][value="eat"]:checked) .field-cook-only {
+    display: none;
+  }
+
+  /* Submit row: full-width primary button on phones, natural width from 40rem. */
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cc-space-3) var(--cc-space-5);
+    padding-top: var(--cc-space-2);
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  @media (min-width: 40rem) {
+    .form-actions .btn {
+      width: auto;
+      min-width: 12rem;
+    }
+  }
+
+  /* Danger: a solid dark red in light mode, an inverted coral in dark mode; the text says "Delete". */
+  .btn-danger {
+    background: var(--cc-danger);
+    color: var(--cc-on-danger);
+  }
+
+  .btn-danger:hover {
+    background: var(--cc-danger-strong);
+  }
+
+  .callout-danger {
+    background: var(--cc-danger-bg);
+    color: var(--cc-text);
+    border: 1px solid var(--cc-danger-border);
+    border-inline-start-width: 6px;
+  }
+
+  .callout-danger strong {
+    color: var(--cc-danger-text);
+  }
+
+  .callout-danger ul {
+    margin: var(--cc-space-2) 0 0;
+    padding-inline-start: var(--cc-space-5);
+  }
+
+  .auth .callout {
+    margin-bottom: var(--cc-space-6);
+  }
+
+  .auth .callout p {
+    margin-bottom: var(--cc-space-2);
+  }
+
+  .danger-link {
+    color: var(--cc-danger-text);
+    font-weight: 650;
+  }
+
+  /* Flash messages after an account action. */
+  .messages {
+    max-width: var(--cc-max);
+    margin: 0 0 var(--cc-space-5);
+    padding: var(--cc-space-3) var(--cc-space-5);
+    list-style: none;
+    background: var(--cc-free-bg);
+    color: var(--cc-free-text);
+    border-radius: var(--cc-radius);
+    font-weight: 600;
+  }
+
+  /* Demo login: an invitation, not a form. */
+  .inline-form {
+    display: contents;
+  }
+
+  .demo-login {
+    display: grid;
+    gap: var(--cc-space-4) var(--cc-space-6);
+    align-items: center;
+    padding: var(--cc-space-5);
+    background: var(--cc-surface);
+    border: 1.5px dashed var(--cc-input-border);
+    border-radius: calc(var(--cc-radius) * 1.5);
+  }
+
+  .demo-login h2 {
+    margin: 0 0 var(--cc-space-1);
+    font-size: var(--cc-step-2);
+  }
+
+  .demo-login p {
+    margin: 0;
+    color: var(--cc-muted);
+  }
+
+  .demo-actions {
+    display: grid;
+    gap: var(--cc-space-3);
+  }
+
+  @media (min-width: 30rem) {
+    .demo-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 56rem) {
+    .demo-login {
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: var(--cc-space-5) var(--cc-space-6);
+    }
+
+    .demo-actions {
+      grid-template-columns: repeat(2, auto);
+    }
+  }
+
+  .home-demo {
+    margin-bottom: var(--cc-space-6);
+  }
+
+  /* The login page stacks the demo card: one column of text, buttons below. */
+  .auth-pair .demo-login {
+    grid-template-columns: 1fr;
+    padding: var(--cc-space-5);
+  }
+
+  .auth-pair .demo-actions {
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 40rem) {
+    .auth-pair .demo-login {
+      padding: var(--cc-space-6);
+    }
+  }
+
+  /* /me: initials avatar, name, then the profile and bookings cards. */
+  .account-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cc-space-4) var(--cc-space-5);
+    margin-bottom: var(--cc-space-6);
+  }
+
+  .account-head h1 {
+    margin: 0;
+  }
+
+  .account-head p {
+    margin: var(--cc-space-1) 0 0;
+    color: var(--cc-muted);
+  }
+
+  .avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 1.25rem;
+    background: var(--cc-brand);
+    color: var(--cc-on-brand);
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-3);
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: inset 0 -4px 0 rgb(0 0 0 / 18%);
+  }
+
+  .account-grid {
+    display: grid;
+    gap: var(--cc-space-5);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .account-grid {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: var(--cc-space-6);
+    }
+  }
+
+  .account-grid .card h2 {
+    font-size: var(--cc-step-2);
+  }
+
+  .summary {
+    display: grid;
+    margin: 0 0 var(--cc-space-5);
+  }
+
+  .summary > div {
+    display: grid;
+    gap: 0 var(--cc-space-4);
+    padding-block: var(--cc-space-3);
+    border-bottom: 1px solid var(--cc-border);
+  }
+
+  .summary > div:first-child {
+    padding-top: 0;
+  }
+
+  @media (min-width: 30rem) {
+    .summary > div {
+      grid-template-columns: minmax(9rem, 2fr) 3fr;
+    }
+  }
+
+  .summary dt {
+    color: var(--cc-muted);
+    font-size: var(--cc-step--1);
+    font-weight: 600;
+    line-height: 1.9;
+  }
+
+  .summary dd {
+    margin: 0;
+    font-weight: 550;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cc-space-3) var(--cc-space-4);
+    margin: 0;
+  }
+
+  .actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .actions .danger-link {
+    margin-inline-start: auto;
+  }
+
+  @media (min-width: 40rem) {
+    .actions .btn {
+      flex: none;
+    }
+  }
+
+  .empty-state {
+    display: grid;
+    justify-items: start;
+    gap: var(--cc-space-3);
+    padding: var(--cc-space-5);
+    background: var(--cc-surface-sunk);
+    border: 1.5px dashed var(--cc-border);
+    border-radius: var(--cc-radius);
+  }
+
+  .empty-state p {
+    margin: 0;
+  }
+
+  /* The page background is close to the diet badge colour, so the diner badge sits on white. */
+  .role-badge {
+    margin-inline-start: var(--cc-space-1);
+  }
+
+  .role-badge:not(.badge-share) {
+    background: var(--cc-surface);
+    color: var(--cc-text);
+    border: 1px solid var(--cc-border);
+  }
 }

@@ -44,22 +44,28 @@
             {% endblock nav %}
             {% if user.is_authenticated %}
               <li>
-                <a href="{% url 'me' %}">My account</a>
+                {% url 'me' as me_url %}
+                <a href="{{ me_url }}"
+                   {% if request.path == me_url %}aria-current="page"{% endif %}>My account</a>
               </li>
               <li>
                 <form class="inline-form" method="post" action="{% url 'logout' %}">
                   {% csrf_token %}
-                  <button type="submit">Log out</button>
+                  <button type="submit" class="nav-button">Log out</button>
                 </form>
               </li>
             {% else %}
               {% if registration_open %}
+                {% url 'register' as register_url %}
                 <li>
-                  <a href="{% url 'register' %}">Register</a>
+                  <a href="{{ register_url }}"
+                     {% if request.path == register_url %}aria-current="page"{% endif %}>Register</a>
                 </li>
               {% endif %}
+              {% url 'login' as login_url %}
               <li>
-                <a href="{% url 'login' %}">Log in</a>
+                <a href="{{ login_url }}"
+                   {% if request.path == login_url %}aria-current="page"{% endif %}>Log in</a>
               </li>
             {% endif %}
           </ul>
@@ -68,11 +74,9 @@
     </header>
     <main id="main">
       {% if messages %}
-        <div class="wrap">
-          <ul class="messages" role="status">
-            {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-          </ul>
-        </div>
+        <ul class="messages" role="status">
+          {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+        </ul>
       {% endif %}
       {% block content %}
       {% endblock content %}

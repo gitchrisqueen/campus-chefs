@@ -85,7 +85,35 @@ section 4:
   - `/how-it-works` uses a three-card row on desktop instead of one narrow column.
 - **Changed after pass 2:** tighter spacing between the search field and its results.
 
+## Form and account pages (design pass 2)
+
+- **Field component** (`templates/partials/field.html`): label, then help, then error, then the control. Django
+  links help and error to the control with `aria-describedby` (`<id>_helptext`, `<id>_error`); the error list
+  reads "Error:" to screen readers, and the field gets a red rail and a 2px red border, so colour is never the
+  only cue.
+- **Checkboxes** sit in a tinted tile with the box on the first line of the label; the whole tile is the target.
+- **Radio group** is a `fieldset` and `legend`; each option is a 52px tile that takes the accent border when
+  checked. The cook food-safety box hides with `:has()` once "I want to eat" is chosen (the server still
+  checks it).
+- **Register** is grouped: Your account, Your profile (first and last name side by side from 40rem), Before you
+  start. The password help is one line instead of Django's five-item list.
+- **Error summary** lists every problem with a link to its field, has `role="alert"`, and takes focus (A11Y-02).
+- **Danger** (`/me/delete`): a red-ruled callout says "You cannot undo this." and the button is a solid dark red
+  (light) or inverted coral (dark). New tokens: `--cc-input-border`, `--cc-danger*`; UX-01 checks them.
+- **Log out** is a reset button that reads as a nav item, with the same hover and focus ring as the links.
+- **Demo login** is a dashed invitation card: "Try it in one click", one line, diner (primary) and cook buttons.
+- **/me** has an initials avatar (plan 4.4: initials only), the public name as the heading, a role badge, a
+  ruled profile list and an empty-bookings state with a "Find a meal" button.
+- **Changed after pass 1:** the diner badge was invisible on the page background (now on white with a border);
+  the phone nav orphaned "Log out" (tighter nav padding below 40rem); the /me phone buttons were ragged (now
+  full width); the radio legend sat tight on its tiles; the login demo card now matches the login card padding.
+- **Changed after pass 2:** an optional select beside a field with an error stretched taller (rows now align on
+  the bottom edge).
+
 ## Open points
+
+- The error summary lists errors in the form's field order, which differs from the grouped visual order on
+  `/register` (email, password first). Each item links to its field, so this is cosmetic.
 
 - Screenshots are taken in the Linux tests container, so the system serif there is the container's fallback
   serif, not Iowan Old Style or Palatino. On macOS and Windows the display face is warmer.

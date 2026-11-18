@@ -1,0 +1,20 @@
+{% comment %}Lists every problem and links each one to its field, above the form.{% endcomment %}
+{% if form.errors %}
+  <div class="error-summary"
+       role="alert"
+       aria-labelledby="error-summary-title"
+       tabindex="-1"
+       autofocus>
+    <h2 id="error-summary-title">Please fix {{ form.errors|length|pluralize:"this problem,these problems" }}</h2>
+    <ul>
+      {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      {% for field in form.visible_fields %}
+        {% for error in field.errors %}
+          <li>
+            <a href="#{% if field.use_fieldset %}{{ field.auto_id }}_0{% else %}{{ field.id_for_label }}{% endif %}">{{ field.label }}</a>: {{ error }}
+          </li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
