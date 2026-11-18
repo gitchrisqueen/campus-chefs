@@ -1,0 +1,41 @@
+/* Campus Chefs. Phase 1 base; phase 8 adds the full token set and components. */
+@layer tokens, base, components;
+
+@layer tokens {
+  :root {
+    --brand: #a40408;          /* the 2008 header red */
+    --bg: #e5ecf3;             /* the 2008 page background */
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --muted: #4a4f55;
+    --focus: #0b57d0;
+    --radius: 12px;
+    --space: 1rem;
+  }
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+  }
+  main { max-width: 60rem; margin: 0 auto; padding: var(--space); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .skip-link { position: absolute; left: -999px; }
+  .skip-link:focus { left: var(--space); top: var(--space); background: var(--surface); padding: .5rem; }
+}
+
+@layer components {
+  .demo-banner { background: #fff4d6; color: var(--text); padding: .5rem var(--space); text-align: center; }
+  .site-header { background: var(--brand); padding: var(--space); }
+  .brand { color: #fff; font-family: Georgia, "Times New Roman", serif; font-size: 1.75rem; text-decoration: none; }
+  .hero, .search { background: var(--surface); border-radius: var(--radius); padding: var(--space); margin-block: var(--space); }
+  .site-footer { text-align: center; color: var(--muted); padding: var(--space); }
+  /* htmx request indicator: shipped here because the CSP blocks injected styles. */
+  .htmx-indicator { opacity: 0; visibility: hidden; }
+  .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; visibility: visible; }
+}
