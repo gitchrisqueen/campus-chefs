@@ -1,6 +1,6 @@
 # Operations runbook
 
-The demo runs locally with Docker Compose. All of its data is synthetic and disposable, and **there are no backups**: the reset for any problem is `docker compose down -v`, then `make demo`.
+The demo runs locally with Docker Compose. Seeded offerings are timed relative to the first boot, so a volume kept for more than a week runs out of future meals: run `make reseed`. All of its data is synthetic and disposable, and **there are no backups**: the reset for any problem is `docker compose down -v`, then `make demo`.
 
 ## Prerequisites
 
@@ -19,13 +19,14 @@ The demo runs locally with Docker Compose. All of its data is synthetic and disp
 | Stop, keeping data | `docker compose down` |
 | **Reset: wipe all data and secrets** | `docker compose down -v`, then `make demo` |
 | Use another port | `WEB_PORT=8010 make demo` |
-| Run the tests | `make test` (unit and integration), `make e2e NO_RESEED=1` (browser) |
+| Reseed the demo data | `make reseed` (wipes and recreates the synthetic data, relative to now) |
+| Run the tests | `make test` (unit and integration), `make e2e` (browser; reseeds first) |
 
 ## What starts, in order
 
 1. `keygen` (one-shot, no network) generates the secrets on first run and gives each service only its own.
 2. `db` (Postgres 18) starts on an internal network with no published port.
-3. `migrate` (one-shot) runs `python manage.py bootstrap_demo`, which applies migrations and prepares the cache table.
+3. `migrate` (one-shot) runs `python manage.py bootstrap_demo`. It applies migrations, prepares the cache table, clears expired sessions and, on a fresh database only, seeds the synthetic demo data.
 4. `web` (gunicorn) starts only after `migrate` has exited 0, and listens on `127.0.0.1:8000`.
 
 ## When it breaks

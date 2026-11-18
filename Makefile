@@ -30,9 +30,9 @@ deploy-check:
 demo:
 	docker compose up -d --build && scripts/wait-healthy.sh web 180
 
-# seed_demo arrives in phase 2; until then this target fails with a clear message.
+# Wipes and reseeds the synthetic demo data (allowed only with CC_DEMO_MODE=true).
 reseed:
-	@echo 'reseed: seed_demo arrives in phase 2; run e2e with NO_RESEED=1' >&2; exit 1
+	docker compose run --rm migrate python manage.py seed_demo --reset
 
 smoke:
 	scripts/smoke.sh
