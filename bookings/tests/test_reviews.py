@@ -67,7 +67,7 @@ def test_rev_04_rating_outside_1_to_5_shows_a_form_error(client, completed, dine
     response = client.post(url(completed), {"rating": rating, "the_good": "Tasty."})
     assert response.status_code == 200
     assert response.context["review_form"].errors["rating"]
-    assert "Please fix the problems below." in response.content.decode()
+    assert "Please fix this problem" in response.content.decode()
     assert Review.objects.count() == 0
 
 
