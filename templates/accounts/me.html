@@ -51,6 +51,48 @@
       </p>
     </section>
     {% if is_cook %}
+      <section class="card" aria-labelledby="requests-heading">
+        <h2 id="requests-heading">Requests for your meals</h2>
+        {% if requests %}
+          <ul class="row-list">
+            {% for booking in requests %}
+              <li class="row">
+                <div>
+                  <p>
+                    <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>
+                    · {{ booking.seats }} seat{{ booking.seats|pluralize }} for {{ booking.offering.title }}
+                  </p>
+                  <p class="small muted">{{ booking.contribution_text }}</p>
+                </div>
+                <div class="row-actions">
+                  <form class="inline-form"
+                        method="post"
+                        action="{% url 'booking_transition' booking.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="to" value="confirmed">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button class="btn btn-primary" type="submit">
+                      Confirm <span class="visually-hidden">{{ booking.diner.public_name }}</span>
+                    </button>
+                  </form>
+                  <form class="inline-form"
+                        method="post"
+                        action="{% url 'booking_transition' booking.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="to" value="declined">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button class="btn btn-secondary" type="submit">
+                      Decline <span class="visually-hidden">{{ booking.diner.public_name }}</span>
+                    </button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No requests waiting for you.</p>
+        {% endif %}
+      </section>
       {% include "meals/_kitchen_panel.html" %}
     {% else %}
       <section class="card" aria-labelledby="cook-cta-heading">
