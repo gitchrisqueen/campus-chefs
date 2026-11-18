@@ -5,9 +5,10 @@
 set -euo pipefail
 svc="${1:?service}"; timeout="${2:-180}"; waited=0
 
-state() { # state <service> -> "<State> <Health> <ExitCode>"
-  docker compose ps -a --format json "$1" 2>/dev/null \
-    | jq -rs 'map(select(.Service == "'"$1"'")) | .[0] // {} | "\(.State // "none") \(if (.Health // "") == "" then "-" else .Health end) \(.ExitCode // 0)"'
+state() { # state <service> -> "<State> <Health> <ExitCode>"; an empty Health prints as "-"
+  local filter='map(select(.Service == $svc)) | .[0] // {}
+    | "\(.State // "none") \(if (.Health // "") == "" then "-" else .Health end) \(.ExitCode // 0)"'
+  docker compose ps -a --format json "$1" 2>/dev/null | jq -rs --arg svc "$1" "${filter}"
 }
 
 while :; do
