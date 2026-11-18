@@ -90,6 +90,34 @@
           </dl>
           <a href="{% url 'offering_detail' offering.pk %}">See the meal and its allergens</a>
         </section>
+        {% if review_form %}
+          <section class="card" aria-labelledby="review-heading">
+            <h2 id="review-heading">Review this meal</h2>
+            <p class="small muted">You can review it once, within 14 days of the meal being completed.</p>
+            <form method="post" action="{% url 'booking_review' booking.pk %}">
+              {% csrf_token %}
+              {% include "partials/form_fields.html" with form=review_form %}
+              <button class="btn btn-primary" type="submit">Post review</button>
+            </form>
+          </section>
+        {% elif review %}
+          <section class="card" aria-labelledby="review-heading">
+            <h2 id="review-heading">Your review</h2>
+            <p>
+              <strong>{{ review.rating }} out of 5</strong>
+            </p>
+            {% if review.the_good %}
+              <p>
+                <strong>The good:</strong> {{ review.the_good }}
+              </p>
+            {% endif %}
+            {% if review.the_bad %}
+              <p>
+                <strong>The bad:</strong> {{ review.the_bad }}
+              </p>
+            {% endif %}
+          </section>
+        {% endif %}
         {% if actions %}
           <section class="card" aria-labelledby="actions-heading">
             <h2 id="actions-heading">What you can do</h2>

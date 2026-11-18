@@ -5,7 +5,7 @@ from django import forms
 from meals.models import Offering
 from meals.money import format_cents
 
-from .models import Booking
+from .models import Booking, Review
 
 C = Booking.Contribution
 
@@ -83,3 +83,21 @@ class BookingRequestForm(forms.Form):
             "terms": data.get("terms", "") if custom else "",
             "amount_cents": int(amount * 100) if custom else 0,
         }
+
+
+class ReviewForm(forms.ModelForm):
+    """A diner's review. The booking, `hidden_at` and the dates never come from the POST (AZ-08)."""
+
+    rating = forms.TypedChoiceField(
+        label="Rating",
+        choices=[(n, f"{n} star{'s' if n > 1 else ''}") for n in range(1, 6)],
+        coerce=int,
+        widget=forms.RadioSelect,
+        help_text="1 star is poor, 5 stars is great.",
+    )
+
+    class Meta:
+        model = Review
+        fields = ["rating", "the_good", "the_bad"]
+        labels = {"the_good": "The good", "the_bad": "The bad"}
+        widgets = {"the_good": forms.Textarea(attrs={"rows": 3}), "the_bad": forms.Textarea(attrs={"rows": 3})}

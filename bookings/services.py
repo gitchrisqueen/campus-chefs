@@ -1,5 +1,7 @@
 """The booking state machine (plan 3.3). Every write runs in one transaction under a lock on the offering."""
 
+from datetime import timedelta
+
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
@@ -8,7 +10,7 @@ from meals.models import Offering
 
 from . import contributions
 from .errors import BookingError, BookingRejected, Forbidden, NotParticipant
-from .models import Booking
+from .models import Booking, Review
 
 S = Booking.Status
 A = Booking.Actor
@@ -158,3 +160,33 @@ def cancel_offering(offering: Offering, now=None) -> Offering:
         offering.status = Offering.Status.CANCELLED
         offering.save(update_fields=["status"])
     return offering
+
+
+REVIEW_WINDOW = timedelta(days=14)
+
+
+def review_block(booking: Booking, user, now=None) -> BookingError | None:
+    """Why `user` can't review `booking` now, or None when they can (REV-02, REV-03, REV-05, REV-07)."""
+    now = now or timezone.now()
+    role = role_of(booking, user)
+    if role is None:
+        return NotParticipant("Not found.")
+    if role != A.DINER:
+        return Forbidden("Only the diner can review a meal.")
+    if booking.status != S.COMPLETED:
+        return Forbidden("You can review a meal once it is completed.")
+    if Review.objects.filter(booking=booking).exists():
+        return BookingError("You already reviewed this meal.")
+    if booking.closed_at is None or now > booking.closed_at + REVIEW_WINDOW:
+        return BookingError("The 14 days to review this meal have passed.")
+    return None
+
+
+def submit_review(booking: Booking, user, rating: int, the_good: str = "", the_bad: str = "", now=None) -> Review:
+    """The diner reviews a completed booking, once, within 14 days of closing (plan 1.2)."""
+    with transaction.atomic():
+        booking = Booking.objects.select_for_update().select_related("offering").get(pk=booking.pk)
+        error = review_block(booking, user, now)
+        if error:
+            raise error
+        return Review.objects.create(booking=booking, rating=rating, the_good=the_good, the_bad=the_bad)
