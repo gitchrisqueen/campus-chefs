@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Edit account · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="card">
+    <h1>Edit account</h1>
+    <form method="post" action="{% url 'account_edit' %}" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <button type="submit">Save changes</button>
+    </form>
+    <p>
+      <a href="{% url 'me' %}">Back to my account</a>
+    </p>
+  </section>
+{% endblock content %}

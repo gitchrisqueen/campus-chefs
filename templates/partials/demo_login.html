@@ -1,0 +1,14 @@
+{% if demo_mode %}
+  <section class="card demo-login" aria-labelledby="demo-login-heading">
+    <h2 id="demo-login-heading">Try the demo</h2>
+    <p>Log in as a made-up student. No password needed.</p>
+    <form class="inline-form" method="post" action="{% url 'demo_login' 'cook' %}">
+      {% csrf_token %}
+      <button type="submit">Try as demo cook</button>
+    </form>
+    <form class="inline-form" method="post" action="{% url 'demo_login' 'diner' %}">
+      {% csrf_token %}
+      <button type="submit">Try as demo diner</button>
+    </form>
+  </section>
+{% endif %}
