@@ -1,0 +1,247 @@
+@CHARSET "ISO-8859-1";
+
+body{
+	background: #e5ecf3;
+	padding: 0px 30px 0px 30px;
+	margin: auto;
+	width: 1024px;
+	font-size: 85%;
+	//position: relative;
+	//height: 100%;
+}
+
+a:visited.logolink{
+	text-decoration: none;
+	color: transparent;
+}	
+
+a:visited {
+	text-decoration: none;
+	color: blue;	
+}
+
+.lefttop{
+	float: left;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+	
+.righttop{
+	float: rightt;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+}
+
+.leftbottom{
+	float: left;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;	
+}
+
+.rightbottom{
+	float: right;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;	
+}
+
+#header-container{
+	max-height: 1200px;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	background: #A40408;
+	position: relative;
+	border: none;
+}
+
+#header-logo{
+	float: left;
+}
+
+#header-login{
+	float: right;
+	color:white;
+	position:absolute;
+	bottom:10px;
+	right:10px;
+}
+
+#leftnav{
+	float: left;
+	min-height: 450px;
+	padding: 10px;
+	width: 143px; //15%;
+	margin: 10px 10px 0px 0px;
+	background: white;	
+	position: relative;
+}
+
+#small_main{
+	min-height: 450px;
+	margin: 10px 0px 0px 0px;
+	padding: 10px;
+	width: 830px; //79.1%;
+	float: left;
+	background: white;	
+	position: relative;
+}
+
+#welcome_name{
+	text-align: center;
+	font-size: 200%;
+	font-weight: bold;
+	color: black;
+	padding: 10px;
+}
+
+#message{
+	width: 95%;
+	text-align: left;
+	padding: 10px;
+	margin: auto;
+}
+
+#steps{
+	width: 801px;
+	padding: 0px 0px;
+	margin: auto;
+} 
+
+#one{
+	width: 167px;
+	float: left;
+	text-align: center;
+	margin: 0px 50px;
+}
+
+#two{
+	width: 167px;
+	float: left;
+	text-align: center;
+	margin: 0px 50px;
+}
+
+#three{
+	width: 167px;
+	float: left;
+	text-align: center;
+	margin: 0px 50px;
+}
+
+#samplesearch{
+	margin: auto;
+	text-align: center;	
+}
+
+#footer-container{
+	width: 80%;
+	margin: auto;
+}
+
+#footer-top{
+	text-align: center;
+}
+
+#footer-bottom{
+	border: gray solid;
+	border-width: thin;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-right: 0px; 
+	text-align: center;
+}
+
+.registrationDiv{
+	position: relative;
+	width: 500px;	
+}
+
+.right{
+	float: right;	
+}
+
+.left{
+	float: left;
+}
+
+.title{
+	font-size: 200%;
+	font-weight: bold;
+	text-align: left;
+}
+
+#profile{
+	min-height: 450px;
+	margin: 10px 0px 0px 0px;
+	padding: 10px 0px 0px 0px;
+	width: 1024px;
+	float: left;
+	background: white; 
+	position: relative;
+}
+
+#customer_main{
+
+}
+
+#cook_main{
+	margin: 0px 15px 15px 15px;
+}
+
+#picture{
+	padding: 2px;
+	border: gray solid;
+	border-width: thin;
+	width: 200px;
+	float: left;
+	margin: 5px;
+}
+
+#userInfo{
+	float: left;
+	width: 400px;
+	margin: 5px;
+	padding: 5px;
+	max-height: 200px;
+}
+
+#specialties{
+	float: left;
+	width: 330px;
+	margin: 5px;
+	padding: 5px;
+}
+
+.profileSection{
+	padding: 2px;
+	border: gray solid;
+	border-width: thin;
+	margin: 5px;
+	min-height: 275px;
+}
+
+#menu{
+	width: auto;
+}
+
+#breakfast{
+	float: left;
+	width: 300px;	
+}
+
+#lunch{
+	float: left;
+	width: 300px;	
+}
+
+#dinner{
+	float: left;
+	width: 300px;	
+}
+
+#comments{
+	width: auto;
+}

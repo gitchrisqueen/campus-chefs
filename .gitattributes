@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.jpg binary
+*.png binary
+*.gif binary
+# The 2008 code is kept byte-for-byte (CRLF, ISO-8859-1): no normalization.
+# Must stay after the "* text=auto" line: later lines win.
+legacy/** -text linguist-vendored

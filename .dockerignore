@@ -1,0 +1,19 @@
+# Only app code goes into images; legacy/ is never deployed.
+.git
+.github
+legacy/
+legacy-support/
+docs/
+test-results/
+playwright-report/
+.env
+.env.*
+**/__pycache__
+**/*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.md
+!README.md
