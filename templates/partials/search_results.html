@@ -14,7 +14,7 @@
   <p class="small muted results-count">
     {{ page.paginator.count }} meal{{ page.paginator.count|pluralize }}
     {% if q %}
-      match “{{ q }}”.
+      match{{ page.paginator.count|pluralize:"es," }} “{{ q }}”.
     {% else %}
       open for requests.
     {% endif %}

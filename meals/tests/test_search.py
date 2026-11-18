@@ -93,6 +93,7 @@ def test_srch_07_htmx_gets_partial_plain_get_gets_full_page(client, cook):
     full = client.get("/search", {"q": "pancakes"})
     html = full.content.decode()
     assert "Buttermilk Pancakes" in html and "<html" in html
+    assert "1 meal matches “pancakes”." in " ".join(html.split())
     assert 'id="q"' in html and 'id="results"' in html and 'aria-live="polite"' in html
 
     empty = client.get("/search", {"q": "zzz"}, headers={"HX-Request": "true"})

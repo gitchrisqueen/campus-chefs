@@ -249,6 +249,7 @@ class SearchForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("auto_id", "%s")  # id="q" and id="results" are what htmx and E2E-06 use
+        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         campuses = Campus.objects.values_list("slug", "name")
         self.fields["campus"].choices = [("", "Any campus"), *campuses]
