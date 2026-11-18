@@ -9,5 +9,5 @@ class Command(BaseCommand):
         call_command("migrate", interactive=False, verbosity=1)
         call_command("createcachetable", verbosity=1)
         call_command("clearsessions", verbosity=1)
-        # Phase 2 adds: seed_demo --if-empty
+        call_command("seed_demo", if_empty=True, verbosity=1)
         self.stdout.write(self.style.SUCCESS("bootstrap_demo: done"))

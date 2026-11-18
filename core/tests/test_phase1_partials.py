@@ -7,8 +7,10 @@ the owning phase adds the rest under the plain ID.
 import pytest
 from django.core.management import call_command
 from django.db import OperationalError, connection
+from django.utils import timezone
 
 from accounts.models import User
+from tests import factories as f
 
 
 def test_leg_06a_healthz_503_when_db_unreachable(client, monkeypatch):
@@ -58,14 +60,31 @@ def test_e2e_06a_search_stub_partial_for_htmx_full_page_without_js(client):
 
 @pytest.mark.django_db
 def test_auth_00a_user_manager_normalizes_email_and_sets_flags():
-    user = User.objects.create_user("Ava.R@LARKSPUR.example", "a-long-test-password-1")
+    campus = f.campus()
+    now = timezone.now()
+    user = User.objects.create_user(
+        "Ava.R@LARKSPUR.example",
+        "a-long-test-password-1",
+        first_name="Ava",
+        last_name="Reyes",
+        campus=campus,
+        adult_attested_at=now,
+    )
     assert user.email == "Ava.R@larkspur.example"
     assert str(user) == "Ava.R@larkspur.example"
     assert not user.is_staff and not user.is_superuser
     assert user.check_password("a-long-test-password-1")
     assert user.password.startswith("argon2$argon2id$")
 
-    admin = User.objects.create_superuser("admin@larkspur.example", "another-long-password-2")
+    admin = User.objects.create_superuser(
+        "admin@larkspur.example",
+        "another-long-password-2",
+        first_name="Ada",
+        last_name="Min",
+        campus=campus,
+        adult_attested_at=now,
+    )
+    assert user.public_name == "Ava R."
     assert admin.is_staff and admin.is_superuser
 
     with pytest.raises(ValueError):

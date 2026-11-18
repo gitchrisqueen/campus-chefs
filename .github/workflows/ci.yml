@@ -83,17 +83,15 @@ jobs:
             aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c \
             image --input /scan/img.tar --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
 
-      # Phase 1: base smoke (checks 1-5). Phase 2 switches to `make smoke` (all 7).
-      - name: Compose smoke (incl. SEC-08 secret isolation)
-        run: make demo && scripts/smoke.sh base
+      - name: Compose smoke (incl. SEC-08 secret isolation, OPS-01 persistence)
+        run: make demo && make smoke
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with: { path: ~/.cache/ms-playwright, key: "pw-${{ runner.os }}-${{ hashFiles('uv.lock') }}" }
       - run: uv run playwright install --with-deps chromium
 
-      # Phase 1: NO_RESEED=1 because seed_demo arrives in phase 2.
       - name: E2E + CSP-violation listener
-        run: make e2e BASE_URL=http://127.0.0.1:8000 NO_RESEED=1
+        run: make e2e BASE_URL=http://127.0.0.1:8000
 
       - if: failure()
         run: docker compose logs --no-color > compose.log

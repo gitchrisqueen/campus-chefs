@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.db.models import Q
 from django.db.models.functions import Lower
 
 
@@ -26,10 +27,25 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """Email login, no username (plan 2.4). Phase 3 adds campus and profile fields."""
+    """Email login, no username (plan 2.4, 3.1). Gender, age, car and residence from 2008 are gone."""
+
+    class Classification(models.TextChoices):
+        FRESHMAN = "freshman", "Freshman"
+        SOPHOMORE = "sophomore", "Sophomore"
+        JUNIOR = "junior", "Junior"
+        SENIOR = "senior", "Senior"
+        GRADUATE = "graduate", "Graduate"
 
     username = None
     email = models.EmailField("email address", unique=True)
+    first_name = models.CharField("first name", max_length=60)
+    last_name = models.CharField("last name", max_length=60)
+    campus = models.ForeignKey("meals.Campus", on_delete=models.PROTECT, related_name="users")
+    # Optional; NULL is "not given" and the classification CHECK allows it.
+    classification = models.CharField(  # noqa: DJ001
+        max_length=10, choices=Classification.choices, null=True, blank=True
+    )
+    adult_attested_at = models.DateTimeField()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
@@ -37,7 +53,19 @@ class User(AbstractUser):
     objects = UserManager()
 
     class Meta:
-        constraints = [models.UniqueConstraint(Lower("email"), name="accounts_user_email_ci_unique")]
+        constraints = [
+            models.UniqueConstraint(Lower("email"), name="accounts_user_email_ci_unique"),
+            models.CheckConstraint(
+                condition=Q(classification__isnull=True)
+                | Q(classification__in=["freshman", "sophomore", "junior", "senior", "graduate"]),
+                name="accounts_user_classification_valid",
+            ),
+        ]
+
+    @property
+    def public_name(self) -> str:
+        """First name plus last initial: the only form shown to other users (AZ-06)."""
+        return f"{self.first_name} {self.last_name[:1]}." if self.last_name else self.first_name
 
     def __str__(self) -> str:
         return self.email

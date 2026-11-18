@@ -44,6 +44,17 @@ Versions were checked on 2026-11-18. Verify them again when a phase starts. Neve
   - `gitleaks git --redact --no-banner .`
 - **README, screenshots and hiring-facing docs** merge only after the owner approves them. Code PRs merge after green CI and review.
 
+## Tooling and team (owner, 2026-11-18)
+
+- **graft first.** The code graph is built with `graft build .` into `graft/`, which is git-ignored and local. Use the graft tools (`graft_find_code`, `graft_trace_calls`, `graft_file_api`) or `graft ask "<question>"` before grepping or reading files. Rebuild after big changes.
+- **caveman voice.** `AGENTS.md`, `.cursor/`, `.windsurf/`, `.clinerules/`, `.opencode/` and `.github/copilot-instructions.md` hold the always-on caveman rule. Chat stays terse. Code, docs, commits and PR bodies stay in full sentences.
+- **A team of agents.**
+  - **Builders:** each phase, or each independent slice of one (for example phases 4 and 5), goes to a builder subagent in its own git worktree.
+  - **Coordinator:** the main session plans, integrates and verifies.
+  - **Code review:** every PR gets the `product-code` adversarial review (claims, operator and security personas) before it merges.
+  - **UX review:** any PR that changes screens or copy also gets a UX review (the `product-content` personas: recipient, brand editor, accessibility, art director). The review uses real screenshots at phone and desktop width, in light and dark mode.
+  - **README review:** the README and hiring-facing docs get the `portfolio` review, then the owner's approval.
+
 ## How to work here
 
 - **One phase per branch and PR.**
