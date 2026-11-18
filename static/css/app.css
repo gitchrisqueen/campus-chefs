@@ -31,9 +31,30 @@
 
 @layer components {
   .demo-banner { background: #fff4d6; color: var(--text); padding: .5rem var(--space); text-align: center; }
-  .site-header { background: var(--brand); padding: var(--space); }
+  .site-header {
+    background: var(--brand); padding: var(--space);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space);
+  }
+  .site-nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space); }
+  .site-nav a { color: #fff; }
+  .inline-form { display: inline-block; margin: 0; }
+  button { min-height: 44px; padding: .5rem 1rem; font: inherit; cursor: pointer; }
   .brand { color: #fff; font-family: Georgia, "Times New Roman", serif; font-size: 1.75rem; text-decoration: none; }
-  .hero, .search { background: var(--surface); border-radius: var(--radius); padding: var(--space); margin-block: var(--space); }
+  .hero, .search, .card { background: var(--surface); border-radius: var(--radius); padding: var(--space); margin-block: var(--space); }
+  .demo-login .inline-form { margin-inline-end: .5rem; }
+  .messages { list-style: none; padding: .75rem var(--space); background: var(--surface); border-radius: var(--radius); }
+  .error-summary { border: 2px solid var(--brand); border-radius: var(--radius); padding: .5rem var(--space); margin-block: var(--space); }
+  .errorlist { color: var(--brand); padding-inline-start: 1.25rem; }
+  form > div { margin-block: var(--space); }
+  form label { display: block; font-weight: 600; }
+  form input:not([type="checkbox"], [type="radio"]), form select { width: 100%; max-width: 30rem; min-height: 44px; font: inherit; }
+  form fieldset { border: 0; padding: 0; }
+  form fieldset label, form input[type="checkbox"] + label { display: inline; font-weight: normal; }
+  .helptext { color: var(--muted); font-size: .9rem; }
+  .summary { display: grid; grid-template-columns: max-content 1fr; gap: .25rem var(--space); }
+  .summary dt { font-weight: 600; }
+  .summary dd { margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: var(--space); }
   .site-footer { text-align: center; color: var(--muted); padding: var(--space); }
   /* htmx request indicator: shipped here because the CSP blocks injected styles. */
   .htmx-indicator { opacity: 0; visibility: hidden; }

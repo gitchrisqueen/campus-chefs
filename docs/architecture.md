@@ -47,3 +47,22 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | The dev image installs `git` and `libatomic1` | SEC-06 needs git. Playwright's bundled Node needs `libatomic1` on slim Debian |
 | — | Partial tests with a letter suffix (`LEG-06a`, `SEC-03a`, `OPS-01a`, `E2E-06a`, `AUTH-00a`) | CI enforces 90% coverage from phase 1. These test code that exists now, and the owning phase adds the full test under the plain ID |
 | — | pytest-playwright `--output test-results/playwright` | The plugin deletes its output folder at startup, and `test-results` is a bind-mount point inside a read-only `/src` |
+
+## Phase 3 records (2026-11-18)
+
+- **OPS-03** now GETs `/login`, POSTs a real login with the CSRF token on port 8010 and expects 302. The script creates a throwaway account (`ops03@ops-check.example`, random password) through the `web` container, because the seeded personas have unusable passwords.
+- **OPS-02** builds the secrets volume name from `${COMPOSE_PROJECT_NAME:-campuschefs}`, so a check run under another project name never removes the default stack's volume.
+- **Failed-login limiter** (`core/ratelimit.py`): a failed login is a POST that re-renders the form (200). A successful login (302) clears the counter. Each failure is written with `cache.set(..., 15 min)`, not `cache.incr`, because `BaseCache.incr` re-sets the key with the default 5-minute timeout. The known gaps (not atomic across workers; anyone who knows an email can lock it for 15 minutes) are in the module docstring until `SECURITY.md` lands in phase 11.
+
+## Phase 3 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| `/safety` arrives in phase 8 | A plain `/safety` page with the five points from plan 5.5, linked from the footer | SEC-03 is in the phase 3 exit and checks that `/safety` stays on when demo mode is off. Phase 8 owns the final copy and design |
+| The demo-login route "exists only when `CC_DEMO_MODE=true`" | The route is always in the URLconf, and the view returns 404 (for every method) unless `CC_DEMO_MODE` is true | Same behaviour from outside, and the switch can be tested without reloading the URLconf |
+| Login with "email and password" | The form field is named `username` (labelled "Email"), as in Django's `AuthenticationForm` and the admin login | One limiter wraps both `/login` and `admin.site.login` and reads the same field |
+| — | Login matches the email case-insensitively (`UserManager.get_by_natural_key` uses `iexact`) | Emails are already unique on `Lower(email)`, so `Ava@…` and `ava@…` are one account |
+| Account deletion, the diner path | The diner path, plus releasing any bring-list item that a cancelled booking had claimed | Leaving a claim on a cancelled booking would block that item for other diners. The cook path stays with ACCT-03 (phase 6) |
+| — | "Try as demo cook" and "Try as demo diner" buttons on `/` and `/login` | Plan 1.2 demo layer; they make the demo login reachable without curl |
+| — | codespell: `brunch` added to the ignore list, and the local `graft/` index skipped | `make lint` already failed on the phase 2 base: codespell reads the meal-type example "brunch" (seed and DATA-03) as a typo. `graft/` is a git-ignored local code index |
+| — | `test_leg_02a_…` (letter suffix) | `/me` exists now, so the part of LEG-02 that phase 3 can prove (own profile shown, another user's never) runs now. Phase 6 adds the bookings part under the plain ID |
