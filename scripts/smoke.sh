@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Smoke checks against the running compose stack (plan 8.1).
 #   scripts/smoke.sh base  -> checks 1-5 (phase 1)
-#   scripts/smoke.sh       -> checks 1-7 (6 and 7 need seed data, phase 2)
+#   scripts/smoke.sh       -> checks 1-7
 set -euo pipefail
 section="${1:-all}"
 base="http://127.0.0.1:${WEB_PORT:-8000}"
@@ -42,5 +42,24 @@ pass "5 web DB role rolsuper=false"
 
 [ "${section}" = "base" ] && { echo "smoke: base checks passed"; exit 0; }
 
-# 6 and 7 arrive in phase 2 with seed_demo.
-fail "6-7 not implemented until phase 2; run 'scripts/smoke.sh base'"
+offerings() {
+  docker compose exec -T web python -c '
+import django; django.setup()
+from meals.models import Offering
+print(Offering.objects.count())'
+}
+
+# 6. seed data is present
+count="$(offerings)"
+[ "${count}" -ge 10 ] || fail "6 only ${count} offerings seeded"
+pass "6 seeded offerings=${count}"
+
+# 7. OPS-01: data survives a down/up without -v
+docker compose down >/dev/null 2>&1
+make demo >/dev/null
+after="$(offerings)"
+[ "${after}" = "${count}" ] || fail "7 offerings ${count} -> ${after} after down/up"
+code="$(docker compose ps -a --format json migrate | jq -rs '.[0].ExitCode')"
+[ "${code}" = "0" ] || fail "7 migrate exit=${code}"
+pass "7 OPS-01 data persisted across down/up (${after} offerings), migrate exit 0"
+echo "smoke: all checks passed"

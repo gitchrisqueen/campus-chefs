@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
@@ -9,5 +10,6 @@ class Command(BaseCommand):
         call_command("migrate", interactive=False, verbosity=1)
         call_command("createcachetable", verbosity=1)
         call_command("clearsessions", verbosity=1)
-        # Phase 2 adds: seed_demo --if-empty
+        if settings.CC_DEMO_MODE:  # never seed demo personas into a non-demo database
+            call_command("seed_demo", if_empty=True, verbosity=1)
         self.stdout.write(self.style.SUCCESS("bootstrap_demo: done"))

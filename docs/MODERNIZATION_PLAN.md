@@ -1395,7 +1395,17 @@ sh legacy-support/harness/exploit-demo.sh | grep -q 'profile.php'
 docker compose -f legacy-support/harness/compose.legacy.yml down -v
 ```
 
-### Phase 11 - Portfolio packaging (5 h)
+### Phase 11 - Portfolio packaging (8 h)
+
+**Owner requirement (2026-11-18):** the final `README.md` must have a "wow" feel and work as an FDE portfolio piece. It speaks to two readers:
+- **People who would use the app:** what it does for a student, shown with real screenshots of the flow (search, a cook page, booking with the grocery share, the kitchen dashboard), at phone and desktop width.
+- **Developers and hiring teams:**
+  - the 2008 → 2026 before/after;
+  - the architecture diagram, the security and data decisions with their trade-offs, the test and CI story, and the one-command demo;
+  - "what I would do next".
+
+It opens with a hero image or GIF of the app. It passes the UX review (`product-content`) on the screenshots and the `portfolio` review on the text, and it merges only after the owner approves it.
+
 **Deliverables:**
 - `README.md`: the pitch, prerequisites, the one-command demo, scope and disclaimer, the Mermaid diagrams, the before/after table with test IDs, the test matrix, "Deliberately not built" and "What I would do next";
 - `docs/architecture.md`, `before-after.md`, `SECURITY.md`, `OPERATIONS.md` and `walkthrough.md`, which walks through E2E-01 and E2E-02 step by step;
@@ -1422,7 +1432,7 @@ Then a review record URL must show every reviewer passing, and the owner approve
 
 | Scope | Base | With 35% buffer |
 |---|---|---|
-| Core (phases 0 to 9, 10a, 11), including the 9.0 public-repo gate | 64 h | about 86 h |
+| Core (phases 0 to 9, 10a, 11), including the 9.0 public-repo gate and the README requirement | 67 h | about 90 h |
 | D10 option 2 (Stripe test mode) | not chosen (D10 = record-only) | |
 | Phase 10b | dropped (D3) | |
 | Phase 12 | +4 h | +5 h |
@@ -1541,6 +1551,7 @@ Then a review record URL must show every reviewer passing, and the owner approve
 - [ ] DATA-02 passes: no card, payout, handle or tip columns, and the only money columns are the three grocery-share `*_cents` columns.
 - [ ] CONTRIB-01..12 pass, and the no-profit CHECK exists in the migrated schema (`share_per_seat_cents * capacity <= grocery_estimate_cents`).
 - [ ] In demo mode every page shows the banner. `/safety` and `noindex` are always present. BOOK-02 and MENU-05 pass.
+- [ ] The README has a "wow" hero (an image or GIF of the app), speaks to users and to developers and hiring teams, and passed the UX and portfolio reviews (owner requirement, 2026-11-18).
 - [ ] The README has the pitch, the prerequisites, the one-command demo, a Mermaid diagram that matches `compose.yaml`, the before/after table with test IDs, the 8 named screenshots, the walkthrough, "Why this is a demo", "Deliberately not built" and "What I would do next".
 - [ ] The Mermaid diagrams in the README and in `docs/architecture.md` render through the pinned mermaid-cli without error.
 - [ ] `docs/before-after.md` has the static "before" screenshot and the exploit explanation next to the AUTH-07 result. If 10b ships, `exploit-demo.sh` shows the bypass live.

@@ -1,11 +1,26 @@
 #!/usr/bin/env bash
 # Ops checks (plan 7.4). THEY DESTROY LOCAL DEMO DATA (docker compose down -v).
-# Usage: scripts/ops-checks.sh ops_02 ops_03   (no args = all implemented checks)
+# Usage: scripts/ops-checks.sh ops_01 ops_02 ops_03   (no args = all)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-checks=("$@"); [ "${#checks[@]}" -gt 0 ] || checks=(ops_02 ops_03)
+checks=("$@"); [ "${#checks[@]}" -gt 0 ] || checks=(ops_01 ops_02 ops_03)
 pass() { echo "ops: PASS $1"; }
 fail() { echo "ops: FAIL $1" >&2; exit 1; }
+
+ops_01() { # seeded data persists across down/up without -v
+  local before after code
+  make demo >/dev/null
+  before="$(docker compose exec -T web python -c 'import django; django.setup()
+from meals.models import Offering; print(Offering.objects.count())')"
+  docker compose down >/dev/null 2>&1
+  make demo >/dev/null
+  after="$(docker compose exec -T web python -c 'import django; django.setup()
+from meals.models import Offering; print(Offering.objects.count())')"
+  code="$(docker compose ps -a --format json migrate | jq -rs '.[0].ExitCode')"
+  [ "${before}" -ge 10 ] && [ "${before}" = "${after}" ] || fail "OPS-01 offerings ${before} -> ${after}"
+  [ "${code}" = "0" ] || fail "OPS-01 migrate exit=${code}"
+  pass "OPS-01 ${after} offerings persisted across down/up, migrate exit 0"
+}
 
 ops_02() { # losing the secrets volume with data present fails loudly, and down -v recovers
   make demo >/dev/null
@@ -42,8 +57,7 @@ ops_03() { # CSRF works on a non-default published port with no CSRF_TRUSTED_ORI
 
 for c in "${checks[@]}"; do
   case "${c}" in
-    ops_02|ops_03) "${c}" ;;
-    ops_01) fail "OPS-01 needs seed data (phase 2)" ;;
+    ops_01|ops_02|ops_03) "${c}" ;;
     *) fail "unknown check ${c}" ;;
   esac
 done
