@@ -213,7 +213,7 @@ AI menu import (plan D4, option 1). It is off by default (`CC_AI_ENABLED=false`)
 
 ### Data sent
 
-Only the pasted text, plus a fixed system prompt. No name, email, campus or id. The text is not stored and is never logged. A test checks the request arguments (AI-02).
+Only the pasted text, plus a fixed system prompt. No name, email, campus or id. This site does not store the text and never logs it. Anthropic receives it and may keep it for a limited time under its own terms, and the privacy page and the paste screen say so. The owner has not yet reviewed those terms (see the runbook's "Before you turn it on"). A test checks the request arguments (AI-02).
 
 ### Failure modes
 
@@ -221,6 +221,7 @@ Only the pasted text, plus a fixed system prompt. No name, email, campus or id. 
 |---|---|---|
 | Flag off | 404 for every verb, for everyone | nothing, and the SDK is never imported (AI-01) |
 | More than 4,000 characters | A validation error, and no API call (AI-04) | nothing |
+| More than 5 drafts in 10 minutes, or 20 in a day, for one cook (`menuparse.views.DRAFT_LIMITS`, AI-06) | A friendly message with the manual link (HTTP 429), and no API call. The counters live in the `ratelimit` cache and fail closed | `menu draft blocked: rate_limited`, the limit name and the user id |
 | No key, network error, timeout, 4xx or 5xx, any other exception | "Drafting a menu is not available right now", with a link to the manual form | model id, request id, error class |
 | `stop_reason` is `refusal` | A refusal message, with the manual link | model id, request id, `refusal` |
 | Output does not parse, has a value outside the enums, or has no dishes | A "could not use" or "no dishes" message, with the manual link | model id, request id, error class |
@@ -253,4 +254,4 @@ The allowed values come from `meals.models` (`MealType`, `Course`, `ALLERGENS`, 
 | — | `ANTHROPIC_API_KEY` is not in `compose.yaml` | CHK-06 bans a non-empty secret value in the file. The runbook shows an override file that mounts a key file and sets `ANTHROPIC_API_KEY_FILE` |
 | — | The review page asks for one allergen confirmation for the whole draft, not one per dish | The plan's AI-05 says "the confirmation". Every dish is still checked by `MenuItemForm` rules |
 | — | A `CC_AI_ENABLED` template variable from `core.context_processors.demo` | One place decides whether the kitchen link and the privacy line show |
-| The image scan runs Trivy with its default secret rules | `docker/trivy-secret.yaml` allows one path: the Anthropic SDK's `types/beta` and `resources/beta` modules | Their docstrings quote the literal `{"type": "service_account"}`, which Trivy's `gcp-service-account` rule reports as CRITICAL. It is documentation in a pinned third-party package. Every other path is still scanned |
+| The image scan runs Trivy with its default secret rules | `docker/trivy-secret.yaml` allows one anchored path (`^opt/venv/lib/python3\.14/site-packages/anthropic/(types\|resources)/beta/`): the Anthropic SDK's `types/beta` and `resources/beta` modules | Their docstrings quote the literal `{"type": "service_account"}`, which Trivy's `gcp-service-account` rule reports as CRITICAL. It is documentation in a pinned third-party package. Every other path is still scanned |
