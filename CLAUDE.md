@@ -11,6 +11,12 @@ The diner **chips in toward the groceries** in one of three ways:
 
 This supplements the food budget of a student who likes to cook. It is cost-sharing, not selling meals for profit.
 
+## Current state (2026-11-19)
+
+- Phases 0 to 10a and phase 12 are merged to `main`. Phase 10b (the live legacy harness) was dropped (D3).
+- Phase 11 (the README, the screenshots and the docs) is on the branch `phase-11-portfolio`. It merges only after the owner approves the README.
+- The AI menu import (phase 12) is off by default and has never called the real API. Never add a test or a CI step that calls it.
+
 ## Source of truth
 
 - [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md), revision 3, holds:
@@ -67,7 +73,9 @@ Versions were checked on 2026-11-18. Verify them again when a phase starts. Neve
   - The app records grocery contributions and never handles money (D10).
   - A no-profit CHECK caps shares at the grocery estimate.
   - DATA-02 bans card, payout and handle columns.
-- **Commands (from phase 1 on):** `make demo`, `make test`, `make e2e`, `make lint`, `make sast`, `make smoke`, `make reseed`, `make deploy-check` (plan 6.3).
+- **Commands:** `make demo`, `make test`, `make e2e`, `make lint`, `make sast`, `make smoke`, `make reseed`, `make deploy-check` (plan 6.3).
+  - `make screenshots` recaptures the README and walkthrough pictures and the hero GIF. It needs the running demo and reseeds it.
+  - `make docs-check` checks the docs' links, images and alt text, then renders every Mermaid diagram.
 
 ## `legacy/` rules
 
