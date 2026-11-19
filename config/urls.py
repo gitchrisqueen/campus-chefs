@@ -17,5 +17,6 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("", include("meals.urls")),
     path("", include("bookings.urls")),
+    path("", include("menuparse.urls")),
     path("admin/", admin.site.urls),
 ]
