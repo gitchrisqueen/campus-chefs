@@ -6,7 +6,8 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 
 - Docker Engine with Compose v2. Phase 1 was tested on Engine 29.9.3 with Compose v5.7.0 (`docs/architecture.md`).
 - `make`, `curl` and `jq`.
-- About 3 GB of free disk space. The runtime image is 173 MB; the test image with Chromium is 1.92 GB.
+- About 3 GB of free disk space. The runtime image is 175 MB; the test image with Chromium is 1.92 GB.
+- For `make sast` only: `uv` on the host. For `make screenshots` only: `exiftool` on the host. `make screenshots` and `make docs-check` also pull two pinned tool images, about 130 MB and 590 MB.
 
 ## Everyday commands
 
@@ -22,6 +23,10 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 | Reseed the demo data | `make reseed` wipes and recreates the synthetic data, timed relative to now. It runs in one transaction, so a failure part-way leaves the old data in place. Staff accounts and their campuses are kept |
 | Check the seeded data | `docker compose exec web python manage.py shell -c "from meals.models import Offering; from bookings.models import Booking, Review; print(Offering.objects.count(), Booking.objects.count(), Review.objects.count())"` prints `16 26 12` on a fresh seed |
 | Run the tests | `make test` (unit and integration), `make e2e` (browser; reseeds first) |
+| Run one test by its plan ID | `make test K="auth_07"`, `make e2e K="e2e_01"` |
+| Lint, static checks and the docs link check | `make lint` |
+| Check the docs | `make docs-check` checks links, image paths and alt text, then renders every Mermaid diagram in `README.md` and `docs/architecture.md` with a pinned mermaid-cli image. Its last line is `render-mermaid: 2 file(s) rendered` |
+| Recapture the README and walkthrough pictures | `make screenshots`, with the demo running. It reseeds, captures `docs/screenshots/after/` and `docs/screenshots/walkthrough/`, rebuilds `hero.gif`, reseeds again and checks every image for metadata. Review the pictures before you commit them: the dates in them move with the day you run it |
 
 ## Admin account
 
@@ -78,6 +83,9 @@ These are set in `compose.yaml` (`x-app-env`). Override them in `.env` or on the
 | Login returns 429 "Too many failed logins for this email" | 5 failed logins for one email within 15 minutes. The lockout also blocks the correct password until the window ends. `docker compose logs web` shows `login locked for key <prefix>` (no email is logged). The counters live in the `cc_ratelimit` cache table | Wait 15 minutes, or clear every counter: `docker compose exec web python manage.py shell -c "from django.core.cache import caches; caches['ratelimit'].clear()"` |
 | `docker compose logs web` shows `rate limiter unavailable` | The `cc_ratelimit` table is missing or the database errored. The limiter fails open, so logins keep working but are not counted | Run `make demo` (`bootstrap_demo` recreates the table with `createcachetable`), then check `docker compose logs migrate` |
 | Port 8000 is in use | Another process holds the port | Run `WEB_PORT=8010 make demo` |
+| `make lint` ends with `check_docs: N failure(s)` | A relative link, image path or heading anchor in `README.md` or `docs/*.md` points at nothing, an image has no alt text, or the container diagram no longer names something in `compose.yaml` | Each line above the summary gives the file, the line and the target. Fix the path, or update the diagram in both `README.md` and `docs/architecture.md` |
+| `make docs-check` fails inside `render-mermaid.sh` | A Mermaid diagram does not parse, or Docker could not pull the mermaid-cli image | Read the parse error printed above the failure and fix the diagram. For a pull failure, check the network and run it again |
+| `make screenshots` stops with a Playwright timeout | The demo is not running, or its data is not the fresh seed the capture expects | Run `make demo`, then `make screenshots` again. It reseeds first |
 | CI fails on "Public-safety denylist" for a pull request from a fork | Fork PRs cannot read the `PUBLIC_DENYLIST_REGEX` secret, so the step fails closed on purpose | A maintainer re-runs the change from a branch in this repository |
 
 ## Rollback

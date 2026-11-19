@@ -20,6 +20,12 @@ What the captures show:
 
 The captures are made with Chromium from the HTML that PHP 8.5 produces for `welcome.php`. That page only includes other PHP files and prints HTML, so the markup should match what PHP 5 produced. This was read from the source, not checked against a PHP 5 run. The fonts, the form controls and the scrollbars are Chromium's, not those of a 2008 browser.
 
+The same page in the rebuild, at the same two widths:
+
+![The 2026 home page at 1280 px wide: a responsive layout with the headline, an example listing, the three steps and a search box](screenshots/after/home.png)
+
+![The 2026 home page on a 390 px phone screen, in one column with no sideways scroll](screenshots/after/phone-home.png)
+
 The original images the page uses:
 
 | Image | Used for | Size |
@@ -104,7 +110,13 @@ What it asserts:
 - Logging in with the first name in the email field fails. That was the 2008 behaviour from `sqlQueries.php:58`, where the "email" was compared with `first_name`.
 - Logging in with `' OR 1=1 -- ` as the email fails. This is the payload from section 2.
 
-The test name starts with its ID, `test_auth_07_sqli_login_bypass_rejected`, so `make test K="auth_07"` selects it. It is written in phase 3 (plan section 9, phase 3 exit command). **It does not exist in this repository yet, so there is no 2026 test output on this page.** When phase 3 lands, the run URL goes in that phase's PR.
+The test is `test_auth_07_sqli_login_bypass_rejected` in [`accounts/tests/test_legacy_regressions.py`](../accounts/tests/test_legacy_regressions.py). It was committed failing, before the login code existed ([`f1d2f5c`](https://github.com/gitchrisqueen/campus-chefs/commit/f1d2f5c)), and passed once the accounts phase was built. Its name starts with its ID, so this selects it:
+
+```sh
+make test K="auth_07"
+```
+
+The last line of a run on 2026-11-19 was `3 passed, 310 deselected` and a time. It is three cases because the test runs once for each value sent as the email: the first name `Ava`, the payload `' OR 1=1 -- `, and `ava.r@larkspur.example' OR '1'='1`. Each case then sends the payload in the password field as well. Every case must get the normal "Email or password is incorrect" page and no session. All 295 unit and integration tests, AUTH-07 among them, pass on `main` in [CI run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489).
 
 The related checks:
 
@@ -116,7 +128,7 @@ The related checks:
 
 ## 4. Before and after, defect by defect
 
-The numbers in the first column are the plan's, from section 1.3 (`#`, `T`) and the file:line audit in section 12. Rows with no test ID in the last column are "Dropped" or "Replaced" in the plan. Everything in the "2026" column is a planned fix with its test ID. A fix counts as done only when its phase lands and the test passes.
+The numbers in the first column are the plan's, from section 1.3 (`#`, `T`) and the file:line audit in section 12. Rows with no test ID in the last column are "Dropped" or "Replaced" in the plan. Every fix in the "2026" column is built. The tests named in the last column pass in [CI run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489) on `main`; the `CHK` entries are static checks in `make lint`, and SEC-08 is check 4 of `make smoke`.
 
 | Plan ref | 2008 defect (file:line) | 2026 fix | Test or check |
 |---|---|---|---|

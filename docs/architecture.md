@@ -1,6 +1,88 @@
 # Architecture notes
 
-This file records the facts the plan said to confirm during implementation (`docs/MODERNIZATION_PLAN.md`). The full design is in plan sections 2, 5, 6 and 8.
+This page starts with the system as built: the containers, how they start, and the booking state machine. After that it records, phase by phase, the facts the plan said to confirm during implementation and every place the build departed from the plan (`docs/MODERNIZATION_PLAN.md`). The full design is in plan sections 2, 5, 6 and 8.
+
+## Containers, networks and volumes
+
+```mermaid
+flowchart LR
+  browser(["Browser<br/>HTML forms and htmx"])
+
+  subgraph compose["docker compose"]
+    keygen["keygen<br/>one-shot, writes the secrets<br/>network_mode: none"]
+
+    subgraph vols["named volumes"]
+      sdb[("secrets-db")]
+      sowner[("secrets-owner")]
+      sweb[("secrets-web")]
+      pgdata[("pgdata")]
+    end
+
+    subgraph both["networks: frontend + backend"]
+      web["web<br/>gunicorn + Django<br/>DB role campuschefs_app"]
+    end
+
+    subgraph backend["network: backend (internal)"]
+      db[("db<br/>PostgreSQL 18<br/>no published port")]
+      migrate["migrate<br/>one-shot: migrations and seed<br/>DB role campuschefs_owner"]
+      tests["tests<br/>profile test only<br/>pytest and Chromium"]
+    end
+  end
+
+  browser -->|"127.0.0.1:8000"| web
+  web -->|"SQL, rows only"| db
+  migrate -->|"SQL, schema and seed"| db
+  tests -->|"SQL, test database"| db
+  tests -->|"HTTP, browser tests"| web
+  keygen -->|write| sdb
+  keygen -->|write| sowner
+  keygen -->|write| sweb
+  pgdata -.->|"read-only"| keygen
+  db -->|data| pgdata
+  sdb -.->|"read-only"| db
+  sowner -.->|"read-only"| migrate
+  sowner -.->|"read-only"| tests
+  sweb -.->|"read-only"| web
+  sweb -.->|"read-only"| tests
+```
+
+Solid arrows are traffic or writes. Dotted arrows are read-only volume mounts. This is the same diagram as in the README. `scripts/check_docs.py` (part of `make lint`) fails if either copy stops naming a service, network or volume that `compose.yaml` declares.
+
+| Property | `keygen` | `db` | `migrate` | `web` | `tests` |
+|---|---|---|---|---|---|
+| Image | `alpine:3.24` | `postgres:18.7-alpine3.24` | built, `runtime` target | same image as `migrate` | built, `dev` target |
+| Networks | none | `backend` | `backend` | `backend`, `frontend` | `backend` |
+| Published port | none | none | none | `127.0.0.1:${WEB_PORT:-8000}` | none |
+| Volumes | `secrets-db`, `secrets-owner`, `secrets-web` (write); `pgdata` (read-only) | `pgdata`; `secrets-db` (read-only) | `secrets-owner` (read-only) | `secrets-web` (read-only) | `secrets-owner`, `secrets-web` (read-only) |
+| Bind mounts | `docker/keygen.sh` (read-only) | `docker/postgres-init/` (read-only) | none | none | the repository at `/src` (read-only); `test-results/` and `docs/screenshots/` (writable) |
+| Starts after | nothing | `keygen` exited 0 | `db` healthy | `migrate` exited 0 | `db` healthy |
+| Database role | none | `postgres` superuser, used only for init | `campuschefs_owner` | `campuschefs_app` | `campuschefs_owner`, and `campuschefs_app` for SEC-04 and SEC-05 |
+| Hardening | no network, all capabilities dropped except `CHOWN` and `DAC_OVERRIDE`, `no-new-privileges` | `no-new-privileges`, memory and process limits | read-only root, `/tmp` as tmpfs, all capabilities dropped, `no-new-privileges` | as `migrate`, plus memory and process limits | none; it is a development tool |
+
+`keygen` and `migrate` run once and exit. `web` restarts unless stopped. `tests` exists only under `--profile test`.
+
+## Booking state machine
+
+`bookings/services.py` holds the five allowed transitions in one table, `ALLOWED`, with who may take each one. Every transition runs in one transaction under a row lock on the meal.
+
+```mermaid
+stateDiagram-v2
+  [*] --> requested: diner asks for 1 to 4 seats
+  requested --> confirmed: cook, before the meal is served
+  requested --> declined: cook
+  requested --> cancelled: diner, cook or system, before the meal is served
+  confirmed --> cancelled: diner before the cutoff, cook or system before the meal is served
+  confirmed --> completed: cook, after the meal is served
+  declined --> [*]
+  cancelled --> [*]
+  completed --> [*]
+```
+
+- **A request is accepted only if** the meal is open, the cutoff has not passed, the diner is not the cook, the diner has no other active booking for it, and enough seats are left. The seats are counted under the lock (BOOK-06).
+- **The system actor** cancels bookings when the cook cancels the meal or deletes their account (BOOK-12, ACCT-03).
+- **Status codes follow one rule:** someone who is not the diner or the cook gets 404; a participant who may not take an existing transition gets 403; a transition that does not exist, or one outside its time limit, gets 409 (BOOK-09).
+- **"Received" is not a state.** The cook marking a grocery share received sets a timestamp beside the status (CONTRIB-07).
+- **"Expired" is not stored.** A request still waiting after the meal was served is shown as expired.
 
 ## Phase 1 records (2026-11-18)
 
@@ -52,7 +134,7 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 
 - **OPS-03** now GETs `/login`, POSTs a real login with the CSRF token on port 8010 and expects 302. The script creates a throwaway account (`ops03@ops-check.example`, random password) through the `web` container, because the seeded personas have unusable passwords.
 - **OPS-02** builds the secrets volume name from `${COMPOSE_PROJECT_NAME:-campuschefs}`, so a check run under another project name never removes the default stack's volume.
-- **Failed-login limiter** (`core/ratelimit.py`): a failed login is a POST that re-renders the form (200). A successful login (302) clears the counter. Each failure is written with `cache.set(..., 15 min)`, not `cache.incr`, because `BaseCache.incr` re-sets the key with the default 5-minute timeout. The known gaps (not atomic across workers; anyone who knows an email can lock it for 15 minutes) are in the module docstring until `SECURITY.md` lands in phase 11.
+- **Failed-login limiter** (`core/ratelimit.py`): a failed login is a POST that re-renders the form (200). A successful login (302) clears the counter. Each failure is written with `cache.set(..., 15 min)`, not `cache.incr`, because `BaseCache.incr` re-sets the key with the default 5-minute timeout. The known gaps (not atomic across workers; anyone who knows an email can lock it for 15 minutes) are described in [`SECURITY.md`](SECURITY.md), under "The failed-login limiter".
 
 ## Phase 3 deviations from the plan
 
@@ -199,3 +281,34 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | The booking redirect helper passes `require_https=request.is_secure()` | An `http://` `next` on an HTTPS request is no longer followed |
 | — | `ReviewAdmin` makes `booking` and `rating` read-only; the hide action writes an admin history entry and a message | Staff may moderate a review but not rewrite it, and the action leaves a trail |
 | — | Supporting tests without a plan ID in `core/tests/test_phase9_hardening.py` | They cover the items above |
+
+## Phase 11 records (2026-11-19)
+
+### Tools pinned for the docs
+
+| Tool | Pin | How it was checked |
+|---|---|---|
+| mermaid-cli | `minlag/mermaid-cli:12.0.1@sha256:18938e53497376d524e04b1fc0bf7b6d61a491ce9ff7032bb2855d57155acb10` | `docker buildx imagetools inspect minlag/mermaid-cli:12.0.1` gave this digest and an image creation time of 2026-11-02 (17 days before the check, so past the 14-day rule). Inside the image, `mmdc --version` prints `12.0.0` and the bundled `mermaid` package is 12.2.0. The npm registry has no `@mermaid-js/mermaid-cli` 12.0.1; the tag is the Docker image's own |
+| ffmpeg (hero GIF) | `mwader/static-ffmpeg:9.0.2-1@sha256:f5d100184884eb3e82b0eb14bb5ebf98da99826ac824989720297fb9ef21c822` | `docker buildx imagetools inspect mwader/static-ffmpeg:9.0.2-1` gave this digest and a creation time of 2026-10-09 |
+
+- **Mermaid render check:** `scripts/render-mermaid.sh` (or `make docs-check`) runs the plan's phase 11 loop for `README.md` and `docs/architecture.md` with `docs/puppeteer.json`. A diagram that does not parse makes it exit 1; this was tried with a deliberately broken diagram. The output goes to `test-results/`, which is git-ignored.
+- **`docs/puppeteer.json`** repeats the image's own config: the path of its Chromium and `--no-sandbox`. Chromium's sandbox cannot start inside this unprivileged container. The container renders only this repository's own Markdown.
+- **Docs link check:** `scripts/check_docs.py` checks every relative link, image path and heading anchor in `README.md` and `docs/*.md`, that every image has alt text, and that the container diagram names everything in `compose.yaml`. It needs no network, so it does not fetch external URLs. It runs in `make lint`, and so in CI.
+- **Pictures:**
+  - `scripts/capture_screenshots.py --after` writes 12 PNGs to `docs/screenshots/after/`: the 8 the plan names, at 1280 px, and 4 more at 390 px. It only reads pages.
+  - `--walkthrough` plays E2E-01 and E2E-02 and writes 14 PNGs to `docs/screenshots/walkthrough/`. It writes data, so `make screenshots` reseeds before and after it.
+  - `scripts/build-hero-gif.sh` joins walkthrough pictures 01 to 08 into `docs/screenshots/after/hero.gif` (1120 x 700, 128 colours, no dithering, about 0.4 MB). The frames are not edited.
+  - `scripts/check-image-metadata.sh docs/screenshots` covers PNG and GIF files and reports every image clean.
+- **Image size:** `campuschefs:local` is 175 MB at this phase (`docker images`); `campuschefs:dev` is still 1.92 GB.
+
+## Phase 11 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| The exit block runs mermaid-cli in an inline loop | The same command lives in `scripts/render-mermaid.sh`, behind `make docs-check` | One place for the pinned image. The inline loop from the plan still works |
+| The Mermaid render is a phase exit | It is not a CI step | The image is about 590 MB to pull on every run. CI runs the link, alt-text and diagram-name check through `make lint` instead |
+| 8 named screenshots | Those 8, plus `phone-search`, `phone-offering`, `phone-booking` and `phone-kitchen`, plus the 14 walkthrough pictures | The owner asked for the user story at phone and desktop width, and `docs/walkthrough.md` needs a picture per step |
+| A demo GIF is a stretch goal (plan 1.4) | Built, as the README hero | The owner asked for a hero that shows the real app |
+| `cook.png` is "a cook page" | It shows a seeded cook who has reviews, not the demo cook | The demo cook has no reviews until E2E-02 runs, and the picture should show the two-part reviews |
+| — | The diner's booking page no longer ends "with Marcus B.." | The name already ends in a full stop. Found while checking the screenshots |
+| `SECURITY.md` documents `.edu` verification for a real deployment (plan 1.4) | It lists the missing email verification as a known gap, and the README lists verified campus email first under "What I would do next" | Same content, in the two places a reader looks |
