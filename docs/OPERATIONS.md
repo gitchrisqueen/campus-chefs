@@ -6,7 +6,7 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 
 - Docker Engine with Compose v2. Phase 1 was tested on Engine 29.9.3 with Compose v5.7.0 (`docs/architecture.md`).
 - `make`, `curl` and `jq`.
-- About 3 GB of free disk space. The runtime image is 175 MB; the test image with Chromium is 1.92 GB.
+- About 3 GB of free disk space. The runtime image is 207 MB; the test image with Chromium is 1.97 GB.
 - For `make sast` only: `uv` on the host. For `make screenshots` only: `exiftool` on the host. `make screenshots` and `make docs-check` also pull two pinned tool images, about 130 MB and 590 MB.
 
 ## Everyday commands

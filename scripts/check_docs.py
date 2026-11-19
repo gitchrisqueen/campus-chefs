@@ -3,6 +3,9 @@
 - Every relative link and image path points at a file or folder in the repository.
 - Every `#anchor` matches a heading in the file it points at (GitHub's heading ids).
 - Every image has alt text.
+- Every `<source srcset>` inside a `<picture>` points at a file in the repository.
+- Every animated image (`.gif`) sits inside a `<picture>` whose
+  `<source media="(prefers-reduced-motion: reduce)">` offers a still picture.
 - The first Mermaid diagram in README.md and in docs/architecture.md names every service,
   network and volume that compose.yaml declares.
 
@@ -20,7 +23,10 @@ ROOT = Path(__file__).resolve().parent.parent
 FENCE = re.compile(r"^(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 MD_LINK = re.compile(r"(!?)\[((?:[^\]\\]|\\.)*)\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
-HTML_TAG = re.compile(r"<(img|a)\b([^>]*)>", re.I)
+HTML_TAG = re.compile(r"<(img|a|source)\b([^>]*)>", re.I)
+PICTURE = re.compile(r"<picture\b.*?</picture>", re.S | re.I)
+GIF_IMAGE = re.compile(r"(?:\bsrc\s*=\s*\"|!\[[^\]]*\]\(\s*<?)([^\")\s>]+\.gif)\b", re.I)
+REDUCED_MOTION = re.compile(r"prefers-reduced-motion\s*:\s*reduce", re.I)
 ATTR = re.compile(r"([a-zA-Z-]+)\s*=\s*\"([^\"]*)\"")
 HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 
@@ -58,6 +64,30 @@ def anchors(path: Path) -> set[str]:
     return found
 
 
+def srcset_paths(srcset: str) -> list[str]:
+    """The URLs of a srcset value, without their width or density descriptors."""
+    return [part.split()[0] for part in srcset.split(",") if part.strip()]
+
+
+def offers_still(picture: str) -> bool:
+    """True if a <source> for readers who ask for reduced motion points at pictures that do not move."""
+    for tag, attrs in HTML_TAG.findall(picture):
+        found = dict((k.lower(), v) for k, v in ATTR.findall(attrs))
+        paths = srcset_paths(found.get("srcset", ""))
+        if tag.lower() == "source" and REDUCED_MOTION.search(found.get("media", "")) and paths:
+            if not any(p.lower().endswith(".gif") for p in paths):
+                return True
+    return False
+
+
+def check_motion(path: Path, failures: list[str]) -> None:
+    """Every GIF must sit inside a <picture> that offers a still (WCAG 2.2.2, motion over 5 seconds)."""
+    text = "\n".join(INLINE_CODE.sub("", line) for _, line in prose_lines(path))
+    uncovered = PICTURE.sub(lambda m: "" if offers_still(m.group(0)) else m.group(0), text)
+    for raw in GIF_IMAGE.findall(uncovered):
+        failures.append(f"{path.relative_to(ROOT)}: animated image without a reduced-motion still: {raw}")
+
+
 def check_file(path: Path, failures: list[str]) -> int:
     rel = path.relative_to(ROOT)
     checked = 0
@@ -91,6 +121,9 @@ def check_file(path: Path, failures: list[str]) -> int:
                     failures.append(f"{rel}:{number} <img> without alt text")
                 if "src" in found:
                     target(number, found["src"])
+            elif tag.lower() == "source":
+                for candidate in srcset_paths(found.get("srcset", "")):
+                    target(number, candidate)
             elif "href" in found:
                 target(number, found["href"])
     return checked
@@ -127,6 +160,8 @@ def main() -> int:
     failures: list[str] = []
     files = [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]
     checked = sum(check_file(f, failures) for f in files)
+    for f in files:
+        check_motion(f, failures)
     for diagram in (ROOT / "README.md", ROOT / "docs" / "architecture.md"):
         check_diagram(diagram, failures)
     for failure in failures:

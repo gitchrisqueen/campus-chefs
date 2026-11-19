@@ -24,6 +24,7 @@ The demo holds no real personal data and no money. The threats that still matter
 | Script or markup injection through names, bios, dish text, terms and reviews | Almost every page shows text typed by another user |
 | A secret or a real name being committed | The repository is public and its history is permanent |
 | Someone deploying this for real students | Food sharing has legal and allergen risk that the code cannot remove |
+| The optional AI menu import, when someone turns it on: pasted text that steers the model, a reply that carries markup or wrong allergens, pasted text leaving the machine, a leaked API key, and a bill run up by repeated requests | It is the only feature that sends data to a third party and the only one that can cost money. It is off by default |
 
 ## What is defended
 
@@ -48,6 +49,7 @@ The demo holds no real personal data and no money. The threats that still matter
 | Containers | `web` and `migrate`: user id 10001, read-only root filesystem, all capabilities dropped, `no-new-privileges`. `db` has no published port and sits on an internal network. `web` is published on `127.0.0.1` only | smoke checks 3 and 4, `compose.yaml` |
 | Local-HTTP guard | Plain HTTP is allowed only when every allowed host is a loopback name. Any other host with `CC_DEMO_LOCAL_HTTP=true` stops the app at start | SEC-09 |
 | Errors and logs | `DEBUG` is off in the image. Errors show a generic page. Audit lines carry ids only, never a name, an email or free text. A lockout is logged with a hash prefix, not the email | LEG-06, AUTH-05 |
+| AI menu import (optional, off by default) | With `CC_AI_ENABLED=false` the route returns 404 and the SDK is never imported. With it on: only the pasted text and a fixed system prompt are sent; the reply must fit a schema built from the app's own allowed values and is validated twice; every value is escaped on the page; nothing is saved until the cook confirms the allergens; each cook gets 5 drafts per 10 minutes and 20 per day, and the counter fails closed. The key is read from a file outside the repository. Logs carry the model id, the request id and the error class, never the pasted text | AI-01 to AI-07, run with a test double in place of the API client |
 | Supply chain | `uv.lock` is committed and installed with `--locked`. Actions are pinned by commit SHA and images by digest. CI runs pip-audit, bandit and a Trivy scan of the built image. Dependabot watches GitHub Actions, Docker, Compose and Python packages | CHK-08, `.github/workflows/ci.yml` |
 | The public repository | gitleaks scans the full history in CI. A denylist scan checks the tree, file names, history and commit messages, and prints only locations. GitHub secret scanning with push protection is on. `legacy/` is pinned by checksum and guarded by a CI gate | SEC-06, `legacy-support/SHA256SUMS` |
 
@@ -62,7 +64,7 @@ The limiter is `core/ratelimit.py`. It counts failed logins per email in a datab
 - **It can be used to lock someone out.** Anyone who knows an email address can send five wrong passwords and block that account for 15 minutes, including for its owner with the right password. The limit is per email and not per IP on purpose: behind Docker's port publishing every client can arrive from one gateway address, so a per-IP limit would lock out everyone together. It never reads `X-Forwarded-For`.
 - **The count is not atomic.** Each attempt reads the counter and then writes it. With three gunicorn workers, attempts that arrive at the same moment can each read the same number, so an attacker can get a few more than five tries per window.
 - **It fails open.** If the cache table is missing or the database errors, logins keep working and are not counted. The log says `rate limiter unavailable`.
-- **Only logins are limited.** Registration, search and booking have no rate limit.
+- **Registration, search and booking have no rate limit.** Failed logins are limited here. The optional menu import has its own per-cook limit, described below.
 
 ### Accounts
 
@@ -77,6 +79,21 @@ The limiter is `core/ratelimit.py`. It counts failed logins per email in a datab
 - **Allergen and dietary labels are whatever the cook typed.** The app makes the cook confirm each list, locks it while a booking is active (MENU-05) and makes the diner tick that they read it (BOOK-02). None of that checks the food.
 - **The no-profit rule trusts the cook's grocery estimate.** There are no receipts.
 - **"Received" is the cook's word.** The app records that the cook marked a share received. It has no proof of payment and no dispute process.
+
+### The AI menu import
+
+The import is off by default (`CC_AI_ENABLED=false`). These gaps apply only when someone turns it on. [OPERATIONS.md](OPERATIONS.md#ai-menu-import-optional) has the steps and the checks to run first.
+
+- **It has never run against the real API.** No test makes a network call: a test double stands in for the API client. The default model id comes from the API documentation and was not checked with a live call. The first real request is the pre-flight in the runbook.
+- **Prompt injection is contained, not prevented.** A pasted menu can hold text that tries to give the model instructions. The system prompt tells the model to treat the text as data, but that is not a guarantee. What limits the damage:
+  - The reply must fit the schema. One value outside it rejects the whole draft (AI-03).
+  - The draft is shown in an editable form with every value escaped, and nothing is saved until the cook ticks the allergen confirmation (AI-02, AI-05).
+  - The model has no tools and no access to the database.
+
+  So the worst outcome is a wrong draft, for example a missing allergen. A cook who confirms a draft without reading it saves that mistake, as a cook who mistypes a dish by hand does.
+- **Pasted text goes to a third party.** Anthropic receives every pasted menu and may keep it for a limited time under its own terms. Those terms and the retention settings have not been reviewed for this project. The paste screen and `/privacy` say what is sent and tell the cook not to paste names, phone numbers, addresses or health details (AI-07). Nothing stops a cook who pastes them anyway. Deleting an account does not remove text already sent.
+- **The API key is a file that the `web` container can read.** It is mounted from the host by a local override file that is not committed. It is not one of the secrets that `keygen` generates, and it is never a Django setting or a value in `compose.yaml`. A takeover of the `web` process can read it. Rotating or revoking it is done in the provider's console.
+- **The cost limit is per cook account, and there is no site-wide cap.** With registration open, someone can create several cook accounts and get 20 drafts a day on each. The count is not atomic across the three gunicorn workers, so requests that arrive at the same moment can slip a few past a limit. Set a monthly spend limit in the provider's console, as the runbook says, and set `CC_REGISTRATION_OPEN=false` on anything reachable from outside your machine.
 
 ### Operations
 

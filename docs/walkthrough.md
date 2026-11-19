@@ -108,6 +108,6 @@ That is the end of E2E-02. The test asserts both of the cook's messages, the Com
 make e2e K="e2e_01 or e2e_02"
 ```
 
-The last line reads `2 passed, 311 deselected` and a time.
+The last line reads `2 passed, 356 deselected` and a time.
 
 After clicking through by hand, run `make reseed` to put the demo data back. `make screenshots` does that for you when it recaptures these pictures.

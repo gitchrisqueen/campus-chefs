@@ -293,13 +293,14 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 
 - **Mermaid render check:** `scripts/render-mermaid.sh` (or `make docs-check`) runs the plan's phase 11 loop for `README.md` and `docs/architecture.md` with `docs/puppeteer.json`. A diagram that does not parse makes it exit 1; this was tried with a deliberately broken diagram. The output goes to `test-results/`, which is git-ignored.
 - **`docs/puppeteer.json`** repeats the image's own config: the path of its Chromium and `--no-sandbox`. Chromium's sandbox cannot start inside this unprivileged container. The container renders only this repository's own Markdown.
-- **Docs link check:** `scripts/check_docs.py` checks every relative link, image path and heading anchor in `README.md` and `docs/*.md`, that every image has alt text, and that the container diagram names everything in `compose.yaml`. It needs no network, so it does not fetch external URLs. It runs in `make lint`, and so in CI.
+- **Docs link check:** `scripts/check_docs.py` checks every relative link, image path, `<source srcset>` path and heading anchor in `README.md` and `docs/*.md`, that every image has alt text, and that the container diagram names everything in `compose.yaml`. It needs no network, so it does not fetch external URLs. It runs in `make lint`, and so in CI.
+- **Reduced motion:** the README hero is a `<picture>`. Its `<source media="(prefers-reduced-motion: reduce)">` gives readers who ask for reduced motion the still `walkthrough/01-home.png` in place of the 14-second loop. This is the project's answer to WCAG 2.2.2, which covers motion that starts by itself and lasts more than 5 seconds. A reader without that setting still gets the loop, with the still walkthrough linked directly under it. `check_docs.py` fails on any `.gif` in the docs that has no such still.
 - **Pictures:**
   - `scripts/capture_screenshots.py --after` writes 12 PNGs to `docs/screenshots/after/`: the 8 the plan names, at 1280 px, and 4 more at 390 px. It only reads pages.
   - `--walkthrough` plays E2E-01 and E2E-02 and writes 14 PNGs to `docs/screenshots/walkthrough/`. It writes data, so `make screenshots` reseeds before and after it.
   - `scripts/build-hero-gif.sh` joins walkthrough pictures 01 to 08 into `docs/screenshots/after/hero.gif` (1120 x 700, 128 colours, no dithering, about 0.4 MB). The frames are not edited.
   - `scripts/check-image-metadata.sh docs/screenshots` covers PNG and GIF files and reports every image clean.
-- **Image size:** `campuschefs:local` is 175 MB at this phase (`docker images`); `campuschefs:dev` is still 1.92 GB.
+- **Image size:** after the merge of phase 12, `campuschefs:local` is 207 MB and `campuschefs:dev` is 1.97 GB (`docker images`). Before that merge they were 175 MB and 1.92 GB; the difference is the phase 12 dependencies.
 
 ## Phase 11 deviations from the plan
 
@@ -311,6 +312,7 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | A demo GIF is a stretch goal (plan 1.4) | Built, as the README hero | The owner asked for a hero that shows the real app |
 | `cook.png` is "a cook page" | It shows a seeded cook who has reviews, not the demo cook | The demo cook has no reviews until E2E-02 runs, and the picture should show the two-part reviews |
 | — | The diner's booking page no longer ends "with Marcus B.." | The name already ends in a full stop. Found while checking the screenshots |
+| The README opens with a hero image or GIF | It is an `<img>` inside `<picture>`, with a still for reduced motion | The loop runs for more than 5 seconds and a GIF cannot be paused, so a reader who asks for reduced motion gets a still |
 | `SECURITY.md` documents `.edu` verification for a real deployment (plan 1.4) | It lists the missing email verification as a known gap, and the README lists verified campus email first under "What I would do next" | Same content, in the two places a reader looks |
 
 ## Phase 12 records (2026-11-19)

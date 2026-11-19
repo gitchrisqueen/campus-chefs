@@ -4,9 +4,14 @@
 
 **Home-cooked meals, made by students who love to cook.**
 
-![Animated walk through a booking in the running demo, eight screens in a loop: the home page; a live search for "pancakes" with one result; the Pancake Breakfast page with its dishes and allergens; the request form with the $4.00 grocery share picked and the allergen box ticked; "Request sent"; the cook's view with Confirm and Decline buttons; "Booking confirmed"; and the diner's confirmed booking, which reads "Grocery share: $4.00, pay the cook in person".](docs/screenshots/after/hero.gif)
+<p>
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="docs/screenshots/walkthrough/01-home.png">
+    <img src="docs/screenshots/after/hero.gif" alt="A booking in the running demo, shown as eight screens in a loop: the home page; a live search for &quot;pancakes&quot; with one result; the Pancake Breakfast page with its dishes and allergens; the request form with the $4.00 grocery share picked and the allergen box ticked; &quot;Request sent&quot;; the cook's view with Confirm and Decline buttons; &quot;Booking confirmed&quot;; and the diner's confirmed booking, which reads &quot;Grocery share: $4.00, pay the cook in person&quot;. With reduced motion turned on, only the first screen, the home page, is shown.">
+  </picture>
+</p>
 
-The loop above is eight unedited screens of the running demo and lasts about 14 seconds. [The walkthrough](docs/walkthrough.md) shows each screen as a still picture.
+[The walkthrough](docs/walkthrough.md) shows each of these screens as a still picture. The loop above is eight unedited screens of the running demo and lasts about 14 seconds. If your system is set to reduce motion, you get a still of the first screen instead.
 
 Campus Chefs matches students who want a home-cooked meal with students who like to cook. A cook posts a meal: the dishes, the time, the seats and what the groceries cost. A diner asks for a seat and chips in toward those groceries with a share of the cost, an item from the cook's bring list, or terms the two of them agree on. The cook gets help with the grocery bill and never a profit.
 
@@ -126,9 +131,10 @@ Sharing food between students carries legal and health risk that an app cannot r
 In short, with the evidence for each line:
 
 - **A legacy rescue with proof.** The original is 1,003 lines of PHP whose login could be bypassed with SQL injection. The plan lists 33 defects and 6 TODOs, and each fix that has behaviour names the test that proves it ([before and after](#before-and-after)).
-- **313 tests, green on `main`.** 295 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.61% statement coverage against a 90% gate ([run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489)).
+- **358 tests, green on `main`.** 340 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.19% statement coverage against a 90% gate ([run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607)).
 - **One command to run.** Four containers, secrets generated at first start, nothing secret in the repository ([architecture](#architecture)).
 - **Security decisions with their costs written down.** A strict content security policy, one secrets volume per service, a database role that cannot change the schema, and rules enforced by the database ([security and data decisions](#security-and-data-decisions)).
+- **An AI feature behind a flag.** An optional menu import that is off by default, sends only the pasted text, and treats the model's reply as untrusted input ([AI menu import](#ai-menu-import-optional)).
 - **Scope held on purpose.** No payments, no messaging, no uploads, and the reasons ([deliberately not built](#deliberately-not-built)).
 
 | Layer | What it uses |
@@ -138,6 +144,7 @@ In short, with the evidence for each line:
 | Runtime | Docker Compose: gunicorn behind a loopback port, WhiteNoise for static files |
 | Tests | pytest, pytest-django, Playwright with Chromium, axe-core 4.14.0 |
 | CI | GitHub Actions, one job |
+| Optional menu import | The anthropic SDK 2.5.0 and pydantic 2.14.2. The SDK is installed in the image and imported only when the flag is on and a cook submits a menu |
 
 ### Architecture
 
@@ -236,13 +243,26 @@ Each row is a choice, what it protects and what it costs. [docs/SECURITY.md](doc
 | **Another user's object returns 404, not 403** | The response does not confirm that the object exists | A real permission bug looks like a missing page, so the authorization tests check both cases | AZ-02, AZ-03 |
 | **Failed logins are limited per email, not per IP** | Behind Docker's port publishing every client can share one address, so a per-IP limit would lock out everyone at once | Someone who knows an email can lock that account for 15 minutes | AUTH-05 |
 
+### AI menu import (optional)
+
+A cook can paste a menu as plain text and get a draft of the dishes to edit. The feature is off by default, and the demo above runs without it.
+
+- **Off means absent.** With `CC_AI_ENABLED=false`, the default, `/kitchen/import` returns 404 for everyone and the SDK is never imported (AI-01).
+- **The flow.** The cook pastes up to 4,000 characters. The reply is validated against a fixed schema whose allowed values come from the app's own dish model, and the draft fills an editable form. Nothing is saved until the cook ticks the allergen confirmation and submits (AI-02, AI-04, AI-05).
+- **What is sent.** Only the pasted text and a fixed system prompt go to Anthropic's Claude API: no name, email, campus or id (AI-02). The paste screen and `/privacy` say so, and tell the cook what not to paste (AI-07).
+- **The reply is untrusted.** A reply with any value outside the schema is rejected whole, and every value is escaped on the page. Text in a pasted menu that tries to give the model instructions can at most produce a wrong draft, which the cook sees and edits before saving (AI-03).
+- **Cost limit.** A cook can ask for 5 drafts in 10 minutes and 20 in a day. Over a limit, no API call is made (AI-06).
+- **Not run against the real API.** Its 45 tests make no network call: a test double stands in for the API client, so CI needs no key and the repository holds none. This code has never sent a request to the real API. The default model id comes from the API documentation and was not checked with a live call.
+
+[docs/OPERATIONS.md](docs/OPERATIONS.md#ai-menu-import-optional) covers what to read before turning it on, the key file, the first live check and each logged error. [docs/SECURITY.md](docs/SECURITY.md#the-ai-menu-import) lists its risks.
+
 ### Tests and CI
 
-The numbers below are from [run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489), the green run on `main` at commit `99527a5`. It took 3 minutes 22 seconds.
+The numbers below are from [run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607), the green run on `main` at commit `4b3ed2e`. It took 3 minutes 36 seconds.
 
-- **295 unit and integration tests** run against PostgreSQL 18 as a role that is not a superuser. There is no SQLite and no mocked database.
+- **340 unit and integration tests** run against PostgreSQL 18 as a role that is not a superuser. There is no SQLite and no mocked database. The menu-import tests use a test double for the external API client and make no network call.
 - **18 browser tests** drive Chromium against the running containers. They cover both halves of the booking story, a keyboard-only registration and booking with a visible focus ring at every stop, no sideways scroll at 320 px, search and booking with JavaScript off, and an axe scan of every main screen in light and dark mode.
-- **Coverage is 98.61%** of 1,507 statements. CI fails below 90%.
+- **Coverage is 98.19%** of 1,713 statements. CI fails below 90%.
 - **Tests are named by plan ID**, so `make test K="auth_07"` runs the login-bypass regression. In the accounts phase the regression tests for the original defects were committed failing, before the code that fixes them ([`f1d2f5c`](https://github.com/gitchrisqueen/campus-chefs/commit/f1d2f5c)).
 
 | ID family | What it covers | Tests | Browser tests |
@@ -259,11 +279,12 @@ The numbers below are from [run 44464655489](https://github.com/gitchrisqueen/ca
 | DATA | Schema constraints, the seed, no payment columns | 19 | |
 | SEC | Security headers, cookies, the database role, deploy check, denylist, demo switches | 11 | |
 | LEG | Regression tests for the original app's defects | 13 | 6 |
+| AI | The optional menu import: the flag, what is sent, bad and hostile replies, the length cap, the allergen confirmation, the rate limit. The plan lists AI-01 to AI-05; AI-06 and AI-07 were added during the build | 45 | |
 | UX and A11Y | Colour contrast of the design tokens, form markup, the axe scan | 7 | 4 |
 | E2E | The six browser journeys | | 6 |
 | HEALTH and OPS | The health endpoint and an idempotent bootstrap | 2 | |
 | No plan ID | Supporting tests that close coverage gaps | 52 | |
-| **Total** | | **295** | **18** |
+| **Total** | | **340** | **18** |
 
 To recount a family, list the tests and filter by prefix. This prints 93:
 
@@ -286,8 +307,8 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 ### How it was built
 
 - **Plan first.** [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) was written before any code: the audit of the 2008 files, the data model, the test catalogue and a phased roadmap. It was reviewed before work started, and its review log (section 13) records 46 findings and what changed for each.
-- **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Nine of the eleven pull request descriptions link a green CI run.
-- **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: the verdicts for #1 to #4 are comments on those pull requests; #5 and #10 describe their design review rounds and the fixes; #11 lists hardening carried over from earlier code reviews. Pull requests #6 to #9 carry no public review record.
+- **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Ten of the twelve pull request descriptions link a green CI run; #3 and #4 do not.
+- **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: each of the twelve merged pull requests carries a summary comment with the number of review rounds, how many reviewers passed and failed in each round, and the final result. Every review took two or three rounds and ended with all reviewers passing, and on eleven of the twelve at least one reviewer failed the first round. The reviewers' full verdicts are kept privately and are not in this repository.
 - **Who did what.** AI coding agents wrote the code from the plan, one builder per phase on its own branch, with a coordinator that integrated and verified the work. I set the scope, made the decisions recorded in plan section 10.3 and approve what is published here.
 
 | Phase | Pull request |
@@ -304,6 +325,7 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 | 7 Reviews | [#9](https://github.com/gitchrisqueen/campus-chefs/pull/9) |
 | 8 Browser tests, accessibility gate, design pass (part 2) | [#10](https://github.com/gitchrisqueen/campus-chefs/pull/10) |
 | 9 Security hardening and coverage | [#11](https://github.com/gitchrisqueen/campus-chefs/pull/11) |
+| 12 Optional AI menu import, off by default | [#12](https://github.com/gitchrisqueen/campus-chefs/pull/12) |
 | 11 This README, the screenshots and the docs | this change |
 
 ### Design and accessibility
@@ -327,13 +349,13 @@ The accessibility gate is part of the browser tests: axe-core with its WCAG 2.0 
 | Full-text search | The seed has 48 dishes. A plain substring match is enough and simpler |
 | Cross-checks between dietary tags and allergens, such as vegan against milk | They are doubtful in the domain itself (honey, gelatin) and would give false assurance. Tags are labelled "cook-declared" |
 | A no-show status, a booking audit table, a cap on open requests per diner | The three-step story does not need them. The timeline comes from timestamps |
-| Rate limits beyond login | The demo is local, and per-IP limits misfire behind Docker's port publishing |
+| Rate limits on registration, search and booking | The demo is local, and per-IP limits misfire behind Docker's port publishing. Only failed logins and the optional menu import are limited |
 | A scheduled dependency-audit workflow | Dependabot and the pip-audit step on every pull request cover it while the repository is active |
 | A recommender that suggests meals | Speculative |
 | A hosted public sign-up | A decision, not a gap: see [why this is a demo](#why-this-is-a-demo) |
 | A live demo of the original login exploit | Running an app with a known login bypass is not worth it. The exploit is explained from the code in [docs/before-after.md](docs/before-after.md) |
 
-The plan listed dark mode and an animated demo as stretch goals. Both were built.
+The plan listed dark mode and an animated demo as stretch goals, and the AI menu import as an optional phase. All three were built.
 
 ## What I would do next
 
@@ -344,7 +366,7 @@ The plan listed dark mode and an animated demo as stretch goals. Both were built
 5. **An atomic failed-login counter,** and a lockout that an outsider cannot trigger for someone else's email.
 6. **Full-text search with an index** once there are more than a few hundred dishes.
 7. **Django 6.2 LTS** when it is released, before 6.1 leaves security support. The plan header records both dates as checked on 2026-11-18.
-8. **A menu import that turns pasted text into a draft menu,** which the cook must still confirm dish by dish. It is the optional phase 12 in the plan and is not built.
+8. **A first live run of the menu import,** after reading the API provider's data terms. Until then the feature stays off, and its API path has been tested only against a test double.
 
 ## More to read
 
@@ -353,7 +375,7 @@ The plan listed dark mode and an animated demo as stretch goals. Both were built
 | [docs/walkthrough.md](docs/walkthrough.md) | The booking story step by step, with a picture of every screen |
 | [docs/architecture.md](docs/architecture.md) | Containers, the booking state machine, versions tested, deviations from the plan |
 | [docs/SECURITY.md](docs/SECURITY.md) | What is defended, what is not, and how to report a problem |
-| [docs/OPERATIONS.md](docs/OPERATIONS.md) | The runbook: commands, admin account, moderation, when it breaks |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | The runbook: commands, admin account, moderation, the optional AI menu import, when it breaks |
 | [docs/before-after.md](docs/before-after.md) | The original code next to the fixes, defect by defect |
 | [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) | Where each original file's job lives now |
 | [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) | The plan, the test catalogue and the decisions |

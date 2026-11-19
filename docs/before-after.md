@@ -116,7 +116,7 @@ The test is `test_auth_07_sqli_login_bypass_rejected` in [`accounts/tests/test_l
 make test K="auth_07"
 ```
 
-The last line of a run on 2026-11-19 was `3 passed, 310 deselected` and a time. It is three cases because the test runs once for each value sent as the email: the first name `Ava`, the payload `' OR 1=1 -- `, and `ava.r@larkspur.example' OR '1'='1`. Each case then sends the payload in the password field as well. Every case must get the normal "Email or password is incorrect" page and no session. All 295 unit and integration tests, AUTH-07 among them, pass on `main` in [CI run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489).
+The last line of a run on 2026-11-19 was `3 passed, 355 deselected` and a time. It is three cases because the test runs once for each value sent as the email: the first name `Ava`, the payload `' OR 1=1 -- `, and `ava.r@larkspur.example' OR '1'='1`. Each case then sends the payload in the password field as well. Every case must get the normal "Email or password is incorrect" page and no session. All 340 unit and integration tests, AUTH-07 among them, pass on `main` in [CI run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607).
 
 The related checks:
 
@@ -128,7 +128,7 @@ The related checks:
 
 ## 4. Before and after, defect by defect
 
-The numbers in the first column are the plan's, from section 1.3 (`#`, `T`) and the file:line audit in section 12. Rows with no test ID in the last column are "Dropped" or "Replaced" in the plan. Every fix in the "2026" column is built. The tests named in the last column pass in [CI run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489) on `main`; the `CHK` entries are static checks in `make lint`, and SEC-08 is check 4 of `make smoke`.
+The numbers in the first column are the plan's, from section 1.3 (`#`, `T`) and the file:line audit in section 12. Rows with no test ID in the last column are "Dropped" or "Replaced" in the plan. Every fix in the "2026" column is built. The tests named in the last column pass in [CI run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607) on `main`; the `CHK` entries are static checks in `make lint`, and SEC-08 is check 4 of `make smoke`.
 
 | Plan ref | 2008 defect (file:line) | 2026 fix | Test or check |
 |---|---|---|---|
