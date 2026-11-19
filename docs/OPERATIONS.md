@@ -64,6 +64,33 @@ These are set in `compose.yaml` (`x-app-env`). Override them in `.env` or on the
 - **Failed logins:** see the 429 row below. The cause of a failed login is never logged per user, by design.
 - **Parallel stacks** (other worktrees): set `COMPOSE_PROJECT_NAME`, `WEB_PORT` and `CC_IMAGE` so stacks never share containers, ports or images.
 
+## AI menu import (optional)
+
+Off by default. With `CC_AI_ENABLED=false`, `/kitchen/import` returns 404 and the Claude SDK is never loaded. The pasted menu text is sent to the Claude API only when this is on and a cook uses it. Nothing else about the cook is sent.
+
+**Turn it on**
+
+1. Put the API key in a file outside the repository, for example `~/.config/campuschefs/anthropic_key`, mode 0400. Never put the key in `.env`, `compose.yaml` or a chat.
+2. Create `compose.override.yaml` (it is not committed) so the web container can read the file:
+
+   ```yaml
+   services:
+     web:
+       environment:
+         ANTHROPIC_API_KEY_FILE: /run/anthropic_key
+       volumes:
+         - ${HOME}/.config/campuschefs/anthropic_key:/run/anthropic_key:ro
+   ```
+
+3. Run `CC_AI_ENABLED=true make demo`. Optional: `CC_AI_MODEL=<model id>` (default `claude-opus-5-5`).
+4. Log in as a cook. The kitchen shows "Paste a menu", and `/privacy` gains one line about the AI service.
+
+**Cost.** API fees apply only while it is on and a cook submits a menu. One request is at most 4,000 characters in and a short draft out.
+
+**Turn it off.** Run `make demo` again without `CC_AI_ENABLED`, or set it to `false`. The page is gone at once. Remove the key file and the override to finish. Rotating or revoking the key is done in the Anthropic console.
+
+**If it fails.** `docker compose logs web | grep "menu draft"` shows the model id, the request id and the error class, never the pasted text. `no_api_key` means the key file is missing or not mounted. A cook always sees a friendly message and a link to the manual form.
+
 ## When it breaks
 
 | Symptom | Meaning | What to do |

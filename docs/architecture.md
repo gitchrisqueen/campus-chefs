@@ -199,3 +199,57 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | The booking redirect helper passes `require_https=request.is_secure()` | An `http://` `next` on an HTTPS request is no longer followed |
 | — | `ReviewAdmin` makes `booking` and `rating` read-only; the hide action writes an admin history entry and a message | Staff may moderate a review but not rewrite it, and the action leaves a trail |
 | — | Supporting tests without a plan ID in `core/tests/test_phase9_hardening.py` | They cover the items above |
+
+## Phase 12 records (2026-11-19)
+
+AI menu import (plan D4, option 1). It is off by default (`CC_AI_ENABLED=false`), and nothing here runs without the owner turning it on and supplying a key.
+
+### Flow
+
+1. A cook opens `/kitchen/import` (linked as "Paste a menu" in the kitchen, only when the flag is on) and pastes up to 4,000 characters.
+2. `menuparse.service.parse_menu` sends the text to the Claude API with `client.messages.parse(output_format=MenuDraft)`. The reply is validated into a Pydantic `MenuDraft` (`menuparse/schema.py`) and checked a second time in our code.
+3. The draft fills an unbound formset (`DraftDishForm`, a `MenuItemForm` subclass, so every dish rule applies). Nothing is written to the database on this request (AI-02).
+4. The cook edits the dishes, may tick "Leave this dish out" on any of them, ticks one allergen confirmation for the whole draft, and posts to `/kitchen/import/confirm`. Only then are `MenuItem` rows saved, in one transaction, for the cook from the session. `allergens_confirmed_at` is set by `MenuItemForm.save`, which runs only after the tick (AI-05).
+
+### Data sent
+
+Only the pasted text, plus a fixed system prompt. No name, email, campus or id. The text is not stored and is never logged. A test checks the request arguments (AI-02).
+
+### Failure modes
+
+| What happens | What the cook sees | What is logged |
+|---|---|---|
+| Flag off | 404 for every verb, for everyone | nothing, and the SDK is never imported (AI-01) |
+| More than 4,000 characters | A validation error, and no API call (AI-04) | nothing |
+| No key, network error, timeout, 4xx or 5xx, any other exception | "Drafting a menu is not available right now", with a link to the manual form | model id, request id, error class |
+| `stop_reason` is `refusal` | A refusal message, with the manual link | model id, request id, `refusal` |
+| Output does not parse, has a value outside the enums, or has no dishes | A "could not use" or "no dishes" message, with the manual link | model id, request id, error class |
+
+The SDK runs with `max_retries=0` and a 20 s timeout, so one request fits inside Gunicorn's 30 s worker timeout. Raw API messages never reach a page.
+
+### Model output is untrusted
+
+The allowed values come from `meals.models` (`MealType`, `Course`, `ALLERGENS`, `DIETARY_TAGS`), and import-time asserts fail if the schema drifts from them. `MenuDraft` forbids extra keys and caps each name at 80 and each description at 500 characters, and a draft at 20 dishes. The review page renders every value through Django's autoescaping, and CHK-05 still bans `|safe`.
+
+### Versions
+
+| Component | Version | Released | Note |
+|---|---|---|---|
+| anthropic | 2.5.0 | 2026-11-04 | Newest release at least 14 days old on 2026-11-19. Pinned in `pyproject.toml` |
+| pydantic | 2.14.2 | 2026-10-29 | Same rule (2.14.3 is from 2026-11-05) |
+| pydantic-core | 2.50.2 | 2026-10-29 | Transitive |
+| httpx2 and httpcore2 | 2.16.0 | 2026-10-21 | Transitive. 2.16.1 and 2.16.2 are from 2026-11-16, so `uv.lock` holds 2.16.0 |
+| jiter | 0.18.0 | 2026-10-23 | Transitive. 0.19.0 is from 2026-11-06 |
+| other new transitive packages | annotated-types 0.8.0, anyio 4.16.0, docstring-parser 0.18.0, h11 0.16.0, httpx2-jsfetch 1.0, opentelemetry-api 1.45.2, sniffio 1.3.1, truststore 0.10.5, typing-extensions 4.16.0, typing-inspection 0.4.5 | all at least 14 days old (typing-inspection 0.4.5 is from 2026-11-04) | Dates from the PyPI JSON API |
+| Model id | `claude-opus-5-5` | | From the `claude-api` skill's current-models table (cached 2026-11-03). Override with `CC_AI_MODEL`. Opus 5.5 is listed at $4 input and $20 output per million tokens |
+
+### Phase 12 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| "The Claude model id" is verified at implementation | Default `claude-opus-5-5`, from the skill's table, not from a live `GET /v1/models` call | No key exists in this build and no real API call is allowed. The owner can set `CC_AI_MODEL` |
+| — | No server-side refusal `fallbacks` | `messages.parse` is on the stable endpoint and the fallback needs the beta endpoint. A refusal is shown as a friendly message with the manual form |
+| — | `effort: low` and no `thinking` setting | Extraction needs little reasoning. Opus 5.5 always thinks, and `low` keeps latency inside the worker timeout |
+| — | `ANTHROPIC_API_KEY` is not in `compose.yaml` | CHK-06 bans a non-empty secret value in the file. The runbook shows an override file that mounts a key file and sets `ANTHROPIC_API_KEY_FILE` |
+| — | The review page asks for one allergen confirmation for the whole draft, not one per dish | The plan's AI-05 says "the confirmation". Every dish is still checked by `MenuItemForm` rules |
+| — | A `CC_AI_ENABLED` template variable from `core.context_processors.demo` | One place decides whether the kitchen link and the privacy line show |
