@@ -99,8 +99,12 @@ def test_a11y_03_home_steps_are_an_ordered_list_of_three_without_digit_images(pa
 
     expect(items.locator("h3")).to_have_text(["Register.", "Search.", "Eat!"])
     expect(steps.locator("img, svg, picture")).to_have_count(0)
-    for i in range(3):
-        expect(items.nth(i).get_by_role("link")).to_have_count(1)
+    # The home strip is one compact line (design review round 1): the steps carry no links, and
+    # one "Read the details" link after the list leads to /how-it-works.
+    expect(steps.get_by_role("link")).to_have_count(0)
+    more = page.locator(".steps-strip > a.steps-more")
+    expect(more).to_have_count(1)
+    expect(more).to_have_attribute("href", "/how-it-works")
 
     # The numbered tile is CSS-generated (a counter), with empty alternative text, so a screen
     # reader hears the list position once and never a stray digit.
@@ -110,7 +114,8 @@ def test_a11y_03_home_steps_are_an_ordered_list_of_three_without_digit_images(pa
     assert not re.search(r"^\s*- text: \d\s*$", snapshot, re.M), snapshot
     assert "Register." in snapshot and "Eat!" in snapshot
 
-    # Three columns from 40rem, one stacked column below it (plan 4.3).
+    # One line on desktop. On a phone the steps wrap onto one or two short lines, in order,
+    # and never overflow the strip.
     def tops() -> list[float]:
         return [items.nth(i).bounding_box()["y"] for i in range(3)]
 
@@ -119,4 +124,9 @@ def test_a11y_03_home_steps_are_an_ordered_list_of_three_without_digit_images(pa
     assert max(wide) - min(wide) < 1, wide
     page.set_viewport_size({"width": 390, "height": 844})
     narrow = tops()
-    assert narrow[0] < narrow[1] < narrow[2], narrow
+    assert narrow[0] <= narrow[1] <= narrow[2], narrow
+    assert len({round(y) for y in narrow}) <= 2, narrow
+    strip = page.locator(".steps-strip").bounding_box()
+    for i in range(3):
+        box = items.nth(i).bounding_box()
+        assert box["x"] >= strip["x"] and box["x"] + box["width"] <= strip["x"] + strip["width"] + 1, box
