@@ -10,7 +10,7 @@
 - Never reads X-Forwarded-For and has no per-IP limit: behind Docker port publishing
   every client can share one gateway IP.
 
-Known gaps (documented): the get-then-set is not atomic across workers, and anyone who
+Known gaps (docs/SECURITY.md): the get-then-set is not atomic across workers, and anyone who
 knows an email can lock that account out for 15 minutes.
 """
 
