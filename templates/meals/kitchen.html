@@ -35,7 +35,7 @@
               </p>
               <p class="small muted">{{ offering.seats_left }} of {{ offering.capacity }} seats left</p>
               <p class="small">
-                Groceries {{ offering.grocery_estimate_cents|money }}{% if offering.share_per_seat_cents %}, {{ offering.share_per_seat_cents|money }} share per seat{% endif %}. Chip-ins received {{ offering.received_cents|money }} of {{ offering.expected_cents|money }} from confirmed diners.
+                Groceries {{ offering.grocery_estimate_cents|money }}{% if offering.share_per_seat_cents %}, {{ offering.share_per_seat_cents|money }} share per seat{% endif %}. {% if offering.expected_cents %}Chip-ins received {{ offering.received_cents|money }} of {{ offering.expected_cents|money }} from confirmed diners.{% else %}No confirmed grocery shares yet.{% endif %}
               </p>
               {% if offering.needs.all %}
                 <p class="small muted">Bring list: {{ offering.open_needs|length }} of {{ offering.needs.all|length }} open</p>
@@ -75,7 +75,7 @@
         {% for offering in past %}
           <li>
             <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
-            <span class="small muted">{{ offering.serve_at|date:"j M Y" }}. Groceries {{ offering.grocery_estimate_cents|money }}. Chip-ins received {{ offering.received_cents|money }} of {{ offering.expected_cents|money }} from confirmed diners.</span>
+            <span class="small muted">{{ offering.serve_at|date:"j M Y" }}. Groceries {{ offering.grocery_estimate_cents|money }}. {% if offering.expected_cents %}Chip-ins received {{ offering.received_cents|money }} of {{ offering.expected_cents|money }} from confirmed diners.{% else %}No confirmed grocery shares yet.{% endif %}</span>
           </li>
         {% endfor %}
       </ul>

@@ -148,6 +148,13 @@ def test_contrib_07_mark_received_status_codes(client, offering, diner):
 
 @pytest.mark.django_db
 def test_contrib_09_kitchen_panel_shows_groceries_and_chip_ins_received_of_expected(client, offering, diner):
+    # Before any share is confirmed there is nothing to total, so no "$0.00 of $0.00" line.
+    f.booking(offering, f.user(first="Ola"), status=S.REQUESTED, contribution="share", share_cents=400)
+    client.force_login(offering.cook.user)
+    for url, line in (("/me", "Groceries $20.00. "), ("/kitchen", "Groceries $20.00, $4.00 share per seat. ")):
+        html = page(client, url)
+        assert line + "No confirmed grocery shares yet." in html
+        assert "Chip-ins received" not in html and "$0.00" not in html
     f.booking(offering, diner, status=S.CONFIRMED, seats=2, contribution="share", share_cents=800)
     received = f.booking(offering, f.user(first="Sam"), status=S.CONFIRMED, contribution="share", share_cents=400)
     received.contribution_received_at = received.allergen_ack_at

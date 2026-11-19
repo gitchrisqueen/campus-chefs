@@ -279,7 +279,7 @@ class Command(BaseCommand):
                 capacity=spec.capacity,
                 fulfillment=spec.fulfillment,
                 status=spec.status,
-                pickup_note="Lobby of North Hall (Demo). Message the cook on arrival.",
+                pickup_note="Meet in the lobby of North Hall (Demo).",
                 grocery_estimate_cents=spec.estimate,
                 share_per_seat_cents=spec.share,
             )
