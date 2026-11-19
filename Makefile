@@ -4,7 +4,7 @@ RUN ?= docker compose --profile test run --rm tests
 K ?=
 export BASE_URL
 
-.PHONY: test e2e lint sast manage deploy-check demo reseed smoke
+.PHONY: test e2e lint sast manage deploy-check demo reseed smoke screenshots docs-check
 
 test:
 	mkdir -p test-results && chmod 0777 test-results
@@ -15,7 +15,7 @@ e2e:
 	$(if $(NO_RESEED),,$(MAKE) reseed &&) $(RUN) pytest -p no:cacheprovider -m e2e $(if $(K),-k "$(K)") --tracing retain-on-failure
 
 lint:
-	$(RUN) sh -c 'ruff check . && ruff format --check . && djlint templates --lint && codespell && python scripts/static_checks.py'
+	$(RUN) sh -c 'ruff check . && ruff format --check . && djlint templates --lint && codespell && python scripts/static_checks.py && python scripts/check_docs.py'
 
 # pip-audit needs PyPI/OSV; the tests container has no internet (backend network only), so sast runs on the host.
 sast:
@@ -36,3 +36,19 @@ reseed:
 
 smoke:
 	scripts/smoke.sh
+
+# README and walkthrough pictures (docs/screenshots/after and walkthrough) and the animated hero.
+# Needs the running demo. It reseeds before and after, because the walkthrough run books a seat.
+screenshots:
+	mkdir -p test-results && chmod 0777 test-results
+	$(MAKE) reseed
+	$(RUN) python scripts/capture_screenshots.py --after
+	$(RUN) python scripts/capture_screenshots.py --walkthrough
+	scripts/build-hero-gif.sh
+	$(MAKE) reseed
+	scripts/check-image-metadata.sh docs/screenshots
+
+# Docs gate: links, image paths and alt text, then every Mermaid diagram through the pinned mermaid-cli.
+docs-check:
+	python3 scripts/check_docs.py
+	scripts/render-mermaid.sh
