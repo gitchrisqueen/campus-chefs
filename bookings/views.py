@@ -14,8 +14,8 @@ from meals.views import offering_context
 
 from . import contributions, services
 from .errors import BookingError
-from .forms import BookingRequestForm
-from .models import Booking
+from .forms import BookingRequestForm, ReviewForm
+from .models import Booking, Review
 
 DONE = {
     Booking.Status.CONFIRMED: "Booking confirmed.",
@@ -76,7 +76,12 @@ def book(request, pk):
 @require_GET
 def booking_detail(request, pk):
     booking = _participant_booking(request.user, pk)
+    return _detail(request, booking)
+
+
+def _detail(request, booking: Booking, review_form: ReviewForm | None = None, status: int = 200):
     role = services.role_of(booking, request.user)
+    can_review = services.review_block(booking, request.user) is None
     context = {
         "booking": booking,
         "offering": booking.offering,
@@ -85,8 +90,10 @@ def booking_detail(request, pk):
         "can_mark_received": role == Booking.Actor.COOK and contributions.can_mark_received(booking),
         "show_pickup_note": booking.status == Booking.Status.CONFIRMED,
         "now": timezone.now(),
+        "review_form": (review_form or ReviewForm()) if can_review else None,
+        "review": Review.objects.filter(booking=booking).first() if role == Booking.Actor.DINER else None,
     }
-    return render(request, "bookings/detail.html", context)
+    return render(request, "bookings/detail.html", context, status=status)
 
 
 @login_required
@@ -112,3 +119,21 @@ def booking_received(request, pk):
         return _blocked(request, booking, error)
     messages.success(request, "Contribution marked received.")
     return _see_other(_back(request, booking))
+
+
+@login_required
+@require_POST
+def booking_review(request, pk):
+    booking = _participant_booking(request.user, pk)
+    form = ReviewForm(request.POST)
+    block = services.review_block(booking, request.user)
+    if block:
+        return _blocked(request, booking, block)
+    if form.is_valid():
+        try:
+            services.submit_review(booking, request.user, **form.cleaned_data)
+        except BookingError as error:
+            return _blocked(request, booking, error)
+        messages.success(request, "Thanks, your review is posted.")
+        return _see_other(booking.get_absolute_url())
+    return _detail(request, booking, review_form=form)

@@ -1,9 +1,16 @@
 """AZ-03, AZ-04, AZ-05: who may see and change a booking (plan 3.3, 5.2)."""
 
-import pytest
+from datetime import timedelta
 
-from bookings.models import Booking
+import pytest
+from django.utils import timezone
+
+from accounts.models import User
+from accounts.tests.test_account import _edit_data
+from accounts.tests.test_registration import _data as registration_data
+from bookings.models import Booking, Review
 from meals.models import MenuItem, Offering
+from meals.tests.test_kitchen import item_data, offering_data
 from tests import factories as f
 
 S = Booking.Status
@@ -100,3 +107,52 @@ def test_booking_page_marks_completed_and_expired(client, cook, diner):
     html = client.get(f"/bookings/{stale.pk}").content.decode()
     assert "Expired" in html and ">Confirm<" not in html
     assert client.post(f"/bookings/{stale.pk}/transition", {"to": "nonsense"}).status_code == 409
+
+
+@pytest.mark.django_db
+def test_az_08_extra_fields_on_every_form_change_nothing(client, offering, diner):
+    """Registration, account, item, offering, booking and review forms ignore fields they do not list."""
+    cook = offering.cook
+    other = f.user(first="Sam", last="Turner")
+    extra = {
+        "is_staff": "on",
+        "is_superuser": "on",
+        "is_active": "off",
+        "status": "completed",
+        "hidden_at": "2026-01-01 00:00:00",
+        "cook": other.pk,
+        "diner": other.pk,
+    }
+
+    client.post("/register", {**registration_data(), **extra})
+    new_user = User.objects.get(email="new.student@larkspur.example")
+    assert (new_user.is_staff, new_user.is_superuser, new_user.is_active) == (False, False, True)
+
+    client.force_login(diner)
+    assert client.post("/me/edit", {**_edit_data(diner, first_name="Avery"), **extra}).status_code == 302
+    diner.refresh_from_db()
+    assert (diner.first_name, diner.is_staff, diner.is_superuser, diner.is_active) == ("Avery", False, False, True)
+
+    client.force_login(cook.user)
+    new_item = {**item_data(name="Hash Browns", meal_type="breakfast"), **extra}
+    assert client.post("/kitchen/items/new", new_item).status_code == 302
+    item = cook.menu_items.get(name="Hash Browns")
+    assert item.cook == cook and item.is_active
+    new_offering = {**offering_data([item], title="Brunch Plate"), **extra}
+    assert client.post("/kitchen/offerings/new", new_offering).status_code == 302
+    brunch = Offering.objects.get(title="Brunch Plate")
+    assert (brunch.cook, brunch.status) == (cook, Offering.Status.OPEN)
+
+    client.force_login(diner)
+    book = {"seats": "1", "contribution": "share", "allergen_ack": "on", **extra}
+    assert client.post(f"/offerings/{offering.pk}/book", book).status_code == 303
+    booking = Booking.objects.get(offering=offering)
+    assert (booking.diner, booking.status) == (diner, S.REQUESTED)
+
+    booking.status, booking.closed_at = S.COMPLETED, timezone.now() - timedelta(days=1)
+    booking.save()
+    assert client.post(f"/bookings/{booking.pk}/review", {"rating": "4", **extra}).status_code == 303
+    review = Review.objects.get()
+    assert (review.booking, review.hidden_at, review.rating) == (booking, None, 4)
+    booking.refresh_from_db()
+    assert booking.status == S.COMPLETED and booking.diner == diner
