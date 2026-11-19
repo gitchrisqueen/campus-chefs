@@ -37,7 +37,7 @@ reseed:
 smoke:
 	scripts/smoke.sh
 
-# README and walkthrough pictures (docs/screenshots/after and walkthrough) and the animated hero.
+# README and walkthrough pictures (docs/screenshots/after and walkthrough), the play-once hero and the linked loop.
 # Needs the running demo. It reseeds before and after, because the walkthrough run books a seat.
 screenshots:
 	mkdir -p test-results && chmod 0777 test-results
