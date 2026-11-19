@@ -9,7 +9,7 @@ from accounts.models import User
 from meals.models import CookProfile
 from tests import factories as f
 
-PASSWORD = "a-long-test-password-1"
+PASSWORD = "test-only-long-password-1"
 
 
 def _register(client, **overrides):
@@ -58,13 +58,13 @@ def test_leg_04_registration_keeps_chosen_campus_and_cook_role(client):
 @pytest.mark.django_db
 def test_leg_05_password_with_html_and_quote_characters_round_trips(client):
     """2008 code passed the raw password through GET and string-built SQL."""
-    password = "a&b<c>\"d'e-1234"
-    response = _register(client, password1=password, password2=password)
+    tricky = "a&b<c>\"d'e-1234"
+    response = _register(client, password1=tricky, password2=tricky)
     assert response.status_code == 302, response.content.decode()
     client.post("/logout")
     assert "_auth_user_id" not in client.session
 
-    response = client.post("/login", {"username": "new.student@larkspur.example", "password": password})
+    response = client.post("/login", {"username": "new.student@larkspur.example", "password": tricky})
     assert response.status_code == 302
     assert response["Location"] == "/me"
     assert int(client.session["_auth_user_id"]) == User.objects.get(email="new.student@larkspur.example").pk

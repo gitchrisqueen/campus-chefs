@@ -5,7 +5,7 @@ from accounts.models import User
 from meals.models import CookProfile
 from tests import factories as f
 
-PASSWORD = "a-long-test-password-1"
+PASSWORD = "test-only-long-password-1"
 EMAIL = "new.student@larkspur.example"
 
 

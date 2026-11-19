@@ -302,6 +302,10 @@ Each item below is a deliberate change to the plan's text. None changes scope.
   - `scripts/check-image-metadata.sh docs/screenshots` covers PNG and GIF files and reports every image clean.
 - **Image size:** after the merge of phase 12, `campuschefs:local` is 207 MB and `campuschefs:dev` is 1.97 GB (`docker images`). Before that merge they were 175 MB and 1.92 GB; the difference is the phase 12 dependencies.
 
+- **Public-safety sweep (2026-11-19):** a sweep of the tree and the full history for private names, home paths, private references and secret-shaped strings. Results at this phase:
+  - names, home paths and secrets: no findings. Test passwords now start with `test-`, and the two `ALTER ROLE ... PASSWORD :'var'` lines in `docker/postgres-init/01-roles.sh` carry an allow marker, because they pass a psql variable and hold no literal.
+  - private references: the sweep reports `/opt/venv` on six lines of `docs/MODERNIZATION_PLAN.md`. That is the virtualenv path inside the container image (`Dockerfile`), not a path on any host, so it stays.
+
 ## Phase 11 deviations from the plan
 
 | Plan said | Built | Why |

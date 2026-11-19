@@ -5,7 +5,7 @@ from django.test import Client
 from core.ratelimit import MAX_FAILURES, WINDOW_SECONDS
 from tests import factories as f
 
-PASSWORD = "a-long-test-password-1"
+PASSWORD = "test-only-long-password-1"
 EMAIL = "ava.r@larkspur.example"
 INCORRECT = b"Email or password is incorrect"
 

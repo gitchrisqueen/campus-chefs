@@ -7,7 +7,7 @@ from bookings.models import Booking, Review
 from meals.models import OfferingNeed
 from tests import factories as f
 
-PASSWORD = "a-long-test-password-1"
+PASSWORD = "test-only-long-password-1"
 
 
 @pytest.fixture
