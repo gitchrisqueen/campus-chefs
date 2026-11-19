@@ -37,21 +37,27 @@ This plan covers the visual foundation that every later screen inherits. The tok
 Desktop (1280 px):
 
 ```
-[ demo banner ...................................................... ]
+[ Portfolio demo: fictional people and campuses ..................... ]
 [ ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ red top rule ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ ]
 [ (logo plate)                                   Home   How it works ]
-[ eyebrow                                                            ]
+[ eyebrow (the only one on the page)                                 ]
 [ HOME-COOKED MEALS,                             ┌ example listing ┐ ]
-[ made by students                               │ dish, cook, $   │ ]
-[ WHO LOVE TO COOK.                              │ badges, seats   │ ]
-[ lede · [Find a meal] [How it works] · chip-in  └─────────────────┘ ]
-[ ┌ panel: How it works  [1] Register.  [2] Search.  [3] Eat! ─────┐ ]
-[ ┌ panel: Find a meal   [ search input ......... ] [Search] ──────┐ ]
-[ footer: How it works · Safety · Privacy               © 2008–2026 ]
+[ made by students                               │ dish            │ ]
+[ WHO LOVE TO COOK.                              │ day, time, meal │ ]
+[ lede · [Find a meal] (How it works) · chip-in  │ cook, campus    │ ]
+[                                                └─────────────────┘ ]
+[ How it works  [1] Register. [2] Search. [3] Eat!  Read the details ]
+[ ┌ panel: Find a meal [ search input ................... ] (Search) ]
+[ ┌ dashed card: Try it in one click     [Try as demo diner] cook ─┐ ]
+[ footer: How it works · Safety · Privacy        © 2026 Campus Chefs ]
+[                                                  A portfolio demo  ]
 ```
 
-Phone (390 px): the same order in one column. The listing card sits below the call to action, and each step
-puts its numeral tile beside its text.
+Phone (390 px): the same order in one column. The listing card sits below the call to action, and the
+three steps wrap onto one or two short lines.
+
+Each screen has one filled red button: "Find a meal" in the hero, then "Try as demo diner" in the demo card.
+The search button and the hero's "How it works" are outlined.
 
 ## The one bold element
 
@@ -84,6 +90,14 @@ section 4:
   - the search moved into its own panel with space above it;
   - `/how-it-works` uses a three-card row on desktop instead of one narrow column.
 - **Changed after pass 2:** tighter spacing between the search field and its results.
+- **Changed after the art-director review (round 1):**
+  - one tracked uppercase label per page at most: the hero's "Student meal sharing" stays; the "Three steps",
+    "Live search", "Step", "How it works", "My account" and "Join Campus Chefs" eyebrows are gone;
+  - the listing card and the footer drop their middle-dot strings for separate lines;
+  - the home "How it works" panel is one compact line, because the nav and the hero link to /how-it-works;
+  - the demo card moved below the search and has one filled button (diner); the cook option is a text link;
+  - the search field fills the panel width with its button at the right edge;
+  - on /how-it-works the step cards shrink to their content, and Questions and About sit side by side.
 
 ## Form and account pages (design pass 2)
 
@@ -91,17 +105,20 @@ section 4:
   links help and error to the control with `aria-describedby` (`<id>_helptext`, `<id>_error`); the error list
   reads "Error:" to screen readers, and the field gets a red rail and a 2px red border, so colour is never the
   only cue.
+- **Placeholders** use `--cc-muted`, so their contrast is fixed in both themes. UX-01 already checks
+  `--cc-muted` on `--cc-surface`, the input background.
 - **Checkboxes** sit in a tinted tile with the box on the first line of the label; the whole tile is the target.
 - **Radio group** is a `fieldset` and `legend`; each option is a 52px tile that takes the accent border when
   checked. The cook food-safety box hides with `:has()` once "I want to eat" is chosen (the server still
   checks it).
 - **Register** is grouped: Your account, Your profile (first and last name side by side from 40rem), Before you
-  start. The password help is one line instead of Django's five-item list.
+  start. The group titles are sentence-case serif subheads at `--cc-step-1`, not tracked caps. The password help is one line instead of Django's five-item list.
 - **Error summary** lists every problem with a link to its field, has `role="alert"`, and takes focus (A11Y-02).
 - **Danger** (`/me/delete`): a red-ruled callout says "You cannot undo this." and the button is a solid dark red
   (light) or inverted coral (dark). New tokens: `--cc-input-border`, `--cc-danger*`; UX-01 checks them.
 - **Log out** is a reset button that reads as a nav item, with the same hover and focus ring as the links.
-- **Demo login** is a dashed invitation card: "Try it in one click", one line, diner (primary) and cook buttons.
+- **Demo login** is a dashed invitation card: "Try it in one click", one line, a diner button (primary) and a
+  cook text link. The cook link is a POST button styled as a link, so its accessible name stays "Try as demo cook".
 - **/me** has an initials avatar (plan 4.4: initials only), the public name as the heading, a role badge, a
   ruled profile list and an empty-bookings state with a "Find a meal" button.
 - **Changed after pass 1:** the diner badge was invisible on the page background (now on white with a border);

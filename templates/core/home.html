@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}Campus Chefs · Home-cooked meals made by students{% endblock title %}
 {% block content %}
   <section class="hero" aria-labelledby="hero-heading">
     <div>
@@ -8,25 +9,25 @@
       </h1>
       <p class="lede">
         Campus Chefs matches students who want a good home-cooked meal with students who know how to cook.
-        Rather sit back and let someone else cook than do it yourself? Find a meal.
+        Want a home-cooked meal without cooking it? Find a meal.
       </p>
       <div class="btn-row">
         <a class="btn btn-primary" href="#search">Find a meal</a>
         <a class="btn btn-secondary" href="{% url 'how_it_works' %}">How it works</a>
       </div>
       <p class="chip-in">
-        <strong>Chip in, not pay.</strong>
+        <strong>Chip in for groceries.</strong>
         <span>Diners share the grocery cost or bring an ingredient. Cooks never make a profit.</span>
       </p>
     </div>
     <div class="ticket-stack">
       <article class="ticket" aria-label="Example listing">
-        <div class="ticket-head">
-          <span class="ticket-label">Example listing</span>
-          <span>Sat · Breakfast · 9:30</span>
-        </div>
+        <p class="ticket-label">Example listing</p>
         <p class="ticket-dish">Buttermilk Pancakes</p>
-        <p class="ticket-cook">by Marcus B. · Larkspur State University (Demo)</p>
+        <p class="ticket-meta">
+          <span>Sat, 9:30, Breakfast</span>
+          <span>Marcus B., Larkspur State (Demo)</span>
+        </p>
         <ul class="badges" aria-label="Chip in and dietary info">
           <li class="badge badge-share">$4.00 grocery share per seat</li>
           <li class="badge badge-bring">or bring an item</li>
@@ -47,38 +48,24 @@
       </article>
     </div>
   </section>
-  {% include "partials/demo_login.html" with home=True %}
-  <section class="panel steps-section" aria-labelledby="steps-heading">
-    <span class="eyebrow">Three steps</span>
+  <section class="steps-strip" aria-labelledby="steps-heading">
     <h2 id="steps-heading">How it works</h2>
     <ol class="steps" role="list">
       <li class="step">
-        <span class="step-kicker">Step</span>
         <h3>Register.</h3>
-        <p>
-          Sign up to eat, or to cook as well. Use made-up details: this is a demo. <a href="{% url 'how_it_works' %}#register">About accounts</a>
-        </p>
       </li>
       <li class="step">
-        <span class="step-kicker">Step</span>
         <h3>Search.</h3>
-        <p>
-          Find a meal by a cook's first name, a dish or an ingredient. <a href="#search">Try a search</a>
-        </p>
       </li>
       <li class="step">
-        <span class="step-kicker">Step</span>
         <h3>Eat!</h3>
-        <p>
-          Book a seat, chip in toward the groceries, and enjoy. <a href="{% url 'how_it_works' %}#booking">About booking</a>
-        </p>
       </li>
     </ol>
+    <a class="steps-more" href="{% url 'how_it_works' %}">Read the details</a>
   </section>
   <section id="search"
            class="panel search-section"
            aria-labelledby="search-heading">
-    <span class="eyebrow">Live search</span>
     <h2 id="search-heading">Find a meal</h2>
     <form class="search-form"
           action="{% url 'search' %}"
@@ -95,7 +82,7 @@
                hx-trigger="input changed delay:300ms, search"
                hx-target="#results"
                hx-indicator="#search-indicator">
-        <button class="btn btn-primary" type="submit">Search</button>
+        <button class="btn btn-secondary" type="submit">Search</button>
       </div>
       <p class="search-status">
         <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching…</span>
@@ -106,4 +93,5 @@
     </form>
     <div id="results" aria-live="polite"></div>
   </section>
+  {% include "partials/demo_login.html" with home=True %}
 {% endblock content %}

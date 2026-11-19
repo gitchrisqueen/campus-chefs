@@ -2,7 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from bookings import services as booking_services
-from bookings.models import Booking
+from bookings.models import Booking, Review
 from meals.models import CookProfile, Offering, OfferingNeed
 
 from .models import User
@@ -13,18 +13,24 @@ def delete_account(user: User) -> None:
     """Anonymize an account (plan 5.4).
 
     Diner path: the user's active bookings are cancelled. Cook path (ACCT-03): every upcoming meal is
-    cancelled, which system-cancels its bookings, and the menu is archived. Past bookings and reviews
-    stay, because they belong to the other student too.
+    cancelled, which system-cancels its bookings, and the menu is archived. Past bookings and review ratings
+    stay, because they belong to the other student too. Free text (terms, notes, bio, review text) is blanked.
     """
     now = timezone.now()
     active = Booking.objects.filter(diner=user, status__in=Booking.ACTIVE)
     OfferingNeed.objects.filter(claimed_by_booking__in=active).update(claimed_by_booking=None)
     active.update(status=Booking.Status.CANCELLED, cancelled_by=Booking.Actor.DINER, closed_at=now)
 
+    # Free text goes; the booking, its contribution and the star rating stay for the other student.
+    Booking.objects.filter(diner=user).update(terms="", note="")
+    Review.objects.filter(booking__diner=user).update(the_good="", the_bad="")
+
     cook = CookProfile.objects.filter(user=user).first()
     if cook is not None:
         for offering in cook.offerings.filter(status=Offering.Status.OPEN, serve_at__gt=now):
             booking_services.cancel_offering(offering, now=now)
+        cook.bio = ""
+        cook.save(update_fields=["bio"])
         cook.menu_items.filter(is_active=True).update(is_active=False, is_specialty=False)
 
     user.email = f"deleted-{user.pk}@invalid.example"

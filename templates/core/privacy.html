@@ -19,7 +19,8 @@
         <li>The time you confirmed you are 18 or older.</li>
         <li>Your password, stored only as an Argon2id hash.</li>
         <li>For cooks: your bio, menus and meals. A pickup note is shown only to diners the cook has confirmed.</li>
-        <li>Your bookings, grocery shares and reviews.</li>
+        <li>Your bookings and grocery shares, with any custom grocery terms or note you write. Only the cook sees them.</li>
+        <li>Your reviews, with the star rating and any text you write.</li>
       </ul>
     </section>
     <section class="card" aria-labelledby="not-stored-heading">
@@ -40,7 +41,14 @@
     <ul>
       <li>your open bookings are cancelled;</li>
       <li>if you cook, your upcoming meals are cancelled and your menu is hidden;</li>
-      <li>your email and name are removed, and your past reviews show “Former student”.</li>
+      <li>your email, name and cook bio are removed;</li>
+      <li>the terms and notes on your bookings are removed;</li>
+      <li>the text of your reviews is removed.</li>
+    </ul>
+    <p>What stays:</p>
+    <ul>
+      <li>your past bookings and the star ratings of your reviews, under “Former student”, because they belong to the other student too;</li>
+      <li>your campus, class year and the time you confirmed you are 18 or older, on the anonymized account.</li>
     </ul>
   </section>
 {% endblock content %}

@@ -263,9 +263,7 @@
   }
 
   .demo-banner strong {
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-inline-end: var(--cc-space-1);
+    font-weight: 700;
   }
 
   /* Header: the original red band survives as a thin top rule; not sticky (WCAG 2.4.11). */
@@ -366,6 +364,10 @@
 
   .site-footer p {
     margin: 0;
+  }
+
+  .footer-note span {
+    display: block;
   }
 
   .footer-links {
@@ -611,20 +613,11 @@
     transform: rotate(-1.5deg);
   }
 
-  .ticket-head {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--cc-space-3);
-    align-items: baseline;
-    margin-bottom: var(--cc-space-3);
+  .ticket-label {
+    margin: 0 0 var(--cc-space-2);
     color: var(--cc-muted);
     font-size: var(--cc-step--1);
-  }
-
-  .ticket-label {
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
   }
 
   .ticket-dish {
@@ -635,9 +628,16 @@
     line-height: 1.1;
   }
 
-  .ticket-cook {
-    margin: var(--cc-space-1) 0 var(--cc-space-4);
+  .ticket-meta {
+    display: grid;
+    margin: var(--cc-space-2) 0 var(--cc-space-4);
     color: var(--cc-muted);
+    line-height: 1.45;
+  }
+
+  .ticket-meta span:first-child {
+    color: var(--cc-text);
+    font-weight: 650;
   }
 
   .ticket .badges {
@@ -675,84 +675,68 @@
     background: var(--cc-brand);
   }
 
-  /* The 1-2-3 steps (plan 4.3): an ordered list; a CSS counter draws each tile. */
-  .steps-section h2 {
-    margin-bottom: var(--cc-space-2);
+  /* The 1-2-3 steps (plan 4.3): an ordered list; a CSS counter draws each tile.
+     On home it is one compact line, because /how-it-works holds the detail. */
+  .steps-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cc-space-3) var(--cc-space-6);
+    margin-bottom: var(--cc-space-6);
+    padding-block: var(--cc-space-4);
+    border-block: 1px solid var(--cc-border);
+  }
+
+  .steps-strip h2 {
+    margin: 0;
+    font-size: var(--cc-step-1);
   }
 
   .steps {
     counter-reset: step;
-    display: grid;
-    gap: var(--cc-space-5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--cc-space-3) var(--cc-space-5);
     list-style: none;
-    margin: var(--cc-space-6) 0 0;
+    margin: 0;
     padding: 0;
   }
 
   .step {
     counter-increment: step;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0 var(--cc-space-4);
-    align-items: start;
-    align-content: start;
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-2);
   }
 
   .step::before {
     content: counter(step);
     content: counter(step) / "";
-    grid-row: span 3;
     display: grid;
     place-items: center;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 1rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.6rem;
     background: var(--cc-brand);
     color: var(--cc-on-brand);
     font-family: var(--cc-font-display);
-    font-size: 2.5rem;
+    font-size: var(--cc-step-1);
     line-height: 1;
-    box-shadow: inset 0 -4px 0 rgb(0 0 0 / 18%);
-  }
-
-  .step-kicker {
-    color: var(--cc-muted);
-    font-size: var(--cc-step--1);
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    box-shadow: inset 0 -3px 0 rgb(0 0 0 / 18%);
   }
 
   .step h3 {
-    font-size: var(--cc-step-2);
-    margin: 0 0 var(--cc-space-2);
+    margin: 0;
+    font-size: var(--cc-step-1);
   }
 
-  .step p {
-    margin: 0 0 var(--cc-space-2);
-  }
-
-  .step a {
+  .steps-more {
     font-weight: 700;
   }
 
-  @media (min-width: 40rem) {
-    .steps {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--cc-space-6);
-    }
-
-    .step {
-      grid-template-columns: 1fr;
-      gap: var(--cc-space-2);
-    }
-
-    .step::before {
-      grid-row: auto;
-      width: 5rem;
-      height: 5rem;
-      font-size: 3.25rem;
-      margin-bottom: var(--cc-space-3);
+  @media (min-width: 56rem) {
+    .steps-more {
+      margin-inline-start: auto;
     }
   }
 
@@ -760,7 +744,6 @@
   .search-form {
     display: grid;
     gap: var(--cc-space-2);
-    max-width: 40rem;
   }
 
   .search-row {
@@ -771,6 +754,7 @@
 
   .search-row input {
     flex: 1 1 14rem;
+    width: auto;
     min-height: 3rem;
     font-size: var(--cc-step-1);
     border-radius: var(--cc-radius-pill);
@@ -790,6 +774,18 @@
 
   .search-section {
     scroll-margin-top: var(--cc-space-4);
+    margin-bottom: var(--cc-space-6);
+  }
+
+  /* The status line and the results box already add space below the field. */
+  @media (min-width: 40rem) {
+    .search-section {
+      padding-bottom: var(--cc-space-5);
+    }
+  }
+
+  .search-section h2 {
+    margin-bottom: var(--cc-space-4);
   }
 
   #results {
@@ -887,6 +883,7 @@
   .step-cards {
     display: grid;
     gap: var(--cc-space-5);
+    align-items: start;
     margin-bottom: var(--cc-space-7);
   }
 
@@ -974,7 +971,32 @@
   .faq {
     display: grid;
     gap: var(--cc-space-3);
-    max-width: 44rem;
+  }
+
+  /* Questions on the left, About on the right, so neither leaves half the row empty. */
+  .faq-about {
+    display: grid;
+    gap: var(--cc-space-5) var(--cc-space-6);
+    align-items: start;
+    margin-bottom: var(--cc-space-7);
+  }
+
+  .faq-section h2 {
+    margin-bottom: var(--cc-space-4);
+  }
+
+  @media (min-width: 56rem) {
+    .faq-about {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    }
+  }
+
+  .about-card h2 {
+    font-size: var(--cc-step-2);
+  }
+
+  .about-card p {
+    margin-bottom: 0;
   }
 
   .faq details {
@@ -1121,12 +1143,10 @@
 
   .form-group-title {
     margin: 0;
-    font-family: var(--cc-font-body);
-    font-size: var(--cc-step--1);
+    font-family: var(--cc-font-display);
+    font-size: var(--cc-step-1);
     font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--cc-muted);
+    color: var(--cc-text);
   }
 
   /* Controls line up on their bottom edge when only one field in the row shows an error. */
@@ -1192,6 +1212,11 @@
     border: 1px solid var(--cc-input-border);
     border-radius: var(--cc-radius-sm);
     transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  ::placeholder {
+    color: var(--cc-muted);
+    opacity: 1;
   }
 
   input:not([type="checkbox"], [type="radio"]):hover,
@@ -1478,6 +1503,33 @@
     margin-bottom: var(--cc-space-6);
   }
 
+  .home-demo h2 {
+    font-size: var(--cc-step-1);
+  }
+
+  /* A POST button that reads as a text link (the demo cook login). */
+  .link-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--cc-tap);
+    margin: 0;
+    padding: 0 var(--cc-space-2);
+    border: 0;
+    border-radius: var(--cc-radius-sm);
+    background: transparent;
+    color: var(--cc-accent);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .link-button:hover {
+    text-decoration-thickness: 2px;
+  }
+
   /* The login page stacks the demo card: one column of text, buttons below. */
   .auth-pair .demo-login {
     grid-template-columns: 1fr;
@@ -1486,6 +1538,11 @@
 
   .auth-pair .demo-actions {
     grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .auth-pair .demo-actions .btn {
+    width: 100%;
   }
 
   @media (min-width: 40rem) {
