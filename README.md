@@ -11,7 +11,7 @@
   </picture>
 </p>
 
-The walkthrough shows all eight screens in this booking as still pictures: [open the walkthrough](docs/walkthrough.md).
+The walkthrough shows the eight booking screens, and six more from after the meal, as still pictures: [open the walkthrough](docs/walkthrough.md).
 
 Campus Chefs matches students who want a home-cooked meal with students who like to cook. A cook posts a meal: the dishes, the time, the seats and what the groceries cost. A diner asks for a seat and chips in toward those groceries with a share of the cost, an item from the cook's bring list, or terms the two of them agree on. The cook gets help with the grocery bill and never a profit.
 
