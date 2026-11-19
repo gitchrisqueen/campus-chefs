@@ -216,6 +216,23 @@ def test_hide_action_writes_a_log_entry_a_message_and_an_audit_line(client, staf
 
 
 @pytest.mark.django_db
+def test_hide_action_needs_the_change_permission(client, review):
+    """A staff user who may only view reviews neither sees nor can run the hide action."""
+    from django.contrib.auth.models import Permission
+
+    viewer = f.user(first="View", last="Only", is_staff=True)
+    viewer.user_permissions.add(Permission.objects.get(codename="view_review", content_type__app_label="bookings"))
+    client.force_login(viewer)
+    page = client.get("/admin/bookings/review/")
+    assert page.status_code == 200
+    assert "hide_reviews" not in page.content.decode()
+    client.post("/admin/bookings/review/", {"action": "hide_reviews", "_selected_action": [review.pk]})
+    review.refresh_from_db()
+    assert review.hidden_at is None
+    assert not LogEntry.objects.filter(object_id=str(review.pk)).exists()
+
+
+@pytest.mark.django_db
 def test_review_admin_shows_booking_and_rating_read_only(client, staff, review):
     client.force_login(staff)
     page = client.get(f"/admin/bookings/review/{review.pk}/change/")

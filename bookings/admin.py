@@ -15,7 +15,7 @@ class BookingAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at"]
 
 
-@admin.action(description="Hide selected reviews")
+@admin.action(description="Hide selected reviews", permissions=["change"])
 def hide_reviews(modeladmin, request, queryset):
     now = timezone.now()
     hidden = 0
