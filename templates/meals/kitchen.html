@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load money tz %}
+{% block title %}Your kitchen · Campus Chefs{% endblock title %}
+{% block content %}
+  <header class="page-head">
+    <span class="eyebrow">Kitchen</span>
+    <h1>Your kitchen</h1>
+    {% if cook.bio %}
+      <p class="lede">{{ cook.bio }}</p>
+    {% else %}
+      <p class="lede muted">Add a short bio so diners know who is cooking.</p>
+    {% endif %}
+    <p class="actions">
+      <a href="{% url 'kitchen_bio' %}">Edit your bio</a>
+      <a href="{% url 'cook_page' cook.pk %}">View your public page</a>
+    </p>
+  </header>
+  <section class="block" aria-labelledby="meals-heading">
+    <div class="section-head">
+      <h2 id="meals-heading">Your meals</h2>
+      <a class="btn btn-primary" href="{% url 'offering_create' %}">Open a meal</a>
+    </div>
+    {% if upcoming %}
+      <ul class="row-list">
+        {% for offering in upcoming %}
+          <li class="row card">
+            <div>
+              <p class="row-title">
+                <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
+                {% if offering.status == "cancelled" %}<span class="badge">Cancelled</span>{% endif %}
+              </p>
+              <p class="small muted">
+                {% timezone cook.user.campus.timezone %}
+                  {{ offering.serve_at|date:"D j M · g:i A" }}
+                {% endtimezone %}
+                · {{ offering.seats_left }} of {{ offering.capacity }} seats left
+              </p>
+              <p class="small">
+                Groceries {{ offering.grocery_estimate_cents|money }} · Share {{ offering.share_per_seat_cents|money }} per seat
+                {% if offering.needs.all %}· Bring list: {{ offering.open_needs|length }} of {{ offering.needs.all|length }} open{% endif %}
+              </p>
+            </div>
+            <div class="row-actions">
+              <a class="btn btn-secondary"
+                 href="{% url 'offering_edit' offering.pk %}">Edit</a>
+              <form class="inline-form"
+                    method="post"
+                    action="{% url 'offering_delete' offering.pk %}">
+                {% csrf_token %}
+                <button class="btn btn-quiet" type="submit">Delete</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No upcoming meals. Open one when your menu is ready.</p>
+    {% endif %}
+    {% if past %}
+      <h3>Past meals</h3>
+      <ul class="plain-list">
+        {% for offering in past %}
+          <li>
+            <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
+            <span class="small muted">{{ offering.serve_at|date:"j M Y" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+  <section class="block" aria-labelledby="menu-heading">
+    <div class="section-head">
+      <h2 id="menu-heading">Your menu</h2>
+      <a class="btn btn-primary" href="{% url 'item_create' %}">Add a dish</a>
+    </div>
+    <div class="menu-grid">
+      {% for meal, courses in menu %}
+        <section class="menu-meal card" aria-label="{{ meal }}">
+          <h3>{{ meal }}</h3>
+          {% for course, items in courses %}
+            <h4>{{ course }}</h4>
+            {% if items %}
+              <ul class="dish-list">
+                {% for item in items %}
+                  <li>
+                    {% include "meals/_dish.html" %}
+                    <div class="row-actions">
+                      <a href="{% url 'item_edit' item.pk %}">Edit <span class="visually-hidden">{{ item.name }}</span></a>
+                      <form class="inline-form"
+                            method="post"
+                            action="{% url 'item_archive' item.pk %}">
+                        {% csrf_token %}
+                        <button class="link-button" type="submit">
+                          Remove <span class="visually-hidden">{{ item.name }}</span>
+                        </button>
+                      </form>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted small">Nothing yet.</p>
+            {% endif %}
+          {% endfor %}
+        </section>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock content %}

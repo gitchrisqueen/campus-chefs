@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Set up your kitchen · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="card form-card">
+    <span class="eyebrow">Become a cook</span>
+    <h1>Set up your kitchen</h1>
+    <p>
+      Share the meals you like to cook. Diners chip in toward the groceries, so you never pay for the whole shop, and you never make a profit.
+    </p>
+    <form method="post" action="{% url 'kitchen_setup' %}" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <button class="btn btn-primary" type="submit">Set up kitchen</button>
+    </form>
+    <p>
+      <a href="{% url 'me' %}">Back to my account</a>
+    </p>
+  </section>
+{% endblock content %}

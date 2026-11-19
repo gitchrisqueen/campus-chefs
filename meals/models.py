@@ -1,8 +1,9 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import F, Q
-from django.db.models.functions import Lower
+from django.db.models import F, OuterRef, Q, Subquery, Sum
+from django.db.models.functions import Coalesce, Lower
 
 ALLERGENS = [
     ("milk", "Milk"),
@@ -108,6 +109,16 @@ class MenuItem(models.Model):
         parts = [p.strip().lower() for p in self.ingredients.split(",")]
         self.ingredients = ", ".join(dict.fromkeys(p for p in parts if p))
 
+    @property
+    def allergen_labels(self) -> list[str]:
+        names = dict(ALLERGENS)
+        return [names[a].lower() for a in self.allergens]
+
+    @property
+    def dietary_labels(self) -> list[str]:
+        names = dict(DIETARY_TAGS)
+        return [names[t] for t in self.dietary_tags]
+
 
 class Fulfillment(models.TextChoices):
     PICKUP = "pickup", "Pickup"
@@ -117,6 +128,23 @@ class Fulfillment(models.TextChoices):
 class OfferingStatus(models.TextChoices):
     OPEN = "open", "Open"
     CANCELLED = "cancelled", "Cancelled"
+
+
+class OfferingQuerySet(models.QuerySet):
+    def with_seats_taken(self):
+        """Annotate `seats_taken`: seats held by requested and confirmed bookings (plan 2.3)."""
+        taken = (
+            apps.get_model("bookings", "Booking")
+            .objects.filter(offering=OuterRef("pk"), status__in=["requested", "confirmed"])
+            .values("offering")
+            .annotate(total=Sum("seats"))
+            .values("total")
+        )
+        return self.annotate(seats_taken=Coalesce(Subquery(taken), 0))
+
+    def for_listing(self):
+        """What an offering card needs: cook, campus, dishes, bring list and seats taken."""
+        return self.select_related("cook__user__campus").prefetch_related("items", "needs").with_seats_taken()
 
 
 class Offering(models.Model):
@@ -136,6 +164,8 @@ class Offering(models.Model):
     # Grocery cost-sharing (plan 3.5): integer cents, never money movement.
     grocery_estimate_cents = models.PositiveIntegerField(default=0)
     share_per_seat_cents = models.PositiveIntegerField(default=0)
+
+    objects = OfferingQuerySet.as_manager()
 
     class Meta:
         ordering = ["serve_at"]
@@ -162,6 +192,25 @@ class Offering(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title} ({self.serve_at:%Y-%m-%d %H:%M})"
+
+    @property
+    def is_free(self) -> bool:
+        """No cash share and no bring list (plan 3.5)."""
+        return self.share_per_seat_cents == 0 and not self.needs.all()
+
+    @property
+    def open_needs(self) -> list[OfferingNeed]:
+        return [need for need in self.needs.all() if need.claimed_by_booking_id is None]
+
+    @property
+    def allergen_labels(self) -> list[str]:
+        """Every allergen declared on any dish of this meal, in first-seen order."""
+        return list(dict.fromkeys(label for item in self.items.all() for label in item.allergen_labels))
+
+    @property
+    def seats_left(self) -> int:
+        """Needs the `with_seats_taken()` annotation."""
+        return max(self.capacity - self.seats_taken, 0)
 
 
 class OfferingItem(models.Model):

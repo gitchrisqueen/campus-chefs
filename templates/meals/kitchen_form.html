@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="card form-card">
+    <span class="eyebrow">Kitchen</span>
+    <h1>{{ title }}</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="btn-row">
+        <button class="btn btn-primary" type="submit">{{ action_label }}</button>
+        <a class="btn btn-secondary" href="{% url back_url %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock content %}

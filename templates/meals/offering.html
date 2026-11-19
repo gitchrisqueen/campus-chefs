@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load money tz %}
+{% block title %}{{ offering.title }} · Campus Chefs{% endblock title %}
+{% block content %}
+  {% timezone offering.cook.user.campus.timezone %}
+    <header class="page-head">
+      <span class="eyebrow">{{ offering.get_meal_type_display }} · {{ offering.get_fulfillment_display }}</span>
+      <h1>{{ offering.title }}</h1>
+      <p class="lede">
+        by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a> · {{ offering.cook.user.campus.name }}
+      </p>
+    </header>
+    {% if offering.status == "cancelled" %}
+      <p class="callout">The cook cancelled this meal.</p>
+    {% endif %}
+    <div class="offer-layout">
+      <div class="stack">
+        <section class="card" aria-labelledby="dishes-heading">
+          <h2 id="dishes-heading">Dishes</h2>
+          <ul class="dish-list">
+            {% for item in offering.items.all %}
+              <li>{% include "meals/_dish.html" %}</li>
+            {% empty %}
+              <li class="muted">The cook has not added dishes yet.</li>
+            {% endfor %}
+          </ul>
+        </section>
+        <aside class="callout" aria-label="Allergen notice">
+          <p>
+            <strong>Allergens and dietary tags are declared by the cook. They are not a safety guarantee.</strong>
+            If you have a severe allergy, ask the cook before you book, or skip this meal. <a href="{% url 'safety' %}">Read the safety notes</a>.
+          </p>
+        </aside>
+      </div>
+      <div class="stack">
+        <section class="card" aria-labelledby="when-heading">
+          <h2 id="when-heading">When and where</h2>
+          <dl class="facts facts-stacked">
+            <dt>Serves</dt>
+            <dd>
+              {{ offering.serve_at|date:"l j F · g:i A" }}
+            </dd>
+            <dt>Requests close</dt>
+            <dd>
+              {{ offering.booking_cutoff_at|date:"l j F · g:i A" }}
+            </dd>
+            <dt>Seats left</dt>
+            <dd>
+              {{ offering.seats_left }} of {{ offering.capacity }}
+            </dd>
+            <dt>Pickup or dine-in</dt>
+            <dd>
+              {{ offering.get_fulfillment_display }}
+            </dd>
+            {% if show_pickup_note and offering.pickup_note %}
+              <dt>Pickup note</dt>
+              <dd>
+                {{ offering.pickup_note }}
+              </dd>
+            {% endif %}
+          </dl>
+        </section>
+        <section class="card" aria-labelledby="chip-heading">
+          <h2 id="chip-heading">Chip in</h2>
+          {% include "meals/_chip_in.html" %}
+          {% if offering.is_free %}
+            <p class="small muted">This meal is on the cook. Nothing to chip in.</p>
+          {% elif offering.share_per_seat_cents %}
+            <p class="small muted">
+              Pay the cook in person at pickup. The shares can never add up to more than the groceries cost ({{ offering.grocery_estimate_cents|money }}).
+            </p>
+          {% endif %}
+          {% if offering.needs.all %}
+            <h3>Bring list</h3>
+            <ul class="bring-list">
+              {% for need in offering.needs.all %}
+                <li>
+                  {{ need.label }}
+                  {% if need.claimed_by_booking_id %}<span class="muted">(taken)</span>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </section>
+        <section id="booking-panel" class="card" aria-labelledby="booking-heading">
+          <h2 id="booking-heading">Request a seat</h2>
+          {% if is_cook %}
+            <p>This is your meal.</p>
+            <a class="btn btn-secondary"
+               href="{% url 'offering_edit' offering.pk %}">Edit this meal</a>
+          {% else %}
+            <p class="muted">Seat requests are not open yet in this demo.</p>
+          {% endif %}
+        </section>
+      </div>
+    </div>
+  {% endtimezone %}
+{% endblock content %}

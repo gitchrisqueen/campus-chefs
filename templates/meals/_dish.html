@@ -1,0 +1,14 @@
+<p class="dish-name">
+  {{ item.name }}
+  {% if item.is_specialty %}<span class="badge">Specialty</span>{% endif %}
+</p>
+{% if item.description %}<p class="dish-desc">{{ item.description }}</p>{% endif %}
+<ul class="badges"
+    aria-label="Allergens and dietary tags for {{ item.name }}">
+  {% if item.allergens %}
+    <li class="badge badge-allergen">Contains: {{ item.allergen_labels|join:", " }}</li>
+  {% else %}
+    <li class="badge">No major allergens declared</li>
+  {% endif %}
+  {% for tag in item.dietary_labels %}<li class="badge badge-diet">{{ tag }}</li>{% endfor %}
+</ul>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ cook.user.public_name }} · Campus Chefs{% endblock title %}
+{% block content %}
+  <header class="page-head cook-head">
+    <span class="avatar" aria-hidden="true">{{ cook.user.first_name|first }}{{ cook.user.last_name|first }}</span>
+    <div>
+      <span class="eyebrow">Student cook</span>
+      <h1>{{ cook.user.public_name }}</h1>
+      <dl class="facts">
+        <dt>Campus</dt>
+        <dd>
+          {{ cook.user.campus.name }}
+        </dd>
+        {% if cook.user.classification %}
+          <dt>Year</dt>
+          <dd>
+            {{ cook.user.get_classification_display }}
+          </dd>
+        {% endif %}
+        <dt>Rating</dt>
+        <dd>
+          {% if rating.count %}
+            {{ rating.average|floatformat:1 }} out of 5 ({{ rating.count }} review{{ rating.count|pluralize }})
+          {% else %}
+            No reviews yet
+          {% endif %}
+        </dd>
+      </dl>
+      {% if cook.bio %}<p class="lede">{{ cook.bio }}</p>{% endif %}
+    </div>
+  </header>
+  {% if specialties %}
+    <section class="block" aria-labelledby="specialties-heading">
+      <h2 id="specialties-heading">Specialties</h2>
+      <ul class="specialty-list">
+        {% for item in specialties %}
+          <li class="card">
+            <span class="eyebrow">{{ item.get_meal_type_display }}</span>
+            {% include "meals/_dish.html" %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  <section class="block" aria-labelledby="menu-heading">
+    <h2 id="menu-heading">Menu</h2>
+    <div class="menu-grid">
+      {% for meal, courses in menu %}
+        <section class="menu-meal card" aria-label="{{ meal }}">
+          <h3>{{ meal }}</h3>
+          {% for course, items in courses %}
+            <h4>{{ course }}</h4>
+            {% if items %}
+              <ul class="dish-list">
+                {% for item in items %}
+                  <li>{% include "meals/_dish.html" %}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted small">Nothing yet.</p>
+            {% endif %}
+          {% endfor %}
+        </section>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="block" aria-labelledby="upcoming-heading">
+    <h2 id="upcoming-heading">Upcoming meals</h2>
+    {% if upcoming %}
+      <ul class="offer-list">
+        {% for offering in upcoming %}
+          <li>{% include "meals/_offering_card.html" %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No meals open right now.</p>
+    {% endif %}
+  </section>
+  <section class="block" aria-labelledby="reviews-heading">
+    <h2 id="reviews-heading">Reviews</h2>
+    {% if reviews %}
+      <ul class="review-list">
+        {% for review in reviews %}
+          <li class="card">
+            <p class="review-head">
+              <strong>{{ review.rating }} out of 5</strong>
+              <span class="muted">{{ review.booking.diner.public_name }} · {{ review.booking.offering.title }} · {{ review.created_at|date:"j M Y" }}</span>
+            </p>
+            {% if review.the_good %}
+              <p>
+                <strong>The good:</strong> {{ review.the_good }}
+              </p>
+            {% endif %}
+            {% if review.the_bad %}
+              <p>
+                <strong>The bad:</strong> {{ review.the_bad }}
+              </p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No reviews yet.</p>
+    {% endif %}
+  </section>
+{% endblock content %}

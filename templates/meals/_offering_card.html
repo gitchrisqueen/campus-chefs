@@ -1,0 +1,31 @@
+{% load tz %}
+{% timezone offering.cook.user.campus.timezone %}
+  <article class="offer-card" aria-labelledby="offer-{{ offering.pk }}-title">
+    <p class="offer-meta">
+      <span class="offer-kind">{{ offering.get_meal_type_display }}</span>
+      <span>{{ offering.serve_at|date:"D j M · g:i A" }}</span>
+    </p>
+    <h3 id="offer-{{ offering.pk }}-title" class="offer-title">
+      <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
+    </h3>
+    <p class="offer-cook">
+      by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a> · {{ offering.cook.user.campus.name }}
+    </p>
+    <p class="offer-dishes">
+      {% for item in offering.items.all %}
+        {{ item.name }}
+        {% if not forloop.last %}·{% endif %}
+      {% endfor %}
+    </p>
+    {% include "meals/_chip_in.html" %}
+    {% if offering.allergen_labels %}
+      <p class="offer-allergens">
+        <span class="badge badge-allergen">Contains: {{ offering.allergen_labels|join:", " }}</span>
+      </p>
+    {% endif %}
+    <p class="offer-foot">
+      <strong>{{ offering.seats_left }} of {{ offering.capacity }} seat{{ offering.capacity|pluralize }} left</strong>
+      <span>{{ offering.get_fulfillment_display }}</span>
+    </p>
+  </article>
+{% endtimezone %}

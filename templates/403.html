@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Not allowed · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="error-page" aria-labelledby="error-heading">
+    <span class="error-code" aria-hidden="true">403</span>
+    <h1 id="error-heading">This part of the kitchen is for cooks.</h1>
+    <p class="lede">Set up a kitchen first, or go back to your account.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="{% url 'kitchen_setup' %}">Set up a kitchen</a>
+      <a class="btn btn-secondary" href="{% url 'home' %}">Back to the home page</a>
+    </div>
+  </section>
+{% endblock content %}
