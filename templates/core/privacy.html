@@ -21,7 +21,7 @@
         <li>For cooks: your bio, menus and meals. A pickup note is shown only to diners the cook has confirmed.</li>
         <li>Your bookings and grocery shares, with any custom grocery terms or note you write. Only the cook sees them.</li>
         <li>Your reviews, with the star rating and any text you write.</li>
-        {% if ai_import_enabled %}<li>If you use “Paste a menu”, the text you paste is sent to an AI service to draft your dishes. It is not stored, and nothing else about you is sent.</li>{% endif %}
+        {% if ai_import_enabled %}<li>If you use “Paste a menu”, the text you paste is sent to an AI service, Anthropic's Claude API, to draft your dishes. This site does not store that text. Anthropic receives it and may keep it for a limited time under its own terms. Nothing else about you is sent.</li>{% endif %}
       </ul>
     </section>
     <section class="card" aria-labelledby="not-stored-heading">
@@ -51,5 +51,6 @@
       <li>your past bookings and the star ratings of your reviews, under “Former student”, because they belong to the other student too;</li>
       <li>your campus, class year and the time you confirmed you are 18 or older, on the anonymized account.</li>
     </ul>
+    {% if ai_import_enabled %}<p>Deleting your account here does not remove text already sent to Anthropic through “Paste a menu”.</p>{% endif %}
   </section>
 {% endblock content %}

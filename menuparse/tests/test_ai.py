@@ -12,7 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from meals.models import ALLERGENS, DIETARY_TAGS, Course, MealType, MenuItem
-from menuparse import service
+from menuparse import service, views
 from menuparse.schema import MenuDraft
 from menuparse.service import MAX_MENU_CHARS, MenuParseError
 from tests import factories as f
@@ -444,6 +444,105 @@ def test_ai_import_page_says_the_text_is_sent_to_an_ai_service_and_to_check_alle
     assert "allergens" in body
     assert "2008" not in body and 'class="eyebrow"' not in body and "·" not in body.split("</title>", 1)[1]
     assert body.count("btn-primary") == 1
+
+
+@pytest.mark.django_db
+def test_ai_07_import_page_names_the_provider_and_its_retention(client, cook, ai_on):
+    client.force_login(cook.user)
+    body = client.get(PASTE_URL).content.decode()
+    assert "Anthropic" in body
+    assert "does not store the pasted text" in body
+    assert "may keep it for a limited time under its own terms" in body
+    assert "It is not stored" not in body
+    assert "This can take up to 20 seconds." in body
+
+
+@pytest.mark.django_db
+def test_ai_07_import_page_tells_the_cook_what_not_to_paste(client, cook, ai_on):
+    client.force_login(cook.user)
+    body = client.get(PASTE_URL).content.decode()
+    assert "Paste dish names and descriptions only." in body
+    assert "Do not include names, phone numbers, addresses or health details." in body
+
+
+@pytest.mark.django_db
+def test_ai_07_privacy_page_names_the_provider_and_its_retention_only_when_the_flag_is_on(client, settings):
+    settings.CC_AI_ENABLED = False
+    off = client.get("/privacy").content.decode()
+    assert "Anthropic" not in off and "limited time" not in off
+    settings.CC_AI_ENABLED = True
+    on = client.get("/privacy").content.decode()
+    assert "Anthropic" in on
+    assert "This site does not store that text." in on
+    assert "may keep it for a limited time under its own terms" in on
+    assert "It is not stored" not in on
+    assert "does not remove text already sent to Anthropic" in on
+
+
+# --- AI-06: rate limit --------------------------------------------------------------------
+
+
+def _post_n(client, fake, n):
+    with mock.patch.object(service, "build_client", return_value=fake):
+        return [client.post(PASTE_URL, {"text": PASTED}) for _ in range(n)]
+
+
+@pytest.mark.django_db
+def test_ai_06_rate_limit_blocks_api_call(client, cook, ai_on, caplog):
+    client.force_login(cook.user)
+    limit = views.DRAFT_LIMITS[0][2]
+    assert limit == 5
+    fake = fake_client(draft())
+    with caplog.at_level(logging.WARNING):
+        responses = _post_n(client, fake, limit + 1)
+    assert all("form-0-name" in r.content.decode() for r in responses[:limit])
+    assert fake.messages.parse.call_count == limit
+    last = responses[-1]
+    body = last.content.decode()
+    assert last.status_code == 429
+    assert "form-0-name" not in body
+    assert "several drafts in a row" in body
+    assert 'href="/kitchen/items/new"' in body
+    assert "menu draft blocked: rate_limited" in " ".join(r.getMessage() for r in caplog.records)
+    assert MenuItem.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_ai_06_the_daily_cap_blocks_api_call(client, cook, ai_on, monkeypatch):
+    assert views.DRAFT_LIMITS[1][1:] == (24 * 60 * 60, 20)
+    monkeypatch.setattr(views, "DRAFT_LIMITS", (("burst", 600, 100), ("daily", 86400, 3)))
+    client.force_login(cook.user)
+    fake = fake_client(draft())
+    responses = _post_n(client, fake, 4)
+    assert fake.messages.parse.call_count == 3
+    assert responses[-1].status_code == 429 and "today" in responses[-1].content.decode()
+    assert 'href="/kitchen/items/new"' in responses[-1].content.decode()
+
+
+@pytest.mark.django_db
+def test_ai_06_the_limit_is_per_user_and_invalid_or_blocked_posts_do_not_count(client, cook, other_cook, ai_on):
+    client.force_login(cook.user)
+    with mock.patch.object(service, "build_client") as build:
+        for _ in range(10):  # invalid form: no API call and nothing counted
+            client.post(PASTE_URL, {"text": "   "})
+        build.assert_not_called()
+    fake = fake_client(draft())
+    _post_n(client, fake, 7)  # two blocked posts add nothing
+    assert fake.messages.parse.call_count == 5
+    client.force_login(other_cook.user)
+    other = fake_client(draft())
+    assert _post_n(client, other, 1)[0].status_code == 200
+    assert other.messages.parse.call_count == 1
+
+
+@pytest.mark.django_db
+def test_ai_06_a_broken_counter_blocks_the_call(client, cook, ai_on):
+    client.force_login(cook.user)
+    fake = fake_client(draft())
+    with mock.patch("core.ratelimit.caches", side_effect=RuntimeError("cache down")):
+        response = _post_n(client, fake, 1)[0]
+    assert response.status_code == 429
+    fake.messages.parse.assert_not_called()
 
 
 @pytest.mark.django_db
