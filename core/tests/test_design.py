@@ -208,9 +208,10 @@ def test_home_keeps_live_search_hooks_and_chip_in_line(client):
 
 
 @pytest.mark.django_db
-def test_home_design_review_fixes(client):
+def test_home_design_review_fixes(client, settings):
     """Art-director fixes: no middle-dot strings in the listing card or the footer, no tracked
     eyebrows except the hero's, one filled button in the demo card, and a descriptive title."""
+    settings.CC_DEMO_MODE = True  # the demo card renders only in demo mode; CI runs with it off
     html = client.get("/").content.decode("utf-8")
     ticket = html[html.index('<article class="ticket"') : html.index("</article>")]
     footer = html[html.index("<footer") : html.index("</footer>")]
