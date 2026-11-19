@@ -3,6 +3,7 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -10,8 +11,9 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from bookings.models import Booking, Review
 
-from .forms import CookBioForm, CookSetupForm, MenuItemForm, OfferingForm
+from .forms import CookBioForm, CookSetupForm, MenuItemForm, OfferingForm, SearchForm
 from .models import CookProfile, Course, MealType, MenuItem, Offering
+from .search import search_offerings
 
 
 def cook_required(view):
@@ -194,3 +196,13 @@ def offering_detail(request, pk):
     )
     context = {"offering": offering, "show_pickup_note": is_cook or is_confirmed_diner, "is_cook": is_cook}
     return render(request, "meals/offering.html", context)
+
+
+@require_GET
+def search(request):
+    """GET /search. htmx gets the results partial; a plain GET gets the full page (SRCH-07, E2E-05)."""
+    form = SearchForm(request.GET)
+    paginator = Paginator(search_offerings(**form.filters()).for_listing(), 20)
+    context = {"form": form, "page": paginator.get_page(request.GET.get("page")), "q": form.cleaned_data.get("q", "")}
+    template = "partials/search_results.html" if request.headers.get("HX-Request") else "meals/search.html"
+    return render(request, template, context)

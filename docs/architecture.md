@@ -89,3 +89,18 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | — | Supporting tests without a plan ID (`meals/tests/test_kitchen.py`, `test_public_pages.py`) | They cover the kitchen and public views for the 90% coverage gate |
 | — | While a meal has requested or confirmed bookings, `OfferingForm` rejects a new serve time, fulfillment or share per seat, and a capacity below the seats held. `grocery_estimate` stays editable | Diners agreed to what they saw. The estimate needs no lock because the no-profit check already bounds it against the share and capacity |
 | — | `MenuItemForm` rejects a meal-type change on a dish that is attached to any meal | Offerings require their dishes to match the meal type, so a re-typed dish would break the meals that use it |
+
+## Phase 5 records (2026-11-18)
+
+- **Search** is `meals/search.py::search_offerings`. The dietary filter drops any offering with a dish that lacks the tag, and the allergen filter drops any offering with a dish whose allergens overlap the excluded set. Both use an `OfferingItem` subquery, so the text-match join cannot change their meaning.
+- **htmx 4 on a form:** `hx-get` on the `/search` form with `hx-trigger="submit, input delay:300ms"` sends every field of the form, and the bubbling `input` event from the text box, the selects and the checkboxes all trigger it. E2E-06 checks this in Chromium.
+- **The phase 1 stub is gone:** the `search_stub` view, its URL, `STUB_DISHES`, `partials/search_stub_results.html` and `test_e2e_06a_…`. SRCH-07 replaces the partial test, and E2E-06 now types "pancakes" on `/` and on `/search`.
+
+## Phase 5 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| — | A "Find a meal" link in the main nav | Search is the second of the three steps; LEG-08 (phase 8) checks every nav link returns 200 |
+| — | Invalid filter values are listed above the results and ignored; the valid filters still apply | A tampered `campus` or `max_share` should not blank the whole page |
+| — | An empty query lists every open meal | `/search` doubles as "browse meals"; the same holds when the home box is cleared |
+| — | Supporting tests without a plan ID in `meals/tests/test_search.py` | They cover the meal and date filters, invalid input and pagination |

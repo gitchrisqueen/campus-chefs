@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Find a meal · Campus Chefs{% endblock title %}
+{% block content %}
+  <header class="page-head">
+    <span class="eyebrow">Search</span>
+    <h1>Find a meal</h1>
+    <p class="lede">Search by a cook's first name, a dish or an ingredient. Results update as you type.</p>
+  </header>
+  <form class="search-page-form panel"
+        action="{% url 'search' %}"
+        method="get"
+        role="search"
+        hx-get="{% url 'search' %}"
+        hx-trigger="submit, input delay:300ms"
+        hx-target="#results"
+        hx-indicator="#search-indicator">
+    <label class="label" for="q">{{ form.q.label }}</label>
+    <div class="search-row">
+      <input id="q"
+             name="q"
+             type="search"
+             value="{{ form.q.value|default:'' }}"
+             maxlength="100"
+             placeholder="Try pancakes or lentils"
+             autocomplete="off">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+    <div class="filters">
+      <div class="field">{{ form.campus.as_field_group }}</div>
+      <div class="field">{{ form.meal.as_field_group }}</div>
+      <div class="field">{{ form.date.as_field_group }}</div>
+      <div class="field">{{ form.diet.as_field_group }}</div>
+      <div class="field">{{ form.max_share.as_field_group }}</div>
+    </div>
+    <div class="filters-wide">{{ form.exclude.as_field_group }}</div>
+    <p class="search-status">
+      <span id="search-indicator" class="htmx-indicator" aria-hidden="true">Searching…</span>
+    </p>
+  </form>
+  <section class="block" aria-labelledby="results-heading">
+    <h2 id="results-heading">Results</h2>
+    <div id="results" aria-live="polite">
+      {% include "partials/search_results.html" %}
+    </div>
+  </section>
+{% endblock content %}

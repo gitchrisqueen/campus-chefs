@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from bookings.models import Booking
 
-from .models import ALLERGENS, DIETARY_TAGS, CookProfile, MealType, MenuItem, Offering, OfferingNeed
+from .models import ALLERGENS, DIETARY_TAGS, Campus, CookProfile, MealType, MenuItem, Offering, OfferingNeed
 from .money import format_cents, suggested_share_cents
 
 NO_PROFIT = "Diners together can't pay more than the groceries cost."
@@ -257,3 +257,45 @@ class OfferingForm(forms.ModelForm):
             OfferingNeed(offering=offering, label=label) for label in self.cleaned_data["bring_list"]
         )
         return offering
+
+
+class SearchForm(forms.Form):
+    """GET filters for /search. Invalid filters are reported and ignored; the valid ones still apply."""
+
+    q = forms.CharField(label="Cook's first name, dish or ingredient", required=False, max_length=100)
+    campus = forms.ChoiceField(label="Campus", required=False)
+    meal = forms.ChoiceField(label="Meal", required=False, choices=[("", "Any meal"), *MealType.choices])
+    date = forms.DateField(label="Date", required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    diet = forms.ChoiceField(label="Dietary tag (cook-declared)", required=False, choices=[("", "Any"), *DIETARY_TAGS])
+    exclude = forms.MultipleChoiceField(
+        label="Leave out dishes that contain",
+        required=False,
+        choices=ALLERGENS,
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "check-grid"}),
+        help_text="Cook-declared, not a safety guarantee.",
+    )
+    max_share = forms.DecimalField(
+        label="Most I'll chip in per seat ($)", required=False, min_value=0, max_digits=5, decimal_places=2
+    )
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("auto_id", "%s")  # id="q" and id="results" are what htmx and E2E-06 use
+        kwargs.setdefault("label_suffix", "")
+        super().__init__(*args, **kwargs)
+        campuses = Campus.objects.values_list("slug", "name")
+        self.fields["campus"].choices = [("", "Any campus"), *campuses]
+
+    def filters(self) -> dict:
+        """Keyword arguments for `search_offerings`, from the fields that validated."""
+        self.is_valid()
+        data = self.cleaned_data
+        share = data.get("max_share")
+        return {
+            "q": data.get("q", ""),
+            "campus": data.get("campus", ""),
+            "meal_type": data.get("meal", ""),
+            "on_date": data.get("date"),
+            "diet": data.get("diet", ""),
+            "exclude_allergens": data.get("exclude", []),
+            "max_share_cents": None if share is None else _cents(share),
+        }

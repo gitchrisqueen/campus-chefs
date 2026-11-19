@@ -1,0 +1,42 @@
+<p class="callout small">
+  Allergen and dietary details are declared by each cook. They are not a safety guarantee.
+  <a href="{% url 'safety' %}">Read the safety notes</a>.
+</p>
+{% if form.errors %}
+  <p class="small">
+    Some filters were not valid, so they were ignored:
+    {% for field in form %}
+      {% if field.errors %}{{ field.label }}{% endif %}
+    {% endfor %}
+  </p>
+{% endif %}
+{% if page.paginator.count %}
+  <p class="small muted results-count">
+    {{ page.paginator.count }} meal{{ page.paginator.count|pluralize }}
+    {% if q %}
+      match{{ page.paginator.count|pluralize:"es," }} “{{ q }}”.
+    {% else %}
+      open for requests.
+    {% endif %}
+  </p>
+  <ul class="offer-list">
+    {% for offering in page %}
+      <li>{% include "meals/_offering_card.html" %}</li>
+    {% endfor %}
+  </ul>
+  {% if page.has_other_pages %}
+    <nav class="pager" aria-label="Result pages">
+      {% if page.has_previous %}
+        <a href="{% url 'search' %}{% querystring page=page.previous_page_number %}">Previous page</a>
+      {% endif %}
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}
+        <a href="{% url 'search' %}{% querystring page=page.next_page_number %}">Next page</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p class="empty">
+    No meals match{% if q %} “{{ q }}”{% endif %}. Try another dish, ingredient or first name, or fewer filters.
+  </p>
+{% endif %}
