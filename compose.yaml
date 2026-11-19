@@ -8,6 +8,7 @@ x-app-env: &app-env
   CC_DEMO_LOCAL_HTTP: "true"
   CC_REGISTRATION_OPEN: ${CC_REGISTRATION_OPEN:-true}
   CC_AI_ENABLED: ${CC_AI_ENABLED:-false}
+  CC_AI_MODEL: ${CC_AI_MODEL:-}
   CC_FEEDBACK_URL: ${CC_FEEDBACK_URL:-}
   DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,web"
   DJANGO_SECRET_KEY_FILE: /run/cc-secrets/django_secret_key
