@@ -241,15 +241,16 @@ The allowed values come from `meals.models` (`MealType`, `Course`, `ALLERGENS`, 
 | httpx2 and httpcore2 | 2.16.0 | 2026-10-21 | Transitive. 2.16.1 and 2.16.2 are from 2026-11-16, so `uv.lock` holds 2.16.0 |
 | jiter | 0.18.0 | 2026-10-23 | Transitive. 0.19.0 is from 2026-11-06 |
 | other new transitive packages | annotated-types 0.8.0, anyio 4.16.0, docstring-parser 0.18.0, h11 0.16.0, httpx2-jsfetch 1.0, opentelemetry-api 1.45.2, sniffio 1.3.1, truststore 0.10.5, typing-extensions 4.16.0, typing-inspection 0.4.5 | all at least 14 days old (typing-inspection 0.4.5 is from 2026-11-04) | Dates from the PyPI JSON API |
-| Model id | `claude-opus-5-5` | | From the `claude-api` skill's current-models table (cached 2026-11-03). Override with `CC_AI_MODEL`. Opus 5.5 is listed at $4 input and $20 output per million tokens |
+| Model id | `claude-opus-5-5` | | From the Claude API documentation's model list (read 2026-11-03). Override with `CC_AI_MODEL`. Prices are on Anthropic's pricing page and are not repeated here |
 
 ### Phase 12 deviations from the plan
 
 | Plan said | Built | Why |
 |---|---|---|
-| "The Claude model id" is verified at implementation | Default `claude-opus-5-5`, from the skill's table, not from a live `GET /v1/models` call | No key exists in this build and no real API call is allowed. The owner can set `CC_AI_MODEL` |
+| "The Claude model id" is verified at implementation | Default `claude-opus-5-5`, from the Claude API documentation's model list, not from a live `GET /v1/models` call | No key exists in this build and no real API call is allowed. The owner can set `CC_AI_MODEL` |
 | — | No server-side refusal `fallbacks` | `messages.parse` is on the stable endpoint and the fallback needs the beta endpoint. A refusal is shown as a friendly message with the manual form |
 | — | `effort: low` and no `thinking` setting | Extraction needs little reasoning. Opus 5.5 always thinks, and `low` keeps latency inside the worker timeout |
 | — | `ANTHROPIC_API_KEY` is not in `compose.yaml` | CHK-06 bans a non-empty secret value in the file. The runbook shows an override file that mounts a key file and sets `ANTHROPIC_API_KEY_FILE` |
 | — | The review page asks for one allergen confirmation for the whole draft, not one per dish | The plan's AI-05 says "the confirmation". Every dish is still checked by `MenuItemForm` rules |
 | — | A `CC_AI_ENABLED` template variable from `core.context_processors.demo` | One place decides whether the kitchen link and the privacy line show |
+| The image scan runs Trivy with its default secret rules | `docker/trivy-secret.yaml` allows one path: the Anthropic SDK's `types/beta` and `resources/beta` modules | Their docstrings quote the literal `{"type": "service_account"}`, which Trivy's `gcp-service-account` rule reports as CRITICAL. It is documentation in a pinned third-party package. Every other path is still scanned |
