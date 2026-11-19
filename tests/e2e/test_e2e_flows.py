@@ -8,6 +8,7 @@ unique synthetic `.example` email on every run.
 """
 
 import re
+import secrets
 
 import pytest
 from playwright.sync_api import expect
@@ -16,8 +17,9 @@ from tests.e2e.helpers import demo_login, unique_email
 
 pytestmark = pytest.mark.e2e
 
-# A throwaway password for throwaway synthetic accounts in the local demo; not a credential.
-PASSWORD = "e2e-Synthetic-pass-2026"  # gitleaks:allow
+# A fresh random password per run for the throwaway synthetic accounts the tests register.
+# Nothing logs back in with it, and no literal is committed for secret scanners to flag.
+PASSWORD = secrets.token_urlsafe(18)
 PUBLIC_PAGES = ["/", "/how-it-works", "/safety", "/privacy", "/register", "/login", "/search", "/search?q=pancakes"]
 
 
