@@ -84,7 +84,10 @@
   <section class="block" aria-labelledby="menu-heading">
     <div class="section-head">
       <h2 id="menu-heading">Your menu</h2>
-      <a class="btn btn-secondary" href="{% url 'item_create' %}">Add a dish</a>
+      <div class="btn-row">
+        {% if ai_import_enabled %}<a class="btn btn-secondary" href="{% url 'menu_import' %}">Paste a menu</a>{% endif %}
+        <a class="btn btn-secondary" href="{% url 'item_create' %}">Add a dish</a>
+      </div>
     </div>
     <div class="menu-grid">
       {% for meal, courses in menu %}

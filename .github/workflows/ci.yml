@@ -79,9 +79,10 @@ jobs:
       - name: Image scan (Trivy, tarball input, no docker socket)
         run: |
           docker save campuschefs:local -o "$RUNNER_TEMP/img.tar"
-          docker run --rm -v "$RUNNER_TEMP:/scan:ro" \
+          docker run --rm -v "$RUNNER_TEMP:/scan:ro" -v "$PWD/docker/trivy-secret.yaml:/trivy-secret.yaml:ro" \
             aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c \
-            image --input /scan/img.tar --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+            image --input /scan/img.tar --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --secret-config /trivy-secret.yaml
 
       - name: Compose smoke (incl. SEC-08 secret isolation, OPS-01 persistence)
         run: make demo && make smoke

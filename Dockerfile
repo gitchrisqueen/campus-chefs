@@ -18,6 +18,7 @@ COPY core/ core/
 COPY accounts/ accounts/
 COPY meals/ meals/
 COPY bookings/ bookings/
+COPY menuparse/ menuparse/
 COPY templates/ templates/
 COPY static/ static/
 COPY docker/entrypoint.sh docker/entrypoint.sh
@@ -38,7 +39,7 @@ COPY --from=build /opt/venv /opt/venv
 COPY --from=build /src /app
 ENV PATH=/opt/venv/bin:$PATH PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 DJANGO_SETTINGS_MODULE=config.settings
 # Fails the build if the venv interpreter link is broken.
-RUN python -c "import django, psycopg, argon2, gunicorn"
+RUN python -c "import django, psycopg, argon2, gunicorn, anthropic, pydantic"
 WORKDIR /app
 USER 10001
 EXPOSE 8000

@@ -19,7 +19,7 @@ lint:
 
 # pip-audit needs PyPI/OSV; the tests container has no internet (backend network only), so sast runs on the host.
 sast:
-	uv run sh -c 'bandit -q -c pyproject.toml -r accounts meals bookings core config && uv export --locked --no-hashes --format requirements-txt -o /tmp/cc-req.txt && pip-audit --strict -r /tmp/cc-req.txt'
+	uv run sh -c 'bandit -q -c pyproject.toml -r accounts meals bookings core menuparse config && uv export --locked --no-hashes --format requirements-txt -o /tmp/cc-req.txt && pip-audit --strict -r /tmp/cc-req.txt'
 
 manage:
 	$(RUN) python manage.py $(ARGS)

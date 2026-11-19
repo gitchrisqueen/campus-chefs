@@ -11,6 +11,8 @@ dependencies = [
     "argon2-cffi>=23.1",
     "gunicorn>=23.0",
     "whitenoise>=6.8",
+    "anthropic==2.5.0",
+    "pydantic==2.14.2",
 ]
 
 [dependency-groups]
@@ -33,14 +35,14 @@ package = false
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["."]
-testpaths = ["core", "accounts", "meals", "bookings", "tests"]
+testpaths = ["core", "accounts", "meals", "bookings", "menuparse", "tests"]
 python_files = ["test_*.py"]
 addopts = "--strict-markers --output test-results/playwright"
 markers = ["e2e: browser tests against the running compose stack"]
 filterwarnings = ["ignore:No directory at:UserWarning"]
 
 [tool.coverage.run]
-source = ["accounts", "meals", "bookings", "core"]
+source = ["accounts", "meals", "bookings", "core", "menuparse"]
 omit = ["*/migrations/*", "*/tests/*", "*/apps.py"]
 
 [tool.coverage.report]

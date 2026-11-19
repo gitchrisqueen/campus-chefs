@@ -25,6 +25,9 @@ CC_DEMO_MODE = env_bool("CC_DEMO_MODE", default=False)
 CC_DEMO_LOCAL_HTTP = env_bool("CC_DEMO_LOCAL_HTTP", default=False)
 CC_REGISTRATION_OPEN = env_bool("CC_REGISTRATION_OPEN", default=True)
 CC_AI_ENABLED = env_bool("CC_AI_ENABLED", default=False)
+# Plan phase 12 (D4). The model id is checked against the Claude API docs; override it with CC_AI_MODEL.
+# ANTHROPIC_API_KEY is never a setting: menuparse reads it from `ANTHROPIC_API_KEY_FILE` when it is needed.
+CC_AI_MODEL = read_secret("CC_AI_MODEL", "") or "claude-opus-5-5"
 CC_FEEDBACK_URL = read_secret("CC_FEEDBACK_URL", "") or ""
 
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "[::1]", "web"}
@@ -46,6 +49,7 @@ INSTALLED_APPS = [
     "accounts",
     "meals",
     "bookings",
+    "menuparse",
 ]
 
 MIDDLEWARE = [
