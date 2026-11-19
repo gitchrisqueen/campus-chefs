@@ -11,7 +11,7 @@
   </picture>
 </p>
 
-[The walkthrough](docs/walkthrough.md) shows every screen of this booking as a still picture, and you can also [watch the full 14-second loop](docs/screenshots/after/booking-loop.gif).
+The walkthrough shows all eight screens in this booking as still pictures: [open the walkthrough](docs/walkthrough.md).
 
 Campus Chefs matches students who want a home-cooked meal with students who like to cook. A cook posts a meal: the dishes, the time, the seats and what the groceries cost. A diner asks for a seat and chips in toward those groceries with a share of the cost, an item from the cook's bring list, or terms the two of them agree on. The cook gets help with the grocery bill and never a profit.
 
@@ -23,6 +23,7 @@ Campus Chefs matches students who want a home-cooked meal with students who like
 |---|---|
 | A student, or anyone curious about the product | [What a student sees](#what-a-student-sees) |
 | Someone who wants to click around | [Run the demo](#run-the-demo), one command |
+| A business owner evaluating a legacy-app rescue | [Work with me](#work-with-me) |
 | A developer or a hiring team | [For developers and hiring teams](#for-developers-and-hiring-teams) |
 
 ## What a student sees
@@ -138,6 +139,7 @@ In short, with the evidence for each line:
 - **Security decisions with their costs written down.** A strict content security policy, one secrets volume per service, a database role that cannot change the schema, and rules enforced by the database ([security and data decisions](#security-and-data-decisions)).
 - **An AI feature behind a flag.** An optional menu import that is off by default, sends only the pasted text, and treats the model's reply as untrusted input ([AI menu import](#ai-menu-import-optional)).
 - **Scope held on purpose.** No payments, no messaging, no uploads, and the reasons ([deliberately not built](#deliberately-not-built)).
+- **Methods that carry over to a client app.** Start with file-and-line evidence, add regression tests for fixed behavior, keep a one-command local run, and hand off a runbook. Each client app needs its own scope and release checks; this demo's results do not predict another app's outcome.
 
 IDs such as AUTH-07 and CHK-04 name a test or a static check in the [plan](docs/MODERNIZATION_PLAN.md#7-test-strategy), and each test function carries its ID in its name.
 
@@ -375,6 +377,10 @@ The plan listed dark mode and an animated demo as stretch goals, and the AI menu
 6. **Full-text search with an index** once there are more than a few hundred dishes.
 7. **Django 6.2 LTS** when it is released, before 6.1 leaves security support. The plan header records both dates as checked on 2026-11-18.
 8. **A first live run of the menu import,** after reading the API provider's data terms. Until then the feature stays off, and its API path has been tested only against a test double.
+
+## Work with me
+
+Start with an audit that lists defects by file and line. A scoped legacy-app rescue can include regression tests written before fixes, a one-command local run, and an operations runbook. Scope and timing are set after the audit; price is on request. The client owns the delivered repository, tests and runbook. If a milestone is at risk, we agree on a revised date before the schedule changes; [contact CQC](https://christopherqueenconsulting.com/contact-us/) to discuss a project.
 
 ## More to read
 
