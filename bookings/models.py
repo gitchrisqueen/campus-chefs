@@ -83,7 +83,8 @@ class Booking(models.Model):
                 name="booking_share_only_for_share_or_custom",
             ),
             models.CheckConstraint(
-                condition=~Q(contribution="custom") | ~Q(terms=""), name="booking_custom_needs_terms"
+                condition=~Q(contribution="custom") | ~Q(terms="") | ~Q(status__in=["requested", "confirmed"]),
+                name="booking_custom_needs_terms",
             ),
         ]
 
@@ -113,7 +114,7 @@ class Booking(models.Model):
         if self.contribution == C.CUSTOM:
             agreed = "Agreed" if self.status in (self.Status.CONFIRMED, self.Status.COMPLETED) else "Offered"
             amount = f"{format_cents(self.share_cents)} + " if self.share_cents else ""
-            return f"{agreed}: {amount}{self.terms}"
+            return f"{agreed}: {amount}{self.terms or 'Custom terms (removed)'}"
         return "Free meal: nothing to chip in"
 
 

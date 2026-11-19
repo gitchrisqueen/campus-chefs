@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django import forms
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 
 from bookings.models import Booking
@@ -101,6 +101,8 @@ class MenuItemForm(forms.ModelForm):
                 "Allergens are locked while this dish is on a meal with requested or confirmed bookings, "
                 "because those diners agreed to the list they saw.",
             )
+        if self.instance.pk and "meal_type" in self.changed_data and self.instance.offerings.exists():
+            self.add_error("meal_type", "This dish is on a meal, so its meal type can't change.")
         return cleaned
 
     def _has_active_bookings(self) -> bool:
@@ -198,6 +200,19 @@ class OfferingForm(forms.ModelForm):
         elif serve_at and cutoff and cutoff > serve_at:
             self.add_error("booking_cutoff_at", "The booking cutoff must be at or before the serve time.")
 
+        held = self._held_seats()
+        capacity = cleaned.get("capacity")
+        if held and capacity and capacity < held:
+            self.add_error("capacity", f"{held} seats are already requested or confirmed.")
+        if (
+            held
+            and serve_at
+            and serve_at.replace(second=0, microsecond=0) != self.instance.serve_at.replace(second=0, microsecond=0)
+        ):
+            self._lock_error("serve_at")
+        if held and "fulfillment" in self.changed_data:
+            self._lock_error("fulfillment")
+
         meal, items = cleaned.get("meal_type"), cleaned.get("items")
         if meal and items and any(item.meal_type != meal for item in items):
             self.add_error("items", f"Pick only {MealType(meal).label.lower()} dishes for a {meal} meal.")
@@ -210,9 +225,25 @@ class OfferingForm(forms.ModelForm):
             if share_cents * capacity > estimate_cents:
                 most = format_cents(estimate_cents // capacity)
                 self.add_error("share_per_seat", f"{NO_PROFIT} The most per seat is {most}.")
+            if held and share_cents != self.instance.share_per_seat_cents:
+                self._lock_error("share_per_seat")
             self.instance.grocery_estimate_cents = estimate_cents
             self.instance.share_per_seat_cents = share_cents
         return cleaned
+
+    def _held_seats(self) -> int:
+        """Seats held by requested and confirmed bookings on the meal being edited (0 for a new meal)."""
+        if not self.instance.pk:
+            return 0
+        bookings = Booking.objects.filter(offering=self.instance, status__in=Booking.ACTIVE)
+        return bookings.aggregate(total=Sum("seats"))["total"] or 0
+
+    def _lock_error(self, field: str) -> None:
+        self.add_error(
+            field,
+            "This can't change while the meal has requested or confirmed bookings, "
+            "because those diners agreed to what they saw.",
+        )
 
     @transaction.atomic
     def save(self, commit: bool = True) -> Offering:
