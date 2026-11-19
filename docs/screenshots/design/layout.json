@@ -1,0 +1,736 @@
+{
+ "booking-cook-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "booking-cook-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "booking-cook-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "booking-cook-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "booking-diner-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "booking-diner-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "booking-diner-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "booking-diner-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "cook-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "cook-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "cook-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "cook-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "delete-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "delete-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "delete-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "delete-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "edit-desktop-dark": {
+  "fold_filled_buttons": [
+   "Save changes"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "edit-desktop-light": {
+  "fold_filled_buttons": [
+   "Save changes"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "edit-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "edit-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "home-desktop-dark": {
+  "fold_filled_buttons": [
+   "Find a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "home-desktop-light": {
+  "fold_filled_buttons": [
+   "Find a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "home-phone-dark": {
+  "fold_filled_buttons": [
+   "Find a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "home-phone-light": {
+  "fold_filled_buttons": [
+   "Find a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "home-search-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "home-search-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "home-search-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "home-search-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "how-it-works-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "how-it-works-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "how-it-works-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "how-it-works-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "kitchen-desktop-dark": {
+  "fold_filled_buttons": [
+   "Open a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "kitchen-desktop-light": {
+  "fold_filled_buttons": [
+   "Open a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "kitchen-phone-dark": {
+  "fold_filled_buttons": [
+   "Open a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "kitchen-phone-light": {
+  "fold_filled_buttons": [
+   "Open a meal"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "login-desktop-dark": {
+  "fold_filled_buttons": [
+   "Log in",
+   "Try as demo diner"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "login-desktop-light": {
+  "fold_filled_buttons": [
+   "Log in",
+   "Try as demo diner"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "login-phone-dark": {
+  "fold_filled_buttons": [
+   "Log in"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "login-phone-light": {
+  "fold_filled_buttons": [
+   "Log in"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "me-cook-desktop-dark": {
+  "fold_filled_buttons": [
+   "Confirm Leo B."
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "me-cook-desktop-light": {
+  "fold_filled_buttons": [
+   "Confirm Leo B."
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "me-cook-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "me-cook-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "me-diner-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "me-diner-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "me-diner-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "me-diner-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-cook-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-cook-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-cook-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-cook-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-diner-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-diner-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-diner-phone-dark": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-diner-phone-light": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-errors-desktop-dark": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-errors-desktop-light": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "offering-errors-phone-dark": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-errors-phone-light": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-phone-dark": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "offering-phone-light": {
+  "fold_filled_buttons": [
+   "Request seats"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "password-desktop-dark": {
+  "fold_filled_buttons": [
+   "Change password"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "password-desktop-light": {
+  "fold_filled_buttons": [
+   "Change password"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "password-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "password-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "register-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "register-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "register-errors-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "register-errors-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "register-errors-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "register-errors-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "register-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "register-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "safety-desktop-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "safety-desktop-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "safety-phone-dark": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "safety-phone-light": {
+  "fold_filled_buttons": [],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "search-desktop-dark": {
+  "fold_filled_buttons": [
+   "Search"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "search-desktop-light": {
+  "fold_filled_buttons": [
+   "Search"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 1280,
+  "viewport_height": 800,
+  "viewport_width": 1280
+ },
+ "search-phone-dark": {
+  "fold_filled_buttons": [
+   "Search"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ },
+ "search-phone-light": {
+  "fold_filled_buttons": [
+   "Search"
+  ],
+  "horizontal_overflow": false,
+  "overflowing": [],
+  "scroll_width": 390,
+  "viewport_height": 844,
+  "viewport_width": 390
+ }
+}
