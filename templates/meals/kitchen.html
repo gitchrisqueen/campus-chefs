@@ -36,13 +36,26 @@
                 · {{ offering.seats_left }} of {{ offering.capacity }} seats left
               </p>
               <p class="small">
-                Groceries {{ offering.grocery_estimate_cents|money }} · Share {{ offering.share_per_seat_cents|money }} per seat
+                Expected {{ offering.expected_cents|money }} · Received {{ offering.received_cents|money }} · Groceries {{ offering.grocery_estimate_cents|money }}
+              </p>
+              <p class="small muted">
+                Share {{ offering.share_per_seat_cents|money }} per seat
                 {% if offering.needs.all %}· Bring list: {{ offering.open_needs|length }} of {{ offering.needs.all|length }} open{% endif %}
               </p>
             </div>
             <div class="row-actions">
               <a class="btn btn-secondary"
                  href="{% url 'offering_edit' offering.pk %}">Edit</a>
+              {% if offering.status == "open" %}
+                <form class="inline-form"
+                      method="post"
+                      action="{% url 'offering_cancel' offering.pk %}">
+                  {% csrf_token %}
+                  <button class="btn btn-quiet" type="submit">
+                    Cancel meal <span class="visually-hidden">{{ offering.title }}</span>
+                  </button>
+                </form>
+              {% endif %}
               <form class="inline-form"
                     method="post"
                     action="{% url 'offering_delete' offering.pk %}">
@@ -62,7 +75,7 @@
         {% for offering in past %}
           <li>
             <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
-            <span class="small muted">{{ offering.serve_at|date:"j M Y" }}</span>
+            <span class="small muted">{{ offering.serve_at|date:"j M Y" }} · Expected {{ offering.expected_cents|money }} · Received {{ offering.received_cents|money }} · Groceries {{ offering.grocery_estimate_cents|money }}</span>
           </li>
         {% endfor %}
       </ul>

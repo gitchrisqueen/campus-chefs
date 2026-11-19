@@ -1,8 +1,9 @@
 import pytest
+from django.db import IntegrityError, transaction
 from django.test import Client
 
 from accounts.models import User
-from bookings.models import Review
+from bookings.models import Booking, Review
 from meals.models import OfferingNeed
 from tests import factories as f
 
@@ -15,10 +16,12 @@ def diner(db):
 
 
 @pytest.mark.django_db
-def test_leg_02a_me_shows_own_profile_and_empty_bookings(client, diner):
-    """Phase 3 part of LEG-02 (2008 `cook_main.php` hardcoded userID = 1); phase 6 adds the bookings."""
-    f.user(first="Bruno", last="Quist", email="bruno.q@larkspur.example")
-    client.force_login(diner)
+def test_leg_02_me_shows_only_the_logged_in_users_profile_and_bookings(client, diner):
+    """2008 `cook_main.php` hardcoded userID = 1, so every visitor saw user 1's page."""
+    user_1 = f.user(first="Bruno", last="Quist", email="bruno.q@larkspur.example")
+    cook = f.cook(first="Marcus", email="marcus@larkspur.example", password=PASSWORD)
+    f.booking(f.offering(cook, title="Bruno's Lasagna Night"), user_1, status="confirmed")
+    client.force_login(diner)  # user 2
     page = client.get("/me").content.decode()
     assert "Ava Reyes" in page and "Ava R." in page
     assert "Larkspur State University (Demo)" in page
@@ -26,9 +29,16 @@ def test_leg_02a_me_shows_own_profile_and_empty_bookings(client, diner):
     assert "Cook and diner" not in page
     assert "Bruno" not in page and "bruno.q@" not in page
 
-    f.cook(first="Marcus", email="marcus@larkspur.example", password=PASSWORD)
+    f.booking(f.offering(cook, title="Ava's Pancake Breakfast"), diner, status="requested")
+    page = client.get("/me").content.decode()
+    assert "Ava&#x27;s Pancake Breakfast" in page and "Requested" in page
+    assert "No bookings yet." not in page
+    assert "Bruno" not in page and "Lasagna" not in page
+
     client.login(username="marcus@larkspur.example", password=PASSWORD)
-    assert "Cook and diner" in client.get("/me").content.decode()
+    page = client.get("/me").content.decode()
+    assert "Cook and diner" in page
+    assert "Requests for your meals" in page and "Ava R." in page
 
 
 @pytest.mark.django_db
@@ -37,7 +47,18 @@ def test_acct_01_delete_cancels_bookings_anonymizes_and_keeps_reviews(client, di
     upcoming = f.booking(f.offering(cook), diner, status="requested", contribution="ingredients")
     need = OfferingNeed.objects.create(offering=upcoming.offering, label="1 lb spaghetti", claimed_by_booking=upcoming)
     past = f.booking(f.offering(cook, days_ahead=-3, title="Past Dinner"), diner, status="completed")
-    review = Review.objects.create(booking=past, rating=5, the_good="Great pancakes")
+    review = Review.objects.create(booking=past, rating=5, the_good="Great pancakes", the_bad="Too loud")
+    past.note = "Allergic to nothing"
+    past.save()
+    custom = f.booking(
+        f.offering(cook, days_ahead=-5, title="Custom Dinner"),
+        diner,
+        status="completed",
+        contribution="custom",
+        share_cents=200,
+        terms="a salad and $2",
+        note="I will bring a friend",
+    )
     other_session = Client()
     other_session.force_login(diner)
     client.force_login(diner)
@@ -63,6 +84,16 @@ def test_acct_01_delete_cancels_bookings_anonymizes_and_keeps_reviews(client, di
     assert "Ava" not in diner.first_name and diner.last_name == ""
     review.refresh_from_db()
     assert review.booking.diner.public_name == "Former student"
+    assert (review.rating, review.the_good, review.the_bad) == (5, "", "")
+    assert not Booking.objects.filter(diner=diner).exclude(terms="", note="").exists()
+    custom.refresh_from_db()
+    assert (custom.contribution, custom.share_cents) == ("custom", 200)
+    assert custom.contribution_text == "Agreed: $2.00 + Custom terms (removed)"
+    cook_page = client.get(f"/cooks/{cook.pk}").content.decode()
+    assert "Former student" in cook_page and "5 out of 5" in cook_page
+    assert "Great pancakes" not in cook_page
+    client.force_login(cook.user)
+    assert client.get(f"/bookings/{custom.pk}").status_code == 200
     assert other_session.get("/me").status_code == 302
     assert client.post("/login", {"username": "ava.r@larkspur.example", "password": PASSWORD}).status_code == 200
 
@@ -136,13 +167,42 @@ def test_acct_04_name_change_needs_no_password_but_email_must_be_free(client, di
 
 
 @pytest.mark.django_db
-def test_acct_04_cook_account_deletion_refused_until_cook_path_exists(client):
-    """Operator review: deleting a cook must not orphan offerings; the cook path lands with ACCT-03 in phase 6."""
-    cook = f.cook(email="cook.del@larkspur.example", password="a-long-test-password-1")
+def test_acct_03_cook_deletion_cancels_offerings_and_bookings_and_hides_cook(client):
+    cook = f.cook(first="Marcus", email="marcus@larkspur.example", password=PASSWORD)
+    cook.bio = "I cook for my floor every Sunday."
+    cook.save()
+    item = f.menu_item(cook, "Buttermilk Pancakes", is_specialty=True)
+    future = f.offering(cook)
+    future.items.add(item)
+    diner = f.user(first="Ava", last="Reyes")
+    booking = f.booking(future, diner, status="confirmed", contribution="ingredients")
+    need = OfferingNeed.objects.create(offering=future, label="1 lb spaghetti", claimed_by_booking=booking)
+    past = f.offering(cook, days_ahead=-2, title="Past Dinner")
+    done = f.booking(past, f.user(first="Sam"), status="completed")
+
     client.force_login(cook.user)
-    response = client.post("/me/delete", {"password": "a-long-test-password-1"})
-    assert response.status_code == 409
-    assert b"Cook accounts cannot be deleted yet" in response.content
-    cook.user.refresh_from_db()
-    assert cook.user.is_active
-    assert cook.user.email == "cook.del@larkspur.example"
+    assert client.post("/me/delete", {"password": PASSWORD}).status_code == 302
+
+    future.refresh_from_db()
+    booking.refresh_from_db()
+    item.refresh_from_db()
+    need.refresh_from_db()
+    done.refresh_from_db()
+    assert future.status == "cancelled"
+    assert (booking.status, booking.cancelled_by) == ("cancelled", "system")
+    assert need.claimed_by_booking is None
+    assert (item.is_active, item.is_specialty) == (False, False)
+    assert done.status == "completed"
+    assert client.get(f"/cooks/{cook.pk}").status_code == 404
+    cook.refresh_from_db()
+    assert cook.bio == ""
+
+
+@pytest.mark.django_db
+def test_acct_01_constraint_still_rejects_active_custom_booking_without_terms(diner):
+    cook = f.cook(first="Marcus", email="marcus@larkspur.example")
+    offering = f.offering(cook)
+    for status in ("requested", "confirmed"):
+        with pytest.raises(IntegrityError), transaction.atomic():
+            f.booking(offering, diner, status=status, contribution="custom", terms="")
+    f.booking(offering, diner, status="completed", contribution="custom", terms="")

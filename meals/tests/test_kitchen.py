@@ -298,15 +298,31 @@ def test_item_edit_and_archive(client, cook):
 
 
 @pytest.mark.django_db
-def test_allergen_lock_while_item_has_active_bookings(client, cook):
-    item = f.menu_item(cook, "Buttermilk Pancakes", allergens=["wheat"])
+def test_menu_05_allergens_locked_while_a_booking_is_confirmed(client, cook):
+    item = f.menu_item(cook, "Buttermilk Pancakes", meal_type="breakfast", course="main", allergens=["wheat"])
     offering = f.offering(cook)
     offering.items.add(item)
-    f.booking(offering, f.user(first="Jordan", last="Kim"), status="confirmed")
-    form = MenuItemForm(cook, instance=item, data=item_data(name=item.name, meal_type="breakfast", allergens=["egg"]))
-    assert not form.is_valid() and "allergens" in form.errors
-    form = MenuItemForm(cook, instance=item, data=item_data(name=item.name, meal_type="breakfast", allergens=["wheat"]))
-    assert form.is_valid(), form.errors
+    booking = f.booking(offering, f.user(first="Jordan", last="Kim"), status="confirmed")
+    client.force_login(cook.user)
+    url = f"/kitchen/items/{item.pk}/edit"
+    same = {"name": item.name, "meal_type": "breakfast", "course": "main"}
+
+    response = client.post(url, item_data(**same, allergens=["wheat", "egg"]))
+    assert response.status_code == 200
+    assert "Allergens are locked" in response.context["form"].errors["allergens"][0]
+    item.refresh_from_db()
+    assert item.allergens == ["wheat"]
+
+    response = client.post(url, item_data(**same, allergens=["wheat"], description="Now with blueberries."))
+    assert response.status_code == 302
+    item.refresh_from_db()
+    assert (item.description, item.allergens) == ("Now with blueberries.", ["wheat"])
+
+    booking.status, booking.closed_at = "completed", timezone.now()
+    booking.save()
+    assert client.post(url, item_data(**same, allergens=["wheat", "egg"])).status_code == 302
+    item.refresh_from_db()
+    assert item.allergens == ["wheat", "egg"]
 
 
 @pytest.mark.django_db

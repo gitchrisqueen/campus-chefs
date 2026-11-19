@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
+from django.utils import timezone
+
+from meals.money import format_cents
 
 
 def _in(field: str, choices) -> Q:
@@ -79,12 +83,39 @@ class Booking(models.Model):
                 name="booking_share_only_for_share_or_custom",
             ),
             models.CheckConstraint(
-                condition=~Q(contribution="custom") | ~Q(terms=""), name="booking_custom_needs_terms"
+                condition=~Q(contribution="custom") | ~Q(terms="") | ~Q(status__in=["requested", "confirmed"]),
+                name="booking_custom_needs_terms",
             ),
         ]
 
     def __str__(self) -> str:
         return f"Booking {self.pk} ({self.status})"
+
+    def get_absolute_url(self) -> str:
+        return reverse("booking_detail", args=[self.pk])
+
+    @property
+    def status_label(self) -> str:
+        """A request whose serve time has passed reads "Expired"; it is not a stored status (plan 3.3)."""
+        if self.status == self.Status.REQUESTED and self.offering.serve_at <= timezone.now():
+            return "Expired"
+        return self.get_status_display()
+
+    @property
+    def contribution_text(self) -> str:
+        """How the diner chips in, in the words the booking page uses (plan 3.5)."""
+        C = self.Contribution
+        if self.contribution == C.SHARE:
+            due = ", pay the cook at pickup" if self.status in self.ACTIVE else ""
+            return f"Grocery share: {format_cents(self.share_cents)}{due}"
+        if self.contribution == C.INGREDIENTS:
+            need = getattr(self, "claimed_need", None)  # released when declined or cancelled
+            return f"Bring: {need.label}" if need else "Bring: an item from the bring list (released)"
+        if self.contribution == C.CUSTOM:
+            agreed = "Agreed" if self.status in (self.Status.CONFIRMED, self.Status.COMPLETED) else "Offered"
+            amount = f"{format_cents(self.share_cents)} + " if self.share_cents else ""
+            return f"{agreed}: {amount}{self.terms or 'Custom terms (removed)'}"
+        return "Free meal: nothing to chip in"
 
 
 class Review(models.Model):
