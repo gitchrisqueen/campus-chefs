@@ -33,6 +33,16 @@ No staff account is seeded, and the demo personas have no password, so they cann
 2. Create the account: `docker compose run --rm migrate python manage.py createsuperuser`. It asks for email, first name, last name, a campus id and a password. For a scripted run, add `-e DJANGO_SUPERUSER_PASSWORD=...` and `--noinput --email ... --first_name ... --last_name ... --campus <id>`.
 3. Sign in at http://127.0.0.1:8000/admin/.
 
+## Moderation
+
+Only a staff account (see "Admin account") can hide a review, and only through the admin. The same people can un-hide it.
+
+- **Hide:** open `/admin/bookings/review/`, tick the review, choose "Hide selected reviews" and press Go. A hidden review disappears from the cook page and from the average. The action writes an entry in the admin history of each review and shows "Hid N review(s)." The server log gets one line with ids only (`review hidden: review <id> by staff <id>`).
+- **Un-hide:** open the review (`/admin/bookings/review/<id>/change/`), clear the "Hidden at" date and time, and save. The booking and the rating are read-only there, so a staff member cannot change what the diner wrote.
+- **Not undoable from the app:** account deletion. It anonymizes the user and blanks their free text for good, so the only way back is a database snapshot. The demo has no backups (see the top of this page), so treat a deletion as final.
+- **`make e2e` wipes the demo data:** it runs `make reseed` first, which deletes and recreates every synthetic row. Use `NO_RESEED=1 make e2e` to keep the data, and expect a reseed to remove any review you hid by hand.
+- **Audit lines:** the app logs booking state changes, kitchen changes (meals and dishes), account deletions and review hides at INFO to stdout, with ids only and never a name, email or free text. Read them with `docker compose logs web`.
+
 ## What starts, in order
 
 1. `keygen` (one-shot, no network) generates the secrets on first run and gives each service only its own.
