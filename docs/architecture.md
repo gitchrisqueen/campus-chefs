@@ -139,6 +139,20 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | Licence | MPL-2.0, copied unchanged to `tests/e2e/vendor/axe-core.LICENSE`. The MIT `LICENSE` does not cover `tests/e2e/vendor/` |
 | Checked on | 2026-11-18, against `https://registry.npmjs.org/axe-core` |
 
+- **Pinned in the repo:** `tests/e2e/vendor/SHA256SUMS` holds the SHA-256 of `axe.min.js` and `axe-core.LICENSE`. The unit test `test_e2e_vendor_axe_matches_the_recorded_sha256` (`core/tests/test_design.py`) hashes both files, compares them with `SHA256SUMS`, and checks that the `axe.min.js` hash above appears in this file. A changed vendor file fails `make test`.
+- **Reproduce the hash** (re-run on 2026-11-18, macOS, in an empty temporary folder):
+
+  ```sh
+  curl -fsS https://registry.npmjs.org/axe-core/4.14.0 -o meta.json
+  python3 -I -c "import json,sys; print(json.load(open(sys.argv[1]))['dist']['integrity'])" meta.json
+  curl -fsSO https://registry.npmjs.org/axe-core/-/axe-core-4.14.0.tgz
+  echo "sha512-$(openssl dgst -sha512 -binary axe-core-4.14.0.tgz | openssl base64 -A)"
+  mkdir x && tar -xzf axe-core-4.14.0.tgz -C x package/axe.min.js package/LICENSE
+  shasum -a 256 x/package/axe.min.js x/package/LICENSE
+  ```
+
+  Result: both `sha512-` lines printed `sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==`, so the tarball matches the registry's `dist.integrity`. The extracted `package/axe.min.js` hashed to `20c09fe157a8a34a30e241aaa1fcdade657734f08ab379ecfbeb7d45cc46e878` and `package/LICENSE` to `af175b9d96ee93c21a036152e1b905b0b95304d4ae8c2c921c7609100ba8df7e`, the same values as `tests/e2e/vendor/SHA256SUMS`.
+
 - **Injection:** `tests/e2e/helpers.py` passes the file's text to `page.evaluate`. Playwright runs it through the DevTools protocol, which the page's CSP does not govern, so the app's CSP stays as it is and no inline script is added. `add_script_tag` would add an inline `<script>`, which `script-src 'self'` blocks.
 - **Rules:** `axe.run` with `runOnly` tags `wcag2a`, `wcag2aa`, `wcag21aa` and `wcag22aa`. No rule is disabled, and there is no false positive to record. A planted image without `alt` and a planted low-contrast paragraph were both reported, which shows the run is live.
 - **Pages:** in light and in dark mode, at 1280 px: `/`, `/how-it-works`, `/safety`, `/privacy`, `/register` (empty and submitted empty), `/login`, `/search?q=pancakes`, the home live-search results, a cook page, an offering, the 404 page; as the demo diner `/me`, `/me/edit`, the offering's booking form (empty and with errors) and a booking; as the demo cook `/me`, `/kitchen`, the dish form, the meal form and the same booking.
