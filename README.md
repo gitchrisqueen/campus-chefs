@@ -286,7 +286,7 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 ### How it was built
 
 - **Plan first.** [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) was written before any code: the audit of the 2008 files, the data model, the test catalogue and a phased roadmap. It was reviewed before work started, and its review log (section 13) records 46 findings and what changed for each.
-- **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Nine of the eleven pull request descriptions link the CI run for their final commit.
+- **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Nine of the eleven pull request descriptions link a green CI run.
 - **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: the verdicts for #1 to #4 are comments on those pull requests; #5 and #10 describe their design review rounds and the fixes; #11 lists hardening carried over from earlier code reviews. Pull requests #6 to #9 carry no public review record.
 - **Who did what.** AI coding agents wrote the code from the plan, one builder per phase on its own branch, with a coordinator that integrated and verified the work. I set the scope, made the decisions recorded in plan section 10.3 and approve what is published here.
 
