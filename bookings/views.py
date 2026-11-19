@@ -45,7 +45,7 @@ def _blocked(request, booking: Booking, error: BookingError):
 
 def _back(request, booking: Booking) -> str:
     target = request.POST.get("next", "")
-    if url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
+    if url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         return target
     return booking.get_absolute_url()
 

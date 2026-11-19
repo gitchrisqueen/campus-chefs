@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -6,6 +8,8 @@ from bookings.models import Booking, Review
 from meals.models import CookProfile, Offering, OfferingNeed
 
 from .models import User
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -39,3 +43,4 @@ def delete_account(user: User) -> None:
     user.set_unusable_password()  # also ends every other session (session auth hash)
     user.is_active = False
     user.save()
+    logger.info("account deleted: user %s", user.pk)

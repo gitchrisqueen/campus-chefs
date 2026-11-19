@@ -1,13 +1,16 @@
+import logging
 from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count
+from django.db import IntegrityError, transaction
+from django.db.models import Avg, Count, ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.decorators.vary import vary_on_headers
 
 from bookings import services as booking_services
 from bookings.contributions import with_totals
@@ -18,6 +21,10 @@ from bookings.models import Booking, Review
 from .forms import CookBioForm, CookSetupForm, MenuItemForm, OfferingForm, SearchForm
 from .models import CookProfile, Course, MealType, MenuItem, Offering
 from .search import search_offerings
+
+logger = logging.getLogger(__name__)
+
+RACE_MESSAGE = "Someone changed this at the same moment. Check the page and try again."
 
 
 def cook_required(view):
@@ -54,7 +61,13 @@ def kitchen_setup(request):
     if form.is_bound and form.is_valid():
         form.instance.user = request.user
         form.instance.food_safety_ack_at = timezone.now()
-        form.save()
+        try:
+            with transaction.atomic():
+                cook = form.save()
+        except IntegrityError:
+            # A second request created the kitchen first (OneToOne on user).
+            return redirect("kitchen")
+        logger.info("kitchen created: cook %s", cook.pk)
         messages.success(request, "Your kitchen is ready. Add your first dish.")
         return redirect("kitchen")
     return render(request, "meals/kitchen_setup.html", {"form": form})
@@ -93,7 +106,13 @@ def kitchen_bio(request, cook):
 def item_create(request, cook):
     form = MenuItemForm(cook, request.POST if request.method == "POST" else None)
     if form.is_bound and form.is_valid():
-        item = form.save()
+        try:
+            with transaction.atomic():
+                item = form.save()
+        except IntegrityError:
+            form.add_error(None, RACE_MESSAGE)
+            return _form_page(request, form, title="Add a dish", action_label="Add dish")
+        logger.info("menu item created: cook %s item %s", cook.pk, item.pk)
         messages.success(request, f"“{item.name}” was added to your menu.")
         return redirect("kitchen")
     return _form_page(request, form, title="Add a dish", action_label="Add dish")
@@ -106,6 +125,7 @@ def item_edit(request, cook, pk):
     form = MenuItemForm(cook, request.POST if request.method == "POST" else None, instance=item)
     if form.is_bound and form.is_valid():
         form.save()
+        logger.info("menu item edited: cook %s item %s", cook.pk, item.pk)
         messages.success(request, f"“{item.name}” was updated.")
         return redirect("kitchen")
     return _form_page(request, form, title=f"Edit {item.name}", action_label="Save dish")
@@ -119,6 +139,7 @@ def item_archive(request, cook, pk):
     item.is_active = False
     item.is_specialty = False
     item.save(update_fields=["is_active", "is_specialty"])
+    logger.info("menu item archived: cook %s item %s", cook.pk, item.pk)
     messages.success(request, f"“{item.name}” was removed from your menu.")
     return redirect("kitchen")
 
@@ -129,6 +150,7 @@ def offering_create(request, cook):
     form = OfferingForm(cook, request.POST if request.method == "POST" else None)
     if form.is_bound and form.is_valid():
         offering = form.save()
+        logger.info("offering created: cook %s offering %s", cook.pk, offering.pk)
         messages.success(request, f"“{offering.title}” is open for requests.")
         return redirect("kitchen")
     return _form_page(request, form, title="Open a meal", action_label="Open meal")
@@ -141,6 +163,7 @@ def offering_edit(request, cook, pk):
     form = OfferingForm(cook, request.POST if request.method == "POST" else None, instance=offering)
     if form.is_bound and form.is_valid():
         form.save()
+        logger.info("offering edited: cook %s offering %s", cook.pk, offering.pk)
         messages.success(request, f"“{offering.title}” was updated.")
         return redirect("kitchen")
     return _form_page(request, form, title=f"Edit {offering.title}", action_label="Save meal")
@@ -156,6 +179,7 @@ def offering_cancel(request, cook, pk):
     except BookingError as error:
         messages.error(request, error.message)
     else:
+        logger.info("offering cancelled: cook %s offering %s", cook.pk, offering.pk)
         messages.success(request, f"“{offering.title}” was cancelled. Its diners will see that on their bookings.")
     return redirect("kitchen")
 
@@ -167,8 +191,15 @@ def offering_delete(request, cook, pk):
     if offering.bookings.exists():
         messages.error(request, f"“{offering.title}” has bookings, so it stays on record.")
     else:
-        offering.delete()
-        messages.success(request, f"“{offering.title}” was deleted.")
+        try:
+            with transaction.atomic():
+                offering.delete()
+        except ProtectedError:
+            # A booking arrived after the check above (PROTECT FK).
+            messages.error(request, f"“{offering.title}” has bookings, so it stays on record.")
+        else:
+            logger.info("offering deleted: cook %s offering %s", cook.pk, offering.pk)
+            messages.success(request, f"“{offering.title}” was deleted.")
     return redirect("kitchen")
 
 
@@ -240,6 +271,7 @@ def offering_detail(request, pk):
 
 
 @require_GET
+@vary_on_headers("HX-Request")
 def search(request):
     """GET /search. htmx gets the results partial; a plain GET gets the full page (SRCH-07, E2E-05)."""
     form = SearchForm(request.GET)

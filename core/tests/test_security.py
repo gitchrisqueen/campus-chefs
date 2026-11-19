@@ -1,4 +1,5 @@
 import os
+import secrets
 import shutil
 import subprocess
 import sys
@@ -122,3 +123,25 @@ def test_sec_09_local_http_refused_for_non_loopback_hosts():
         [sys.executable, "-c", "import config.settings"], cwd=ROOT, env=env, capture_output=True, text=True
     )
     assert ok.returncode == 0, ok.stderr
+
+
+def test_sec_02_check_deploy_is_clean_with_production_settings():
+    env = {
+        **os.environ,
+        "CC_DEMO_MODE": "false",
+        "CC_DEMO_LOCAL_HTTP": "false",
+        "DJANGO_ALLOWED_HOSTS": "campuschefs.example",
+        # Generated per run: a committed literal would trip secret scanners.
+        "DJANGO_SECRET_KEY": secrets.token_urlsafe(48),
+    }
+    env.pop("DJANGO_SECRET_KEY_FILE", None)
+    assert len(env["DJANGO_SECRET_KEY"]) == 64
+    result = subprocess.run(
+        [sys.executable, "manage.py", "check", "--deploy", "--fail-level", "WARNING"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "no issues" in result.stdout + result.stderr

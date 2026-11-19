@@ -1,5 +1,6 @@
 """The booking state machine (plan 3.3). Every write runs in one transaction under a lock on the offering."""
 
+import logging
 from datetime import timedelta
 
 from django.db import transaction
@@ -11,6 +12,8 @@ from meals.models import Offering
 from . import contributions
 from .errors import BookingError, BookingRejected, Forbidden, NotParticipant
 from .models import Booking, Review
+
+logger = logging.getLogger(__name__)
 
 S = Booking.Status
 A = Booking.Actor
@@ -83,6 +86,7 @@ def request_booking(
         )
         if booking.contribution == Booking.Contribution.INGREDIENTS:
             contributions.claim_need(offering, need, booking)
+    logger.info("booking %s: requested (offering %s)", booking.pk, offering.pk)
     return booking
 
 
@@ -133,6 +137,7 @@ def transition(booking: Booking, to: str, actor, now=None) -> Booking:
         offering = Offering.objects.select_for_update().get(pk=booking.offering_id)
         booking.refresh_from_db()
         check(booking, offering, to, role, now)
+        previous = booking.status
         booking.status = to
         if to in (S.CONFIRMED, S.DECLINED):
             booking.decided_at = now
@@ -143,6 +148,7 @@ def transition(booking: Booking, to: str, actor, now=None) -> Booking:
         booking.save(update_fields=["status", "decided_at", "closed_at", "cancelled_by"])
         if to in (S.DECLINED, S.CANCELLED):
             contributions.release_claim(booking)
+        logger.info("booking %s: %s -> %s by %s", booking.pk, previous, to, role)
     return booking
 
 

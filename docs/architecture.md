@@ -180,3 +180,22 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 | A11Y-01 lists home, search, register, login, a cook page, an offering, a booking, `/me` and the menu form | Those pages plus `/how-it-works`, `/safety`, `/privacy`, the 404 page, `/kitchen`, the meal form and the error states, in light and dark | The brief asked for both colour schemes; the extra pages cost seconds |
 | Plan 4.3: each step links to `/register`, `/search` and `/how-it-works#booking` | The home steps carry no links; one "Read the details" link after them leads to `/how-it-works`. A11Y-03 checks that, and that the steps sit on one line on desktop and wrap in order onto at most two lines on a phone | The phase 8a art-director review made the home steps one compact line, because the nav and the hero already link to `/how-it-works` |
 | — | E2E tests fail on any console error, through the `new_page` fixture in `tests/e2e/conftest.py` | Plan 7.1 asks for a console-error listener on every page; Chromium reports each CSP violation as a console error. The deliberate 404 visit is the only error allowed |
+
+## Phase 9 records (2026-11-18)
+
+- **Static checks:** `make lint` runs CHK-01 to CHK-08 through `scripts/static_checks.py` and CHK-09 through codespell. They are not pytest tests, so they have no `test_chk_*` names.
+- **Deploy check:** `make deploy-check` and SEC-02 both run `check --deploy --fail-level WARNING` with production settings and report no issues.
+- **Logging:** `LOGGING` sends the root logger at INFO to stdout, so `docker compose logs web` shows the audit lines. Each line carries ids only.
+
+## Phase 9 deviations from the plan
+
+| Plan said | Built | Why |
+|---|---|---|
+| SEC-02 to SEC-09 are unit tests | SEC-08 stays in `scripts/smoke.sh` (marked `[smoke]`), and OPS-01 to OPS-03 stay in `scripts/ops-checks.sh` | The plan puts them there; they need the running stack |
+| — | AUTH-10 `[e2e]` added in `tests/e2e/test_e2e_auth_09_csrf.py` | No plan phase owned it; it records every request URL of a login and register visit and finds no password |
+| AI-01 to AI-05 | Not added | They belong to phase 12, which needs the owner's approval (D4) |
+| — | `/search` sends `Vary: HX-Request` | The same URL returns a partial or a full page, so a shared cache must tell them apart |
+| — | A race on a kitchen write (set-up, new dish, delete meal) gives a message or form error and no 500 | The OneToOne, the unique constraint and the PROTECT foreign key can all fire between the check and the write |
+| — | The booking redirect helper passes `require_https=request.is_secure()` | An `http://` `next` on an HTTPS request is no longer followed |
+| — | `ReviewAdmin` makes `booking` and `rating` read-only; the hide action writes an admin history entry and a message | Staff may moderate a review but not rewrite it, and the action leaves a trail |
+| — | Supporting tests without a plan ID in `core/tests/test_phase9_hardening.py` | They cover the items above |
