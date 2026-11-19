@@ -1,4 +1,4 @@
-"""Capture design-review screenshots of the running demo with Playwright.
+"""Capture screenshots of the running demo with Playwright.
 
 Run inside the tests container, which has Chromium and can reach the web service:
 
@@ -34,6 +34,25 @@ Next to the PNGs it writes the files the art director (reviewer O) reads, one ke
 legacy-support/render-static.sh first). It opens the file through file:// so the
 relative ../css and ../img paths resolve; no server runs. Output:
 docs/screenshots/before/welcome.png (1280 px) and welcome-phone.png (390 px).
+
+--after saves the README and walkthrough screenshots of the seeded demo to
+docs/screenshots/after/, in light mode. It only reads pages, so a second run on the same seed
+on the same day writes the same pictures. Run `make reseed` first.
+- Full-page at 1280 px: home, search, cook, offering (the demo diner's booking form with the
+  grocery share picked), booking (the diner's confirmed Steak Night booking), me (the diner's
+  dashboard) and kitchen-menu (the demo cook's kitchen).
+- The first screen at 390 px, saved at 2x: phone-home, phone-search, phone-offering,
+  phone-booking and phone-kitchen.
+
+--walkthrough plays the two halves of the booking story, E2E-01 and E2E-02, and saves one
+1120 x 700 picture per step to docs/screenshots/walkthrough/ (01-home.png to 14-review-on-cook-page.png).
+docs/walkthrough.md shows them in order. It books a seat, confirms it, marks a share received,
+completes a booking and posts a review, so run `make reseed` before and after it.
+scripts/build-hero-gif.sh joins pictures 01 to 08 into docs/screenshots/after/hero.gif.
+`make screenshots` runs the whole sequence.
+
+Playwright writes PNGs with no EXIF, XMP or text chunks; scripts/check-image-metadata.sh checks
+every image under docs/screenshots.
 """
 
 import argparse
@@ -343,18 +362,201 @@ def capture_before() -> int:
     return 0
 
 
+AFTER_DESKTOP = (1280, 800)
+AFTER_PHONE = (390, 844)
+HERO_VIEWPORT = (1120, 700)
+REVIEWED_COOK = "Tess W."
+# Scrolls an element to the start, centre or end of the screen; start and end keep a 16 px margin.
+SCROLL_TO = """(el, block) => {
+  el.scrollIntoView({block});
+  window.scrollBy(0, block === 'start' ? -16 : block === 'end' ? 16 : 0);
+}"""
+# Phone captures show one screen; these scroll to the part the picture is about.
+PHONE_SCROLL = {
+    "phone-search": ("#results", "start"),
+    "phone-offering": ("#booking-panel", "end"),
+}
+
+
+def _login(page, base_url: str, persona: str) -> None:
+    page.goto(f"{base_url}/login", wait_until="networkidle")
+    page.get_by_role("button", name=f"Try as demo {persona}").click()
+    page.wait_for_url(f"{base_url}/me")
+
+
+def _pick_share_and_ack(page) -> None:
+    """Fill the booking form without sending it: one seat, the grocery share, the allergen box."""
+    form = page.locator(".booking-form")
+    form.get_by_role("radio", name="Grocery share: ", exact=False).check()
+    form.locator("#id_allergen_ack").check()
+
+
+def capture_after(base_url: str, out: Path) -> int:
+    """The eight named README screenshots plus the phone set. Reads pages only."""
+    out.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        seeded = _seeded_paths(browser, base_url)
+        # The demo cook has no reviews until E2E-02 runs, so the cook picture uses a seeded cook
+        # whose page has reviews and whose meals are at fixed hours. Search matches first names.
+        page = browser.new_page()
+        page.goto(f"{base_url}/search?q={REVIEWED_COOK.split()[0]}", wait_until="networkidle")
+        seeded["reviewed_cook"] = page.locator(".offer-cook a", has_text=REVIEWED_COOK).first.get_attribute("href")
+        page.close()
+
+        def shots(persona: str | None, phone: bool, pages: dict[str, str]) -> None:
+            width, height = AFTER_PHONE if phone else AFTER_DESKTOP
+            context = browser.new_context(
+                viewport={"width": width, "height": height},
+                color_scheme="light",
+                device_scale_factor=2 if phone else 1,
+                reduced_motion="reduce",
+            )
+            page = context.new_page()
+            if persona:
+                _login(page, base_url, persona)
+            for name, path in pages.items():
+                page.goto(f"{base_url}{path.format(**seeded)}", wait_until="networkidle")
+                if "offering" in name and persona == "diner":
+                    _pick_share_and_ack(page)
+                    page.locator("#id_allergen_ack").blur()
+                if phone and name in PHONE_SCROLL:
+                    # The first screen of a phone would show only the page top, so scroll to the subject.
+                    selector, block = PHONE_SCROLL[name]
+                    page.locator(selector).evaluate(SCROLL_TO, block)
+                page.screenshot(path=str(out / f"{name}.png"), full_page=not phone)
+                print((out / f"{name}.png").relative_to(ROOT))
+            context.close()
+
+        shots(None, False, {"home": "/", "search": "/search?q=pancakes", "cook": seeded["reviewed_cook"]})
+        shots("diner", False, {"offering": "{offering}", "booking": "{booking}", "me": "/me"})
+        shots("cook", False, {"kitchen-menu": "/kitchen"})
+        shots(None, True, {"phone-home": "/", "phone-search": "/search?q=pancakes"})
+        shots("diner", True, {"phone-offering": "{offering}", "phone-booking": "{booking}"})
+        shots("cook", True, {"phone-kitchen": "/kitchen"})
+        browser.close()
+    return 0
+
+
+def capture_walkthrough(base_url: str, out: Path) -> int:
+    """One picture per step of E2E-01 and E2E-02. Writes data: see the module docstring."""
+    out.mkdir(parents=True, exist_ok=True)
+    for old in out.glob("*.png"):
+        old.unlink()
+    width, height = HERO_VIEWPORT
+    count = 0
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+
+        def open_as(persona: str | None):
+            context = browser.new_context(
+                viewport={"width": width, "height": height},
+                color_scheme="light",
+                device_scale_factor=1,
+                reduced_motion="reduce",
+            )
+            page = context.new_page()
+            if persona:
+                _login(page, base_url, persona)
+            return page
+
+        def frame(page, label: str, show: str | None = None, block: str = "center") -> None:
+            """Save the current screen. `show` is a selector to scroll into view first."""
+            nonlocal count
+            if show:
+                page.locator(show).first.evaluate(SCROLL_TO, block)
+            count += 1
+            target = out / f"{count:02d}-{label}.png"
+            page.screenshot(path=str(target))
+            print(target.relative_to(ROOT))
+
+        # --- E2E-01: a diner finds a meal, picks the grocery share and asks for a seat; the cook confirms.
+        visitor = open_as(None)
+        visitor.goto(f"{base_url}/", wait_until="networkidle")
+        frame(visitor, "home")
+
+        # The live search on the home page: htmx swaps the results in under the box.
+        diner = open_as("diner")
+        steak_night = diner.get_by_role("link", name="Steak Night").get_attribute("href")
+        diner.goto(f"{base_url}/", wait_until="networkidle")
+        diner.locator("#q").press_sequentially("pancakes")
+        card = diner.locator("#results .offer-card", has_text="Pancake Breakfast")
+        card.wait_for()
+        diner.wait_for_load_state("networkidle")
+        diner.locator("#search").evaluate(SCROLL_TO, "start")
+        frame(diner, "search")
+
+        card.get_by_role("link", name="Pancake Breakfast").click()
+        diner.wait_for_load_state("networkidle")
+        frame(diner, "offering")
+
+        _pick_share_and_ack(diner)
+        frame(diner, "form", show="#booking-panel")
+
+        diner.locator('.booking-form button[type="submit"]').click()
+        panel = diner.locator("#booking-panel")
+        panel.get_by_role("link", name="View your booking").wait_for()
+        booking = panel.get_by_role("link", name="View your booking").get_attribute("href")
+        frame(diner, "request-sent", show="#booking-panel")
+
+        cook = open_as("cook")
+        cook.goto(f"{base_url}{booking}", wait_until="networkidle")
+        frame(cook, "cook-sees-request", show='section[aria-labelledby="actions-heading"]', block="end")
+        cook.get_by_role("button", name="Confirm").click()
+        cook.locator(".messages").get_by_text("Booking confirmed.").wait_for()
+        frame(cook, "cook-confirmed")
+
+        diner.goto(f"{base_url}{booking}", wait_until="networkidle")
+        frame(diner, "diner-confirmed")
+
+        # --- E2E-02: after the meal the cook marks the share received and the booking completed;
+        # the diner reviews it. Uses the seeded Steak Night booking, served yesterday.
+        cook.goto(f"{base_url}{steak_night}", wait_until="networkidle")
+        frame(cook, "cook-after-the-meal")
+        cook.get_by_role("button", name="Mark contribution received").click()
+        cook.locator(".messages").get_by_text("Contribution marked received.").wait_for()
+        frame(cook, "share-received")
+        cook.get_by_role("button", name="Mark completed").click()
+        cook.locator(".messages").get_by_text("Booking marked completed.").wait_for()
+        frame(cook, "completed")
+
+        diner.goto(f"{base_url}{steak_night}", wait_until="networkidle")
+        review = diner.locator('form[action$="/review"]')
+        review.get_by_label("5 stars").check()
+        review.get_by_label("The good").fill("Steak cooked just right, and the herb butter was great.")
+        review.get_by_label("The bad").fill("Pickup ran ten minutes late.")
+        review.get_by_label("The bad").blur()
+        frame(diner, "review-form", show='section[aria-labelledby="review-heading"]', block="end")
+        review.get_by_role("button", name="Post review").click()
+        diner.locator(".messages").get_by_text("Thanks, your review is posted.").wait_for()
+        frame(diner, "review-posted")
+
+        diner.locator(".page-head").get_by_role("link").click()  # the cook's public page
+        diner.wait_for_load_state("networkidle")
+        frame(diner, "review-on-cook-page", show=".review-list")
+        browser.close()
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--design", action="store_true", help="capture the design-review set")
     parser.add_argument("--before", action="store_true", help="capture the rendered original landing page")
+    parser.add_argument("--after", action="store_true", help="capture the README screenshots")
+    parser.add_argument("--walkthrough", action="store_true", help="capture each step of E2E-01 and E2E-02")
     parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8000"))
-    parser.add_argument("--out", type=Path, default=ROOT / "docs" / "screenshots" / "design")
+    parser.add_argument("--out", type=Path, help="output folder (each capture set has its own default)")
     args = parser.parse_args()
+    base_url = args.base_url.rstrip("/")
     if args.before:
         return capture_before()
+    if args.after:
+        return capture_after(base_url, args.out or ROOT / "docs" / "screenshots" / "after")
+    if args.walkthrough:
+        return capture_walkthrough(base_url, args.out or ROOT / "docs" / "screenshots" / "walkthrough")
     if not args.design:
-        parser.error("choose a capture set: --design or --before")
-    return capture_design(args.base_url.rstrip("/"), args.out)
+        parser.error("choose a capture set: --design, --before, --after or --walkthrough")
+    return capture_design(base_url, args.out or ROOT / "docs" / "screenshots" / "design")
 
 
 if __name__ == "__main__":
