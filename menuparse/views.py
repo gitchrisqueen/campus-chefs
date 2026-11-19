@@ -8,6 +8,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
+from core.ratelimit import take_slot
 from meals.views import RACE_MESSAGE, cook_required
 
 from .forms import ConfirmDraftForm, DraftFormSet, PasteMenuForm
@@ -25,6 +26,13 @@ FAILURE_MESSAGES = {
         "We could not find any dishes in that text. Try again with the dish names, or add your dishes by hand."
     ),
 }
+# Drafts per user that may reach the paid API: (name, window in seconds, maximum). A request counts once
+# its form is valid and before the API call, so slow calls cannot be stacked past a limit.
+DRAFT_LIMITS = (("burst", 10 * 60, 5), ("daily", 24 * 60 * 60, 20))
+LIMIT_MESSAGES = {
+    "burst": "You have asked for several drafts in a row. Wait 10 minutes and try again, or add your dishes by hand.",
+    "daily": "You have reached today's limit of 20 drafts. Try again tomorrow, or add your dishes by hand.",
+}
 UNAVAILABLE_MESSAGE = "Drafting a menu is not available right now. Try again later, or add your dishes by hand."
 
 
@@ -40,8 +48,8 @@ def ai_import_enabled(view):
     return wrapper
 
 
-def _paste_page(request, form, failure=""):
-    return render(request, "menuparse/import.html", {"form": form, "failure": failure})
+def _paste_page(request, form, failure="", status=200):
+    return render(request, "menuparse/import.html", {"form": form, "failure": failure}, status=status)
 
 
 def _review_page(request, formset, confirm_form):
@@ -59,6 +67,10 @@ def import_menu(request, cook):
     form = PasteMenuForm(request.POST if request.method == "POST" else None)
     if not (form.is_bound and form.is_valid()):
         return _paste_page(request, form)
+    blocked = take_slot("ai-draft", request.user.pk, DRAFT_LIMITS)
+    if blocked:
+        logger.warning("menu draft blocked: rate_limited limit %s user %s", blocked, request.user.pk)
+        return _paste_page(request, form, LIMIT_MESSAGES.get(blocked, UNAVAILABLE_MESSAGE), status=429)
     try:
         draft = parse_menu(form.cleaned_data["text"])
     except MenuParseError as error:
