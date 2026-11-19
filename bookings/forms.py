@@ -50,7 +50,7 @@ class BookingRequestForm(forms.Form):
         choices = []
         if offering.share_per_seat_cents:
             share = format_cents(offering.share_per_seat_cents)
-            choices.append((C.SHARE, f"Grocery share: {share} per seat, paid to the cook at pickup"))
+            choices.append((C.SHARE, f"Grocery share: {share} per seat, paid to the cook in person"))
         open_needs = offering.needs.filter(claimed_by_booking__isnull=True)
         if open_needs.exists():
             choices.append((C.INGREDIENTS, "Bring an item from the bring list instead"))

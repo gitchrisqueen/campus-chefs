@@ -62,7 +62,7 @@ def test_e2e_01_diner_books_with_grocery_share_and_cook_confirms(new_page, base_
     diner.goto(f"{base_url}{booking_url}")
     expect(diner.locator(".page-head .badge")).to_have_text("Confirmed")
     expect(diner.locator(".timeline")).to_contain_text("Confirmed")
-    expect(diner.locator(".contribution")).to_have_text(f"Grocery share: ${per_seat}, pay the cook at pickup")
+    expect(diner.locator(".contribution")).to_have_text(f"Grocery share: ${per_seat}, pay the cook in person")
 
 
 def test_e2e_02_cook_marks_share_received_and_completed_then_diner_reviews(new_page, base_url):
@@ -73,7 +73,7 @@ def test_e2e_02_cook_marks_share_received_and_completed_then_diner_reviews(new_p
     cook = new_page()
     demo_login(cook, base_url, "cook")
     cook.goto(f"{base_url}{booking_url}")
-    expect(cook.locator(".contribution")).to_have_text("Grocery share: $4.00, pay the cook at pickup")
+    expect(cook.locator(".contribution")).to_have_text("Grocery share: $4.00, pay the cook in person")
     cook.get_by_role("button", name="Mark contribution received").click()
     expect(cook.locator(".messages")).to_contain_text("Contribution marked received.")
     expect(cook.get_by_text("Received by the cook")).to_be_visible()

@@ -7,14 +7,21 @@
       <h1 id="hero-heading">
         Home-cooked meals, <em>made by students</em> who love to cook.
       </h1>
-      <p class="lede">
-        Campus Chefs matches students who want a good home-cooked meal with students who know how to cook.
-        Want a home-cooked meal without cooking it? Find a meal.
-      </p>
+      <p class="lede">Students who like to cook share a meal, and you chip in toward the groceries.</p>
       <div class="btn-row">
         <a class="btn btn-primary" href="#search">Find a meal</a>
         <a class="btn btn-secondary" href="{% url 'how_it_works' %}">How it works</a>
       </div>
+      <p class="cook-entry">
+        {% if user.is_authenticated %}
+          <a href="{% url 'kitchen' %}">Cook for students</a>
+        {% elif registration_open %}
+          <a href="{% url 'register' %}">Cook for students</a>
+        {% else %}
+          <a href="{% url 'login' %}">Cook for students</a>
+        {% endif %}
+        <span>Open a meal, set a grocery share, confirm who comes.</span>
+      </p>
       <p class="chip-in">
         <strong>Chip in for groceries.</strong>
         <span>Diners share the grocery cost or bring an ingredient. Cooks never make a profit.</span>
@@ -25,7 +32,8 @@
         <p class="ticket-label">Example listing</p>
         <p class="ticket-dish">Buttermilk Pancakes</p>
         <p class="ticket-meta">
-          <span>Sat, 9:30, Breakfast</span>
+          <span>Sat 9:30 AM</span>
+          <span>Breakfast</span>
           <span>Marcus B., Larkspur State (Demo)</span>
         </p>
         <ul class="badges" aria-label="Chip in and dietary info">

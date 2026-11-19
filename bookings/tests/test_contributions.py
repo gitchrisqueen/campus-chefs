@@ -29,7 +29,7 @@ def test_contrib_03_share_is_snapshotted_at_request_time(client, offering, diner
     Offering.objects.filter(pk=offering.pk).update(share_per_seat_cents=300)
     booking.refresh_from_db()
     assert booking.share_cents == 800
-    assert "Grocery share: $8.00, pay the cook at pickup" in page(client, f"/bookings/{booking.pk}")
+    assert "Grocery share: $8.00, pay the cook in person" in page(client, f"/bookings/{booking.pk}")
 
 
 @pytest.mark.django_db(transaction=True)
@@ -147,16 +147,18 @@ def test_contrib_07_mark_received_status_codes(client, offering, diner):
 
 
 @pytest.mark.django_db
-def test_contrib_09_kitchen_panel_shows_expected_received_and_groceries(client, offering, diner):
+def test_contrib_09_kitchen_panel_shows_groceries_and_chip_ins_received_of_expected(client, offering, diner):
     f.booking(offering, diner, status=S.CONFIRMED, seats=2, contribution="share", share_cents=800)
     received = f.booking(offering, f.user(first="Sam"), status=S.CONFIRMED, contribution="share", share_cents=400)
     received.contribution_received_at = received.allergen_ack_at
     received.save()
     f.booking(offering, f.user(first="Nia"), status=S.REQUESTED, contribution="share", share_cents=400)
     client.force_login(offering.cook.user)
-    totals = "Expected $12.00, received $4.00, groceries $20.00"
+    totals = "Groceries $20.00. Chip-ins received $4.00 of $12.00 from confirmed diners."
     assert totals in page(client, "/me")
-    assert totals in page(client, "/kitchen")
+    kitchen = page(client, "/kitchen")
+    assert "Groceries $20.00, $4.00 share per seat. Chip-ins received $4.00 of $12.00 from confirmed diners." in kitchen
+    assert "Expected" not in kitchen
 
 
 @pytest.mark.django_db

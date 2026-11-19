@@ -55,6 +55,7 @@ class RegistrationForm(BaseUserCreationForm):
     class Meta:
         model = User
         fields = ["email", "first_name", "last_name", "campus", "classification"]
+        labels = {"classification": "Year"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,6 +100,7 @@ class AccountForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["email", "first_name", "last_name", "campus", "classification"]
+        labels = {"classification": "Year"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

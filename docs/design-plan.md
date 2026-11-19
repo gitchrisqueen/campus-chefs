@@ -141,8 +141,30 @@ section 4:
 
 - **Later screens follow the same rules (phase 8b):** the booking, offering, kitchen, cook, search, set-up and
   `/me` screens lose their repeated eyebrows (the booking status is now the status badge), their middle-dot
-  strings become separate lines or commas ("Sat, 9:30"), and "Add a dish" is outlined so "Open a meal" is the one
+  strings become separate lines or commas, and "Add a dish" is outlined so "Open a meal" is the one
   filled button. Browser tab titles keep their " · ".
+
+- **Changed after the UX review of PR #10:**
+  - no tracked uppercase outside the `.eyebrow` rule (home hero, `/safety`, `/privacy`); a unit test reads
+    `app.css` and fails on any other `text-transform: uppercase`. The search card's meal type, the offering's
+    "When and where" labels and the menu course headings are sentence case;
+  - the "When and where" labels are bold body-size text (`--cc-text`), the values regular weight;
+  - offering page: only the booking panel is a raised card with a shadow; dishes, chip in and when and where
+    are flat sections on `--cc-bg`, divided by a rule. On a phone a filled "Request seats" link under the title
+    jumps to `#booking-panel`, so the booking action is on the first screen; from 56rem the link is hidden because
+    the panel sits in the right column. The panel heading and its button both read "Request seats";
+  - phone nav: a two-column grid of four items (Home is left out below 40rem, because the logo is the home link),
+    so no item sits alone on a row, logged in or out;
+  - `--cc-step--1` is 1rem (16px) below 40rem and 13px from 40rem, so meta, help and badge text is at least 16px on
+    a phone;
+  - home hero: a one-sentence lede, and a "Cook for students" text link with one line on what cooking involves
+    (register when logged out, the kitchen when logged in). "Find a meal" stays the only filled button;
+  - copy: payment is "in person" (dine-in exists), times carry AM/PM ("Sat 9:30 AM"), the kitchen labels every
+    figure ("Groceries $20.00, $4.00 share per seat. Chip-ins received $4.00 of $12.00 from confirmed diners."),
+    `/how-it-works` works the share formula through ($20.00 / (4 + 1) = $4.00), "Classification" reads "Year",
+    and "Pickup or dine-in" reads "How you eat";
+  - `scripts/capture_screenshots.py --design` also writes `manifest.json`, `styles.json` and `layout.json` for
+    the art director; `layout.json` lists the filled buttons in each capture's first screen.
 
 ## Open points
 

@@ -14,6 +14,7 @@ from django.test import RequestFactory
 from django.views.defaults import server_error
 
 from meals.models import CookProfile, MenuItem
+from tests import factories as f
 
 ROOT = Path(__file__).resolve().parents[2]
 APP_CSS = ROOT / "static" / "css" / "app.css"
@@ -216,12 +217,61 @@ def test_home_design_review_fixes(client, settings):
     ticket = html[html.index('<article class="ticket"') : html.index("</article>")]
     footer = html[html.index("<footer") : html.index("</footer>")]
     assert " · " not in ticket and " · " not in footer
-    assert "Sat, 9:30, Breakfast" in ticket and "Marcus B., Larkspur State (Demo)" in ticket
+    assert "<span>Sat 9:30 AM</span>" in ticket and "<span>Breakfast</span>" in ticket
+    assert "Marcus B., Larkspur State (Demo)" in ticket
     assert html.count('class="eyebrow"') == 1 and "step-kicker" not in html
     demo = html[html.index('class="demo-login') : html.index("</section>", html.index('class="demo-login'))]
     assert demo.count("btn-primary") == 1 and 'class="link-button">Try as demo cook' in demo
     assert "Campus Chefs · Home-cooked meals made by students" in html[: html.index("</title>")]
     assert "Cook's first name, dish or ingredient" in html
+
+
+@pytest.mark.django_db
+def test_home_hero_lede_cook_entry_and_one_filled_button(client):
+    """UX review of PR #10: a one-sentence lede that does not repeat the headline, a visible cook
+    entry in the hero, and "Find a meal" as the hero's only filled button."""
+    html = client.get("/").content.decode("utf-8")
+    hero = html[html.index('<section class="hero"') : html.index("</section>", html.index('<section class="hero"'))]
+    lede = re.search(r'<p class="lede">([^<]+)</p>', hero).group(1).strip()
+    assert lede.count(".") == 1 and len(lede.split()) < 20 and "?" not in lede
+    h1_end = hero.index("</h1>")
+    assert "home-cooked" not in hero[h1_end:].lower()
+    assert hero.count("btn-primary") == 1 and ">Find a meal</a>" in hero
+    entry = hero[hero.index('class="cook-entry"') :]
+    assert 'href="/register">Cook for students</a>' in entry
+    assert "Open a meal, set a grocery share, confirm who comes." in entry
+    client.force_login(f.cook().user)
+    assert 'href="/kitchen">Cook for students</a>' in client.get("/").content.decode("utf-8")
+
+
+@pytest.mark.django_db
+def test_copy_says_in_person_grocery_cost_and_year(client):
+    html = client.get("/how-it-works").content.decode("utf-8")
+    assert "at pickup" not in html and "seats plus one" not in html
+    assert "$20.00 of groceries for 4 seats is $20.00 / (4 + 1) = $4.00 a seat" in html
+    client.force_login(f.user())
+    for path in ("/me", "/me/edit"):
+        assert "Classification" not in client.get(path).content.decode("utf-8"), path
+    client.logout()
+    assert "Classification" not in client.get("/register").content.decode("utf-8")
+
+
+def test_how_it_works_example_matches_the_share_formula():
+    from meals.money import suggested_share_cents
+
+    assert suggested_share_cents(2000, 4) == 400
+
+
+def test_e2e_vendor_axe_matches_the_recorded_sha256():
+    """tests/e2e/vendor/SHA256SUMS pins the vendored axe-core file; docs/architecture.md records the same hash."""
+    import hashlib
+
+    vendor = ROOT / "tests" / "e2e" / "vendor"
+    sums = dict(reversed(line.split()) for line in (vendor / "SHA256SUMS").read_text(encoding="utf-8").splitlines())
+    assert set(sums) == {"axe.min.js", "axe-core.LICENSE"}
+    for name, digest in sums.items():
+        assert hashlib.sha256((vendor / name).read_bytes()).hexdigest() == digest, name
+    assert sums["axe.min.js"] in (ROOT / "docs" / "architecture.md").read_text(encoding="utf-8")
 
 
 @pytest.mark.django_db

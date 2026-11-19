@@ -106,7 +106,7 @@ class Booking(models.Model):
         """How the diner chips in, in the words the booking page uses (plan 3.5)."""
         C = self.Contribution
         if self.contribution == C.SHARE:
-            due = ", pay the cook at pickup" if self.status in self.ACTIVE else ""
+            due = ", pay the cook in person" if self.status in self.ACTIVE else ""
             return f"Grocery share: {format_cents(self.share_cents)}{due}"
         if self.contribution == C.INGREDIENTS:
             need = getattr(self, "claimed_need", None)  # released when declined or cancelled

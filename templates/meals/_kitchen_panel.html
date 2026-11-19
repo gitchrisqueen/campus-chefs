@@ -17,7 +17,7 @@
             {% endtimezone %}
           </span>
           <span class="small muted">{{ offering.seats_left }} of {{ offering.capacity }} seats left</span>
-          <span class="small">Expected {{ offering.expected_cents|money }}, received {{ offering.received_cents|money }}, groceries {{ offering.grocery_estimate_cents|money }}</span>
+          <span class="small">Groceries {{ offering.grocery_estimate_cents|money }}. Chip-ins received {{ offering.received_cents|money }} of {{ offering.expected_cents|money }} from confirmed diners.</span>
         </li>
       {% endfor %}
     </ul>
