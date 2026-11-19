@@ -304,7 +304,7 @@ Each item below is a deliberate change to the plan's text. None changes scope.
 
 - **Public-safety sweep (2026-11-19):** a sweep of the tree and the full history for private names, home paths, private references and secret-shaped strings. Results at this phase:
   - names, home paths and secrets: no findings. Test passwords now start with `test-`, and the two `ALTER ROLE ... PASSWORD :'var'` lines in `docker/postgres-init/01-roles.sh` carry an allow marker, because they pass a psql variable and hold no literal.
-  - private references: the sweep reports `/opt/venv` on six lines of `docs/MODERNIZATION_PLAN.md`. That is the virtualenv path inside the container image (`Dockerfile`), not a path on any host, so it stays.
+  - private references: the sweep reports `/opt/venv` on six lines of `docs/MODERNIZATION_PLAN.md`. That is the virtualenv path inside the container image (`Dockerfile`), not a path on any host, so it stays. The owner accepted this finding as a false positive on 2026-11-19, so the sweep's `private-refs` check stays red on these lines only. Its denylist check, run against the private list, is clean on the tree and the full history.
 
 ## Phase 11 deviations from the plan
 
