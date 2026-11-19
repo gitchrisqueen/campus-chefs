@@ -60,7 +60,7 @@ def test_e2e_01_diner_books_with_grocery_share_and_cook_confirms(new_page, base_
     expect(cook.locator(".messages")).to_contain_text("Booking confirmed.")
 
     diner.goto(f"{base_url}{booking_url}")
-    expect(diner.locator(".page-head .eyebrow")).to_have_text("Booking · Confirmed")
+    expect(diner.locator(".page-head .badge")).to_have_text("Confirmed")
     expect(diner.locator(".timeline")).to_contain_text("Confirmed")
     expect(diner.locator(".contribution")).to_have_text(f"Grocery share: ${per_seat}, pay the cook at pickup")
 
@@ -79,7 +79,7 @@ def test_e2e_02_cook_marks_share_received_and_completed_then_diner_reviews(new_p
     expect(cook.get_by_text("Received by the cook")).to_be_visible()
     cook.get_by_role("button", name="Mark completed").click()
     expect(cook.locator(".messages")).to_contain_text("Booking marked completed.")
-    expect(cook.locator(".page-head .eyebrow")).to_have_text("Booking · Completed")
+    expect(cook.locator(".page-head .badge")).to_have_text("Completed")
 
     the_good = f"Steak cooked just right (e2e {unique_email('r').split('@')[0]})."
     diner.goto(f"{base_url}{booking_url}")
@@ -185,7 +185,7 @@ def test_e2e_03_keyboard_only_register_and_book_with_visible_focus(new_page, bas
     expect(page.locator("#booking-panel")).to_contain_text("Request sent.")
     keys.tab_to("#booking-panel a.btn")
     page.keyboard.press("Enter")
-    expect(page.locator(".page-head .eyebrow")).to_have_text("Booking · Requested")
+    expect(page.locator(".page-head .badge")).to_have_text("Requested")
 
     assert keys.unringed == []
 
@@ -246,5 +246,5 @@ def test_e2e_05_search_and_booking_work_without_javascript(no_js_page, base_url)
     booking.get_by_role("button", name="Request seats").click()
 
     page.wait_for_url(re.compile(r"/bookings/\d+$"))
-    expect(page.locator(".page-head .eyebrow")).to_have_text("Booking · Requested")
+    expect(page.locator(".page-head .badge")).to_have_text("Requested")
     expect(page.locator(".contribution")).to_have_text(f"Bring: {need_label}")

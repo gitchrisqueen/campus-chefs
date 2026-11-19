@@ -4,8 +4,10 @@
 {% block content %}
   {% timezone offering.cook.user.campus.timezone %}
     <header class="page-head">
-      <span class="eyebrow">Booking · {{ booking.status_label }}</span>
       <h1>{{ offering.title }}</h1>
+      <p>
+        <span class="badge" data-booking-status>{{ booking.status_label }}</span>
+      </p>
       <p class="lede">
         {% if is_cook %}
           {{ booking.diner.public_name }} asked for {{ booking.seats }} seat{{ booking.seats|pluralize }} at your meal.
@@ -21,7 +23,7 @@
           <p class="contribution">{{ booking.contribution_text }}</p>
           {% if booking.contribution != "none" %}
             {% if booking.contribution_received_at %}
-              <p class="small">Received by the cook {{ booking.contribution_received_at|date:"D j M · g:i A" }}.</p>
+              <p class="small">Received by the cook {{ booking.contribution_received_at|date:"D j M, g:i A" }}.</p>
             {% elif booking.status == "confirmed" or booking.status == "completed" %}
               <p class="small muted">Not marked received yet. Money changes hands in person; nothing is paid on this site.</p>
             {% endif %}
@@ -39,7 +41,7 @@
           <h2 id="timeline-heading">Timeline</h2>
           <ol class="timeline">
             <li>
-              Requested <time datetime="{{ booking.created_at|date:'c' }}">{{ booking.created_at|date:"D j M · g:i A" }}</time>
+              Requested <time datetime="{{ booking.created_at|date:'c' }}">{{ booking.created_at|date:"D j M, g:i A" }}</time>
             </li>
             {% if booking.decided_at %}
               <li>
@@ -48,7 +50,7 @@
                 {% else %}
                   Confirmed
                 {% endif %}
-                <time datetime="{{ booking.decided_at|date:'c' }}">{{ booking.decided_at|date:"D j M · g:i A" }}</time>
+                <time datetime="{{ booking.decided_at|date:'c' }}">{{ booking.decided_at|date:"D j M, g:i A" }}</time>
               </li>
             {% endif %}
             {% if booking.closed_at %}
@@ -58,7 +60,7 @@
                 {% else %}
                   Completed
                 {% endif %}
-                <time datetime="{{ booking.closed_at|date:'c' }}">{{ booking.closed_at|date:"D j M · g:i A" }}</time>
+                <time datetime="{{ booking.closed_at|date:'c' }}">{{ booking.closed_at|date:"D j M, g:i A" }}</time>
               </li>
             {% endif %}
             {% if booking.status_label == "Expired" %}<li>Expired: the meal was served before the cook answered</li>{% endif %}
@@ -71,11 +73,11 @@
           <dl class="facts facts-stacked">
             <dt>Serves</dt>
             <dd>
-              {{ offering.serve_at|date:"l j F · g:i A" }}
+              {{ offering.serve_at|date:"l j F, g:i A" }}
             </dd>
             <dt>Requests close</dt>
             <dd>
-              {{ offering.booking_cutoff_at|date:"l j F · g:i A" }}
+              {{ offering.booking_cutoff_at|date:"l j F, g:i A" }}
             </dd>
             <dt>Pickup or dine-in</dt>
             <dd>

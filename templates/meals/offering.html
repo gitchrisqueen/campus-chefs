@@ -4,11 +4,11 @@
 {% block content %}
   {% timezone offering.cook.user.campus.timezone %}
     <header class="page-head">
-      <span class="eyebrow">{{ offering.get_meal_type_display }} · {{ offering.get_fulfillment_display }}</span>
       <h1>{{ offering.title }}</h1>
       <p class="lede">
-        by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a> · {{ offering.cook.user.campus.name }}
+        by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a>
       </p>
+      <p class="muted">{{ offering.cook.user.campus.name }}</p>
     </header>
     {% if offering.status == "cancelled" %}
       <p class="callout">The cook cancelled this meal.</p>
@@ -58,13 +58,17 @@
         <section class="card" aria-labelledby="when-heading">
           <h2 id="when-heading">When and where</h2>
           <dl class="facts facts-stacked">
+            <dt>Meal</dt>
+            <dd>
+              {{ offering.get_meal_type_display }}
+            </dd>
             <dt>Serves</dt>
             <dd>
-              {{ offering.serve_at|date:"l j F · g:i A" }}
+              {{ offering.serve_at|date:"l j F, g:i A" }}
             </dd>
             <dt>Requests close</dt>
             <dd>
-              {{ offering.booking_cutoff_at|date:"l j F · g:i A" }}
+              {{ offering.booking_cutoff_at|date:"l j F, g:i A" }}
             </dd>
             <dt>Seats left</dt>
             <dd>
@@ -98,8 +102,8 @@
                 {% for booking in diners %}
                   <li>
                     <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>
-                    · {{ booking.seats }} seat{{ booking.seats|pluralize }} · {{ booking.status_label }}
-                    <span class="small muted">{{ booking.contribution_text }}</span>
+                    <span class="badge">{{ booking.status_label }}</span>
+                    <span class="small muted">{{ booking.seats }} seat{{ booking.seats|pluralize }}, {{ booking.contribution_text }}</span>
                   </li>
                 {% endfor %}
               </ul>

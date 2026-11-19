@@ -154,7 +154,7 @@ def test_contrib_09_kitchen_panel_shows_expected_received_and_groceries(client, 
     received.save()
     f.booking(offering, f.user(first="Nia"), status=S.REQUESTED, contribution="share", share_cents=400)
     client.force_login(offering.cook.user)
-    totals = "Expected $12.00 · Received $4.00 · Groceries $20.00"
+    totals = "Expected $12.00, received $4.00, groceries $20.00"
     assert totals in page(client, "/me")
     assert totals in page(client, "/kitchen")
 

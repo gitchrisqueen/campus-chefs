@@ -139,6 +139,11 @@ section 4:
   row were shorter than the first (now equal rows), and the cook's panel on their own offering was headed
   "Request a seat" (now "Your meal").
 
+- **Later screens follow the same rules (phase 8b):** the booking, offering, kitchen, cook, search, set-up and
+  `/me` screens lose their repeated eyebrows (the booking status is now the status badge), their middle-dot
+  strings become separate lines or commas ("Sat, 9:30"), and "Add a dish" is outlined so "Open a meal" is the one
+  filled button. Browser tab titles keep their " · ".
+
 ## Open points
 
 - The error summary lists errors in the form's field order, which differs from the grouped visual order on

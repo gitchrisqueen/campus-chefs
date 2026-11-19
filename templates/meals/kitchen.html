@@ -3,7 +3,6 @@
 {% block title %}Your kitchen · Campus Chefs{% endblock title %}
 {% block content %}
   <header class="page-head">
-    <span class="eyebrow">Kitchen</span>
     <h1>Your kitchen</h1>
     {% if cook.bio %}
       <p class="lede">{{ cook.bio }}</p>
@@ -31,17 +30,19 @@
               </p>
               <p class="small muted">
                 {% timezone cook.user.campus.timezone %}
-                  {{ offering.serve_at|date:"D j M · g:i A" }}
+                  {{ offering.serve_at|date:"D j M, g:i A" }}
                 {% endtimezone %}
-                · {{ offering.seats_left }} of {{ offering.capacity }} seats left
               </p>
+              <p class="small muted">{{ offering.seats_left }} of {{ offering.capacity }} seats left</p>
               <p class="small">
-                Expected {{ offering.expected_cents|money }} · Received {{ offering.received_cents|money }} · Groceries {{ offering.grocery_estimate_cents|money }}
+                Expected {{ offering.expected_cents|money }}, received {{ offering.received_cents|money }}, groceries {{ offering.grocery_estimate_cents|money }}
               </p>
               <p class="small muted">
                 Share {{ offering.share_per_seat_cents|money }} per seat
-                {% if offering.needs.all %}· Bring list: {{ offering.open_needs|length }} of {{ offering.needs.all|length }} open{% endif %}
               </p>
+              {% if offering.needs.all %}
+                <p class="small muted">Bring list: {{ offering.open_needs|length }} of {{ offering.needs.all|length }} open</p>
+              {% endif %}
             </div>
             <div class="row-actions">
               <a class="btn btn-secondary"
@@ -77,7 +78,7 @@
         {% for offering in past %}
           <li>
             <a href="{% url 'offering_detail' offering.pk %}">{{ offering.title }}</a>
-            <span class="small muted">{{ offering.serve_at|date:"j M Y" }} · Expected {{ offering.expected_cents|money }} · Received {{ offering.received_cents|money }} · Groceries {{ offering.grocery_estimate_cents|money }}</span>
+            <span class="small muted">{{ offering.serve_at|date:"j M Y" }}. Expected {{ offering.expected_cents|money }}, received {{ offering.received_cents|money }}, groceries {{ offering.grocery_estimate_cents|money }}</span>
           </li>
         {% endfor %}
       </ul>
@@ -86,7 +87,7 @@
   <section class="block" aria-labelledby="menu-heading">
     <div class="section-head">
       <h2 id="menu-heading">Your menu</h2>
-      <a class="btn btn-primary" href="{% url 'item_create' %}">Add a dish</a>
+      <a class="btn btn-secondary" href="{% url 'item_create' %}">Add a dish</a>
     </div>
     <div class="menu-grid">
       {% for meal, courses in menu %}
