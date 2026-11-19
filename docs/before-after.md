@@ -61,21 +61,21 @@ Two more facts from the same files matter:
 
 ### The payload
 
-Send this as the email, with any password:
+Read from the code, this value as the email, with any password, would log anyone in:
 
 ```
 ' OR 1=1 -- 
 ```
 
-The payload ends with a space (`--` then a space; some editors strip trailing spaces, so retype it if you copy it). MySQL treats `--` as a comment start only when a whitespace character follows it. With `x` as the password, the string built at `sqlQueries.php:58` is:
+The payload ends with a space (`--` then a space; some editors strip trailing spaces, so retype it if you copy it). MySQL treats `--` as a comment start only when a whitespace character follows it. With `x` as the password, the string built at `sqlQueries.php:58` would be:
 
 ```sql
 SELECT * FROM user_info WHERE first_name = '' OR 1=1 -- ' && password = 'x';
 ```
 
-The first `'` closes the `first_name` string. `OR 1=1` makes the condition true for every row. `-- ` comments out the rest of the line, including the password check. The query returns rows, so `authenticate()` returns `"Valid"`.
+The first `'` closes the `first_name` string. `OR 1=1` makes the condition true for every row. `-- ` comments out the rest of the line, including the password check. On a table with at least one user the query would return rows, so `authenticate()` would return `"Valid"`.
 
-This page does not run that request. The payload and the resulting SQL come from reading the code. The 2008 app is not run (the decision is recorded in plan 6.4 and D3).
+None of this was reproduced. The payload and the resulting SQL are read from the code, and the 2008 app is never run (the decision is recorded in plan 6.4 and D3).
 
 ### Why `htmlentities()` did not stop it
 
@@ -89,12 +89,12 @@ Two separate facts:
    - `ENT_NOQUOTES` converts neither.
    - The 8.1.0 changelog row says the default changed from `ENT_COMPAT` to `ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401`.
 
-   The 2008 code was written for PHP 5, so it ran with the `ENT_COMPAT` behaviour. The payload has no `&`, `"`, `<` or `>`, and `ENT_COMPAT` does not touch `'`, so it passed through unchanged. As a check, with the pinned `php:8.5.11-cli-trixie` image and the flag named explicitly, `htmlentities("' OR 1=1 -- ", ENT_COMPAT)` returned `' OR 1=1 -- `. With `ENT_QUOTES` it returned `&#039; OR 1=1 -- `. To reproduce: `docker run --rm --network none php:8.5.11-cli-trixie@sha256:8e5d746f87655d89573e76d2b9125ed1b1578e47d3c466a2b2fdfc35593d9b41 php -r 'var_dump(htmlentities("\x27 OR 1=1 -- ", ENT_COMPAT), htmlentities("\x27 OR 1=1 -- ", ENT_QUOTES));'`.
+   The 2008 code was written for PHP 5, so it ran with the `ENT_COMPAT` behavior. The payload has no `&`, `"`, `<` or `>`, and `ENT_COMPAT` does not touch `'`, so it passed through unchanged. As a check, with the pinned `php:8.5.11-cli-trixie` image and the flag named explicitly, `htmlentities("' OR 1=1 -- ", ENT_COMPAT)` returned `' OR 1=1 -- `. With `ENT_QUOTES` it returned `&#039; OR 1=1 -- `. To reproduce: `docker run --rm --network none php:8.5.11-cli-trixie@sha256:8e5d746f87655d89573e76d2b9125ed1b1578e47d3c466a2b2fdfc35593d9b41 php -r 'var_dump(htmlentities("\x27 OR 1=1 -- ", ENT_COMPAT), htmlentities("\x27 OR 1=1 -- ", ENT_QUOTES));'`.
 
 2. **Encoding quotes is still not SQL escaping.** Even with `ENT_QUOTES`, `htmlentities()` is the wrong tool here:
    - It does not touch backslashes. In the same check, a backslash came back unchanged. MySQL by default (without `NO_BACKSLASH_ESCAPES`) treats `\'` inside a string literal as a quote character that does not end the string. A backslash as the email and ` OR 1=1 -- ` as the password would, by the rules of MySQL string literals, turn the first literal into `' && password = ` and leave `OR 1=1 --` outside any string. This is reasoned from the query text and the MySQL rules, and was not run.
    - It changes the data. Stored and compared values would carry entities such as `&amp;` and `&#039;`, which is why plan 1.3 #2 lists the input encoding as a defect in its own right (and LEG-05 tests a password with `&`, `<`, `>`, `"` and `'` in it).
-   - The other half of the problem is on output. `cook_main.php:36-41` echoes database values with no escaping at all (plan 1.3 #2), so input encoding was the only defence against HTML injection too.
+   - The other half of the problem is on output. `cook_main.php:36-41` echoes database values with no escaping at all (plan 1.3 #2), so input encoding was the only defense against HTML injection too.
 
 The fix in 2026 is not a better escaping function. The new code never builds SQL from strings. It uses the Django ORM, and `CHK-04` fails the build if app code contains raw SQL calls.
 
@@ -107,7 +107,7 @@ The regression test is **AUTH-07**. It is specified in plan section 7.2:
 What it asserts:
 
 - The seeded user exists, with first name `Ava` and a different email address.
-- Logging in with the first name in the email field fails. That was the 2008 behaviour from `sqlQueries.php:58`, where the "email" was compared with `first_name`.
+- Logging in with the first name in the email field fails. That was the 2008 behavior from `sqlQueries.php:58`, where the "email" was compared with `first_name`.
 - Logging in with `' OR 1=1 -- ` as the email fails. This is the payload from section 2.
 
 The test is `test_auth_07_sqli_login_bypass_rejected` in [`accounts/tests/test_legacy_regressions.py`](../accounts/tests/test_legacy_regressions.py). It was committed failing, before the login code existed ([`f1d2f5c`](https://github.com/gitchrisqueen/campus-chefs/commit/f1d2f5c)), and passed once the accounts phase was built. Its name starts with its ID, so this selects it:
@@ -162,4 +162,4 @@ The numbers in the first column are the plan's, from section 1.3 (`#`, `T`) and 
 | 1.3 T6 | About, Contact, FAQ, Feedback and tour links all go to `hi.php` | `/how-it-works`, `/safety` and `/privacy` built; Contact and Feedback dropped | LEG-07 |
 | 1.3 #31, #32 | A photo of a real person and possibly real names in the 2008 files | Never published: replaced at import (`legacy-support/REDACTIONS.md`) | SEC-06 |
 
-Dropped or replaced with no behavioural test: the empty `customer_main.php` and the two empty HTML stubs (#14), the dangling `else` and the removed `mysql_*` extension (#22), the echo-only test scripts, which become a pytest suite (#26), and the unused PHP bean classes (#27). The `menu.php` typos and test blocks (#27) were logged here as the plan asks: the header comment says "Consumer class" (`menu.php:2-5`), "funtions" appears twice (`:16,33`), and the commented-out loop is missing a `$` (`:75`).
+Dropped or replaced with no behavioral test: the empty `customer_main.php` and the two empty HTML stubs (#14), the dangling `else` and the removed `mysql_*` extension (#22), the echo-only test scripts, which become a pytest suite (#26), and the unused PHP bean classes (#27). The `menu.php` typos and test blocks (#27) were logged here as the plan asks: the header comment says "Consumer class" (`menu.php:2-5`), "funtions" appears twice (`:16,33`), and the commented-out loop is missing a `$` (`:75`).
