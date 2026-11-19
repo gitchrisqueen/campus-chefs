@@ -13,8 +13,8 @@ SELECT 'CREATE ROLE campuschefs_owner LOGIN CREATEDB'
   WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'campuschefs_owner') \gexec
 SELECT 'CREATE ROLE campuschefs_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE'
   WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'campuschefs_app') \gexec
-ALTER ROLE campuschefs_owner WITH LOGIN CREATEDB PASSWORD :'owner_pw';
-ALTER ROLE campuschefs_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'app_pw';
+ALTER ROLE campuschefs_owner WITH LOGIN CREATEDB PASSWORD :'owner_pw';  -- a psql variable, not a literal (public-readiness: allow)
+ALTER ROLE campuschefs_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'app_pw';  -- a psql variable, not a literal (public-readiness: allow)
 ALTER DATABASE :"db" OWNER TO campuschefs_owner;
 GRANT CONNECT ON DATABASE :"db" TO campuschefs_app;
 GRANT USAGE ON SCHEMA public TO campuschefs_app;

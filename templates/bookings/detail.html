@@ -12,7 +12,7 @@
         {% if is_cook %}
           {{ booking.diner.public_name }} asked for {{ booking.seats }} seat{{ booking.seats|pluralize }} at your meal.
         {% else %}
-          {{ booking.seats }} seat{{ booking.seats|pluralize }} with <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a>.
+          {{ booking.seats }} seat{{ booking.seats|pluralize }} with <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a>
         {% endif %}
       </p>
     </header>

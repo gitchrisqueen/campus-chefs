@@ -66,7 +66,7 @@ def test_auth_00a_user_manager_normalizes_email_and_sets_flags():
     now = timezone.now()
     user = User.objects.create_user(
         "Ava.R@LARKSPUR.example",
-        "a-long-test-password-1",
+        "test-only-long-password-1",
         first_name="Ava",
         last_name="Reyes",
         campus=campus,
@@ -75,7 +75,7 @@ def test_auth_00a_user_manager_normalizes_email_and_sets_flags():
     assert user.email == "Ava.R@larkspur.example"
     assert str(user) == "Ava.R@larkspur.example"
     assert not user.is_staff and not user.is_superuser
-    assert user.check_password("a-long-test-password-1")
+    assert user.check_password("test-only-long-password-1")
     assert user.password.startswith("argon2$argon2id$")
 
     admin = User.objects.create_superuser(

@@ -1,111 +1,388 @@
 # Campus Chefs
 
-> Match students who want a good home-cooked meal with students who know how to cook.
+[![ci](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml?query=branch%3Amain)
 
-Campus Chefs started in 2008 as a student web project. This repository holds that original code and a plan to rebuild it as a 2026 web app with the same idea. The rebuild will be secure, accessible, tested and Docker-deployable.
+**Home-cooked meals, made by students who love to cook.**
 
-**Status:** work in progress. Phase 1 of [the plan](docs/MODERNIZATION_PLAN.md) is built: the Django skeleton, the one-command Docker demo and CI. The app features arrive phase by phase. The repository is public from its first commit, so the whole 2008-to-2026 history can be followed.
+<p>
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="docs/screenshots/walkthrough/01-home.png">
+    <img src="docs/screenshots/after/hero.gif" alt="A booking in the running demo, shown as eight screens in a loop: the home page; a live search for &quot;pancakes&quot; with one result; the Pancake Breakfast page with its dishes and allergens; the request form with the $4.00 grocery share picked and the allergen box ticked; &quot;Request sent&quot;; the cook's view with Confirm and Decline buttons; &quot;Booking confirmed&quot;; and the diner's confirmed booking, which reads &quot;Grocery share: $4.00, pay the cook in person&quot;. With reduced motion turned on, only the first screen, the home page, is shown.">
+  </picture>
+</p>
 
----
+[The walkthrough](docs/walkthrough.md) shows each of these screens as a still picture. The loop above is eight unedited screens of the running demo and lasts about 14 seconds. If your system is set to reduce motion, you get a still of the first screen instead.
 
-## The idea
+Campus Chefs matches students who want a home-cooked meal with students who like to cook. A cook posts a meal: the dishes, the time, the seats and what the groceries cost. A diner asks for a seat and chips in toward those groceries with a share of the cost, an item from the cook's bring list, or terms the two of them agree on. The cook gets help with the grocery bill and never a profit.
 
-The 2008 landing page says:
+**This is a portfolio demo, not a live service.** The people, campuses and meals are made up, and no money moves through the app. [Why this is a demo](#why-this-is-a-demo) has the details.
 
-> "The purpose of this site is to match students looking for a good home cooked meal, with students who know how to cook. This site was built for any college student who would rather sit back and watch someone else cook for them, then [sic] to actually do it themselves."
-
-It worked in three steps:
-
-1. **Register.** Sign up as a **Cook** or a **Customer**, and give your campus, class year and transportation.
-2. **Search.** Find meals by student or by ingredient.
-3. **Eat!** Book the meal you want and enjoy it.
-
-The diner chips in toward the groceries, either with a share of the grocery cost or by bringing ingredients. This supplements the food budget of a student who likes to cook. The cook gets help with the grocery bill, not a profit. The 2008 code never got as far as building this part.
-
-A cook's profile was to show:
-- a breakfast, lunch and dinner menu, split into mains and sides;
-- specialties;
-- a rating;
-- comments split into "the good" and "the bad".
-
-## What the 2008 code does today
-
-| Feature | 2008 state |
+| If you are | Start here |
 |---|---|
-| Landing page with the 1-2-3 steps | Built |
-| Registration | Form built. It submits by GET, saves the password in plain text and does no validation. It also swaps the `campus` and `profileType` values on insert |
-| Login | Built, but it compares the email against the `first_name` column, never starts a session, and is open to SQL injection |
-| Cook profile page | Layout built. It always shows user `1`, and the menu and specialties are hardcoded HTML |
-| Customer profile page | Empty |
-| Search | Text box only; it leads to an "Under Construction" page |
-| Booking | Not built |
-| Grocery cost-sharing | Not built |
-| Comments and ratings | Not built (an empty placeholder) |
-| About, Contact, FAQ, How it works, Take the tour | "Under Construction" |
-| Tests | Two echo scripts with no assertions |
+| A student, or anyone curious about the product | [What a student sees](#what-a-student-sees) |
+| Someone who wants to click around | [Run the demo](#run-the-demo), one command |
+| A developer or a hiring team | [For developers and hiring teams](#for-developers-and-hiring-teams) |
 
-It no longer runs on any current PHP release. It uses the `mysql_*` extension, which PHP 7.0 removed in 2015. There is also no database schema file. The table layout can only be inferred from the queries in `legacy/src/sqlQueries.php`.
+## What a student sees
 
-### TODOs left in the code
+The home page says what the app is for and lets you search straight away. The same pages reflow for a phone.
 
-- `legacy/src/cook_main.php:7`: `//HACK! fix this`, where the user id is hardcoded instead of read from the session.
-- `legacy/src/registration_form.php:57,62,67`: transportation and profile type should be radio buttons, and campus a drop-down.
-- `legacy/src/cook_profile.php`, `legacy/src/customer_profile.php`, `legacy/src/menu.php`: the method-test sections are marked "delete later".
+<p>
+  <img src="docs/screenshots/after/home.png" width="590" alt="Home page on a desktop: the headline &quot;Home-cooked meals, made by students who love to cook&quot;, an example listing for Buttermilk Pancakes with a $4.00 grocery share, the three steps Register, Search and Eat, a search box, and buttons to try the demo as a diner or a cook.">
+  <img src="docs/screenshots/after/phone-home.png" width="190" alt="The same home page on a phone: the demo banner, the logo and menu, the headline, and the Find a meal and How it works buttons in one column.">
+</p>
 
-[Plan section 12](docs/MODERNIZATION_PLAN.md#12-original-code-audit) has the full audit, by file and line.
+### 1. Find a meal
 
-## The 2026 plan, in short
+Search by a cook's first name, a dish or an ingredient. Narrow it by campus, meal, date, dietary tag and the most you want to chip in, and leave out dishes that contain an allergen you name. The results update as you type. The same form works with JavaScript turned off.
 
-| | 2008 | Planned for 2026 |
-|---|---|---|
-| Stack | PHP 5, `mysql_*`, MySQL | Django 6.1, htmx 4, PostgreSQL 18, Python 3.14 |
-| Auth | Plain-text passwords sent over GET, no session | Hashed passwords, POST plus CSRF, sessions, rate-limited login |
-| Data access | String-concatenated SQL | ORM only; a static check bans raw SQL |
-| Features | Register and a static cook page | Register, cook kitchen (menus, allergens, meal offerings), search, bookings with a state machine, grocery cost-sharing (a per-seat share or a bring-list item, capped at the grocery cost), reviews |
-| Design | Fixed 1024px layout, corner-image hacks | Responsive, WCAG 2.2 AA, dark mode, tokens taken from the original red `#A40408` brand |
-| Tests | Echo scripts | About 110 named tests: unit and integration against real Postgres, Playwright end-to-end, axe accessibility, and one regression test per 2008 defect |
-| Deploy | Copy files into a local Apache | `make demo` (Docker Compose, generated secrets, synthetic seed data, healthchecks) |
-| CI | None | One GitHub Actions job: lint, SAST, secret and dependency scans, tests, image build and a compose smoke test |
+<p>
+  <img src="docs/screenshots/after/search.png" width="590" alt="Search page on a desktop with &quot;pancakes&quot; typed in. Below the filters for campus, meal, date, dietary tag and allergens, one result: Pancake Breakfast by Marcus B., $4.00 grocery share per seat or bring an item, contains wheat, milk and egg, 4 of 6 seats left.">
+  <img src="docs/screenshots/after/phone-search.png" width="190" alt="The search result on a phone: a note that allergens are declared by each cook and are not a safety guarantee, then the Pancake Breakfast card.">
+</p>
 
-**Demo only.** Students negotiate their own terms: a suggested share, an item from the cook's bring list, or their own offer. The app records what was agreed and never handles money transactions. The cook marks the contribution received. It carries allergen acknowledgements, safety and privacy pages and a demo banner. All seed data is synthetic. It is meant to show how a 2008 student app becomes a 2026 production-quality one. It is not a live food marketplace.
+### 2. See who is cooking
 
-## Repository layout (today)
+Each cook has a page with their specialties, a menu grouped into breakfast, lunch and dinner, the meals they have coming up, and reviews. A review has two parts, "The good" and "The bad". Cooks appear as a first name and an initial, and no email address is shown on a public page.
 
-```
-compose.yaml, Dockerfile, Makefile   the one-command demo and the dev commands
-docker/          keygen.sh (secrets), entrypoint.sh, postgres-init/01-roles.sh (DB roles)
-config/          Django settings and URLs
-core/            health check, home page, security middleware, management commands
-accounts/        the email-login user model
-meals/, bookings/  the domain apps (filled in by phases 2 to 7)
-templates/, static/  HTML templates, CSS, vendored htmx 4.0.1
-tests/           end-to-end browser tests (Playwright)
-scripts/         denylist.sh, check-image-metadata.sh, static_checks.py, smoke.sh, ops-checks.sh, wait-healthy.sh
-.github/         workflows/ci.yml (one CI job), dependabot.yml
-docs/            MODERNIZATION_PLAN.md, LEGACY-MAP.md, architecture.md, OPERATIONS.md
-legacy/          the 2008 code, read-only and redacted; no license granted (see legacy/README.md)
-legacy-support/  SHA256SUMS for legacy/, REDACTIONS.md, placeholder images
-```
+<img src="docs/screenshots/after/cook.png" width="590" alt="Cook page for Tess W., a junior at Larkspur State University (Demo), rated 4.0 out of 5 from 2 reviews. It lists three specialties, a menu in Breakfast, Lunch and Dinner columns with allergen and dietary labels on every dish, one upcoming meal, and two reviews with &quot;The good&quot; and &quot;The bad&quot;.">
 
-## Running it
+### 3. Ask for a seat and chip in
 
-You need Docker with Compose v2, `make`, `curl` and `jq`.
+Pick 1 to 4 seats and choose how you will chip in: the grocery share, an item from the bring list, or your own terms. You have to tick that you read the allergens before the request can be sent.
+
+<p>
+  <img src="docs/screenshots/after/offering.png" width="590" alt="Pancake Breakfast page on a desktop. Left: the dishes with allergen labels, a notice that allergens are declared by the cook, and the chip-in terms of $4.00 per seat or an item from the bring list. Right: when and where, and the request form with 1 seat, the grocery share selected and the allergen box ticked.">
+  <img src="docs/screenshots/after/phone-offering.png" width="190" alt="The request form on a phone: seats, three ways to chip in with the grocery share selected, the ticked allergen box and the Request seats button.">
+</p>
+
+The cook confirms or declines. Your booking page then shows what you agreed and a timeline. You pay the cook in person, and the cook marks the share received.
+
+<p>
+  <img src="docs/screenshots/after/booking.png" width="590" alt="A diner's confirmed booking for Steak Night on a desktop: &quot;Grocery share: $4.00, pay the cook in person&quot;, the note &quot;Money changes hands in person; nothing is paid on this site&quot;, a timeline with Requested and Confirmed, and the pickup time and pickup note.">
+  <img src="docs/screenshots/after/phone-booking.png" width="190" alt="The same confirmed booking on a phone, in one column.">
+</p>
+
+Your account page keeps your bookings in one place. Your email is shown only to you.
+
+<img src="docs/screenshots/after/me.png" width="590" alt="Account page for the demo diner Jordan K.: a profile card that says the email is never shown to others, a My bookings list with the confirmed Steak Night booking, and a card inviting the diner to set up a kitchen.">
+
+### 4. Cook for other students
+
+The kitchen is where a cook keeps a menu and opens meals. Each meal shows the seats left, the grocery estimate, the share per seat and how much of the chip-ins has been received. The form suggests a share of the estimate divided by the seats plus one, because the cook eats too. It refuses a share that would add up to more than the groceries cost.
+
+<p>
+  <img src="docs/screenshots/after/kitchen-menu.png" width="590" alt="The demo cook's kitchen on a desktop: the upcoming Pancake Breakfast with 4 of 6 seats left, groceries $24.00 and a $4.00 share per seat; the past Steak Night with chip-ins received $0.00 of $4.00; and the menu in Breakfast, Lunch and Dinner columns with Edit and Remove links on each dish.">
+  <img src="docs/screenshots/after/phone-kitchen.png" width="190" alt="The kitchen on a phone: the cook's bio, the Open a meal button and the Pancake Breakfast card with its grocery numbers.">
+</p>
+
+## Run the demo
+
+You need:
+
+- Docker Engine with the Compose plugin (`docker compose`). It was tested with Engine 29.9.3 and Compose v5.7.0.
+- `make`, `curl` and `jq`.
+- About 3 GB of free disk space, and port 8000 free.
 
 ```sh
-make demo                               # build and start; waits until healthy
-curl http://127.0.0.1:8000/healthz      # prints: ok
-docker compose logs -f web              # follow the app logs
-docker compose down                     # stop, keeping data
-docker compose down -v                  # reset: wipes the synthetic data and the generated secrets
-make test                               # unit and integration tests
+git clone https://github.com/gitchrisqueen/campus-chefs.git
+cd campus-chefs
+make demo
 ```
 
-The data is synthetic and disposable, so there are no backups. [docs/OPERATIONS.md](docs/OPERATIONS.md) covers what to do when something breaks.
+`make demo` builds the image, starts four containers and waits for the app. The first run pulls the base images and builds the app image; later runs reuse them. Its last line reads `wait-healthy: web healthy after 6s`, where the number of seconds varies. Then check it:
 
-**Do not deploy the 2008 code in `legacy/`.** Its login can be bypassed with SQL injection.
+```sh
+curl http://127.0.0.1:8000/healthz      # prints: ok
+```
 
-**Contributing:** CI's public-safety denylist step fails closed on pull requests from forks, because forks cannot read the secret it needs. A maintainer re-runs such changes from a branch.
+Open <http://127.0.0.1:8000>. You do not need an account or a password:
 
-## License
+- **Try as demo diner** logs you in as Jordan K., who has one confirmed booking.
+- **Try as demo cook** logs you in as Marcus B., who has a menu, one upcoming meal and one past meal.
 
-[MIT](LICENSE) for everything except `legacy/`, which is kept for historical reference only, with no license granted.
+Both buttons are on the home page and on the login page. The seeded accounts have no passwords, so the buttons are the only way in to them. You can also register with made-up details.
+
+| Task | Command |
+|---|---|
+| Stop, keeping the data | `docker compose down` |
+| Reset everything, data and generated secrets | `docker compose down -v`, then `make demo` |
+| Refresh the demo data | `make reseed` |
+| Use another port | `WEB_PORT=8010 make demo` |
+| Follow the app log | `docker compose logs -f web` |
+| Unit and integration tests | `make test` |
+| Browser tests (they reseed first) | `make e2e` |
+| Lint and static checks | `make lint` |
+
+The seed is 3 campuses, 8 cooks, 14 diners, 48 dishes, 16 meals, 26 bookings and 12 reviews, all fictional. Meal times are set relative to the first start, so after about a week no meal is in the future: run `make reseed`. [docs/OPERATIONS.md](docs/OPERATIONS.md) covers the admin account, moderation and what to do when something breaks.
+
+## Why this is a demo
+
+Sharing food between students carries legal and health risk that an app cannot remove. So this project stops at a local demo, and it says so on every page.
+
+- **Scope.** It runs on your machine with made-up people and campuses. It is not hosted, and it was not built to take public sign-ups. Do not deploy it with public sign-ups; `CC_REGISTRATION_OPEN=false` turns registration off.
+- **Allergens.** Each cook types in the allergens and dietary tags of their own dishes. Nobody checks them, and nobody inspects a kitchen. The app asks the cook to confirm each list and asks the diner to tick that they read it. Those are records of a click, not food-safety or legal compliance.
+- **Food rules.** Rules on home-cooked food made for other people vary by state, county, city and campus. The app does not check them.
+- **Money.** The app never handles money. A share is capped at the grocery cost, and some places may still treat that as a sale of food. Nothing here is legal advice.
+- **What stays on.** The yellow banner shows while `CC_DEMO_MODE=true`. The [`/safety`](templates/core/safety.html) and `/privacy` pages, the `noindex` tag and a `robots.txt` that disallows everything are on in every mode.
+
+## For developers and hiring teams
+
+In short, with the evidence for each line:
+
+- **A legacy rescue with proof.** The original is 1,003 lines of PHP whose login could be bypassed with SQL injection. The plan lists 33 defects and 6 TODOs, and each fix that has behaviour names the test that proves it ([before and after](#before-and-after)).
+- **358 tests, green on `main`.** 340 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.19% statement coverage against a 90% gate ([run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607)).
+- **One command to run.** Four containers, secrets generated at first start, nothing secret in the repository ([architecture](#architecture)).
+- **Security decisions with their costs written down.** A strict content security policy, one secrets volume per service, a database role that cannot change the schema, and rules enforced by the database ([security and data decisions](#security-and-data-decisions)).
+- **An AI feature behind a flag.** An optional menu import that is off by default, sends only the pasted text, and treats the model's reply as untrusted input ([AI menu import](#ai-menu-import-optional)).
+- **Scope held on purpose.** No payments, no messaging, no uploads, and the reasons ([deliberately not built](#deliberately-not-built)).
+
+| Layer | What it uses |
+|---|---|
+| App | Django 6.1.3 on Python 3.14, server-rendered templates, htmx 4.0.1 for live search and the booking panel, no JavaScript build step |
+| Data | PostgreSQL 18.7 |
+| Runtime | Docker Compose: gunicorn behind a loopback port, WhiteNoise for static files |
+| Tests | pytest, pytest-django, Playwright with Chromium, axe-core 4.14.0 |
+| CI | GitHub Actions, one job |
+| Optional menu import | The anthropic SDK 2.5.0 and pydantic 2.14.2. The SDK is installed in the image and imported only when the flag is on and a cook submits a menu |
+
+### Architecture
+
+```mermaid
+flowchart LR
+  browser(["Browser<br/>HTML forms and htmx"])
+
+  subgraph compose["docker compose"]
+    keygen["keygen<br/>one-shot, writes the secrets<br/>network_mode: none"]
+
+    subgraph vols["named volumes"]
+      sdb[("secrets-db")]
+      sowner[("secrets-owner")]
+      sweb[("secrets-web")]
+      pgdata[("pgdata")]
+    end
+
+    subgraph both["networks: frontend + backend"]
+      web["web<br/>gunicorn + Django<br/>DB role campuschefs_app"]
+    end
+
+    subgraph backend["network: backend (internal)"]
+      db[("db<br/>PostgreSQL 18<br/>no published port")]
+      migrate["migrate<br/>one-shot: migrations and seed<br/>DB role campuschefs_owner"]
+      tests["tests<br/>profile test only<br/>pytest and Chromium"]
+    end
+  end
+
+  browser -->|"127.0.0.1:8000"| web
+  web -->|"SQL, rows only"| db
+  migrate -->|"SQL, schema and seed"| db
+  tests -->|"SQL, test database"| db
+  tests -->|"HTTP, browser tests"| web
+  keygen -->|write| sdb
+  keygen -->|write| sowner
+  keygen -->|write| sweb
+  pgdata -.->|"read-only"| keygen
+  db -->|data| pgdata
+  sdb -.->|"read-only"| db
+  sowner -.->|"read-only"| migrate
+  sowner -.->|"read-only"| tests
+  sweb -.->|"read-only"| web
+  sweb -.->|"read-only"| tests
+```
+
+Solid arrows are traffic or writes. Dotted arrows are read-only volume mounts. The diagram names every service, network and volume in [`compose.yaml`](compose.yaml), and `make lint` fails if one is missing from it.
+
+| Service | Starts after | What it does |
+|---|---|---|
+| `keygen` | nothing | Runs once with no network. Writes random secrets into three volumes, one per consumer. It reads `pgdata` only to refuse to make new passwords for a database that already exists |
+| `db` | `keygen` exited 0 | PostgreSQL on the internal network only. Its init script creates an owner role and an app role |
+| `migrate` | `db` healthy | Runs once as the owner role: migrations, cache table, expired sessions, and the seed on an empty database |
+| `web` | `migrate` exited 0 | The app, as the app role, with a read-only root filesystem, no Linux capabilities and user id 10001. The only published port, bound to `127.0.0.1` |
+| `tests` | `db` healthy | Started only with `--profile test`. Runs pytest and Chromium against the stack, with the source mounted read-only |
+
+There is no cache server, queue or scheduler. Sessions and the failed-login counters live in PostgreSQL. [docs/architecture.md](docs/architecture.md) has the booking state machine, the versions tested and every place the build departed from the plan.
+
+### Before and after
+
+This project began as a student web app written in 2008 in PHP 5. The original code is kept in [`legacy/`](legacy/README.md), redacted and read-only, and it is never run: its landing page was rendered once to static HTML for the picture below.
+
+<p>
+  <img src="docs/screenshots/before/welcome.png" width="390" alt="The 2008 landing page: a fixed-width layout with a red header that holds an email and password login form, a left menu, a mission paragraph and three numbered step images.">
+  <img src="docs/screenshots/after/home.png" width="390" alt="The 2026 home page for comparison: a responsive layout with the headline, an example listing, the three steps and a search box.">
+</p>
+
+| 2008 defect | 2026 fix | Proof |
+|---|---|---|
+| Login bypass: SQL built by pasting strings together (`legacy/src/sqlQueries.php:58`). The email `' OR 1=1 -- ` logged anyone in | No SQL strings. The ORM binds every value, and a static check fails the build on raw SQL | AUTH-07, SRCH-03, CHK-04 |
+| Passwords stored and compared as plain text | Argon2id hashes | REG-01 |
+| Login and registration sent by GET, so passwords sat in the URL | POST only, with a CSRF token | AUTH-03, REG-08, AUTH-10 |
+| The "email" was compared with the `first_name` column, and no session was created | Email login; the session key changes at login | AUTH-07, AUTH-01 |
+| Database user `root` with an empty password | Generated secrets, one set per service; the app's role cannot create or drop tables | SEC-04, SEC-05, SEC-08 |
+| Profile page hardcoded to user 1 (`//HACK! fix this`) | The logged-in user, and queries scoped to rows they own | LEG-02 |
+| Registration saved campus and profile type in each other's columns | Named model fields | LEG-04 |
+| The cook's email printed on a public page | No email on any public page | AZ-06 |
+| Database errors printed to the visitor | A generic error page | LEG-06 |
+| Search led to "Under Construction"; booking and reviews were never built | Search with filters, a booking state machine, two-part reviews | SRCH, BOOK and REV tests, LEG-07 |
+| Fixed 1024 px layout; images without alt text; labels not tied to inputs | Responsive from 320 px; WCAG 2.2 AA checked by axe in light and dark mode | E2E-04, A11Y-01, CHK-02 |
+| A photo of a real person and real names in test strings | Replaced before the first commit; a denylist scan runs in CI and before every push | SEC-06 |
+
+[docs/before-after.md](docs/before-after.md) has the full table of 29 rows, the code excerpts, and why `htmlentities()` did not stop the injection. [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) maps each 2008 file to its new home.
+
+### Security and data decisions
+
+Each row is a choice, what it protects and what it costs. [docs/SECURITY.md](docs/SECURITY.md) lists what is not defended.
+
+| Decision | What it buys | What it costs | Proof |
+|---|---|---|---|
+| **Content security policy** of `default-src 'self'`, with no inline script or style anywhere | An injected `<script>` or `style` attribute does not run | No inline handlers or styles: htmx's injected indicator CSS is switched off and shipped in the stylesheet, and conditional form fields use CSS `:has()`. Adding a third-party asset means changing the policy | SEC-01, E2E-06; the booking journeys E2E-01 to E2E-04 also fail on any console error |
+| **One secrets volume per consumer** | `web` can read its own database password and the Django key, and nothing else. The superuser password is visible only to `db` | Three volumes and a one-shot generator that needs two Linux capabilities. If the secrets volume is lost while the data is kept, the stack refuses to start until it is reset | SEC-08 (smoke check 4), OPS-02 |
+| **Least-privilege database role** | `web` connects as a role limited to SELECT, INSERT, UPDATE and DELETE. A takeover of the web process cannot create, alter or drop a table | A second role and a separate one-shot container for migrations | SEC-04, SEC-05, run while connected as that role |
+| **Rules live in the database** as 19 named CHECK constraints and 5 unique constraints | A bug in a form or view cannot store 0 seats, a 6-star rating, a cutoff after the meal or two active bookings by one diner for one meal | Each rule is written twice, once for a readable form error and once as a constraint, and changing one needs a migration | DATA-03, BOOK-08 |
+| **No-profit rule**: `share_per_seat_cents * capacity <= grocery_estimate_cents` | The shares for a meal cannot add up to more than the groceries cost, whatever the form sends | It trusts the cook's estimate. There are no receipts | CONTRIB-01, CONTRIB-12 |
+| **Money is recorded, never moved** | No card, payout or payment-handle data exists to leak, and there is no payment provider to integrate or secure. The only money columns are three integer `*_cents` fields | No proof of payment and no refunds. Settling up is between two students | DATA-02 |
+| **Another user's object returns 404, not 403** | The response does not confirm that the object exists | A real permission bug looks like a missing page, so the authorization tests check both cases | AZ-02, AZ-03 |
+| **Failed logins are limited per email, not per IP** | Behind Docker's port publishing every client can share one address, so a per-IP limit would lock out everyone at once | Someone who knows an email can lock that account for 15 minutes | AUTH-05 |
+
+### AI menu import (optional)
+
+A cook can paste a menu as plain text and get a draft of the dishes to edit. The feature is off by default, and the demo above runs without it.
+
+- **Off means absent.** With `CC_AI_ENABLED=false`, the default, `/kitchen/import` returns 404 for everyone and the SDK is never imported (AI-01).
+- **The flow.** The cook pastes up to 4,000 characters. The reply is validated against a fixed schema whose allowed values come from the app's own dish model, and the draft fills an editable form. Nothing is saved until the cook ticks the allergen confirmation and submits (AI-02, AI-04, AI-05).
+- **What is sent.** Only the pasted text and a fixed system prompt go to Anthropic's Claude API: no name, email, campus or id (AI-02). The paste screen and `/privacy` say so, and tell the cook what not to paste (AI-07).
+- **The reply is untrusted.** A reply with any value outside the schema is rejected whole, and every value is escaped on the page. Text in a pasted menu that tries to give the model instructions can at most produce a wrong draft, which the cook sees and edits before saving (AI-03).
+- **Cost limit.** A cook can ask for 5 drafts in 10 minutes and 20 in a day. Over a limit, no API call is made (AI-06).
+- **Not run against the real API.** Its 45 tests make no network call: a test double stands in for the API client, so CI needs no key and the repository holds none. This code has never sent a request to the real API. The default model id comes from the API documentation and was not checked with a live call.
+
+[docs/OPERATIONS.md](docs/OPERATIONS.md#ai-menu-import-optional) covers what to read before turning it on, the key file, the first live check and each logged error. [docs/SECURITY.md](docs/SECURITY.md#the-ai-menu-import) lists its risks.
+
+### Tests and CI
+
+The numbers below are from [run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607), the green run on `main` at commit `4b3ed2e`. It took 3 minutes 36 seconds.
+
+- **340 unit and integration tests** run against PostgreSQL 18 as a role that is not a superuser. There is no SQLite and no mocked database. The menu-import tests use a test double for the external API client and make no network call.
+- **18 browser tests** drive Chromium against the running containers. They cover both halves of the booking story, a keyboard-only registration and booking with a visible focus ring at every stop, no sideways scroll at 320 px, search and booking with JavaScript off, and an axe scan of every main screen in light and dark mode.
+- **Coverage is 98.19%** of 1,713 statements. CI fails below 90%.
+- **Tests are named by plan ID**, so `make test K="auth_07"` runs the login-bypass regression. In the accounts phase the regression tests for the original defects were committed failing, before the code that fixes them ([`f1d2f5c`](https://github.com/gitchrisqueen/campus-chefs/commit/f1d2f5c)).
+
+| ID family | What it covers | Tests | Browser tests |
+|---|---|---|---|
+| AUTH | Login, logout, CSRF, lockout after failed logins, password change | 22 | 2 |
+| REG | Registration rules, Argon2id, nothing created by GET | 15 | |
+| ACCT | Account edits and deletion | 6 | |
+| AZ | Who can read or change what, and mass assignment | 8 | |
+| MENU | Dishes, specialties, allergen confirmation and lock | 8 | |
+| SRCH | Search, filters, injection and wildcard input, surnames never searchable | 11 | |
+| BOOK | The booking state machine: every transition by every actor, capacity, two diners racing for one seat, time limits | 93 | |
+| CONTRIB | Grocery shares, the bring list, the no-profit cap, custom terms | 15 | |
+| REV | Reviews, the 14-day window, hiding, averages | 13 | |
+| DATA | Schema constraints, the seed, no payment columns | 19 | |
+| SEC | Security headers, cookies, the database role, deploy check, denylist, demo switches | 11 | |
+| LEG | Regression tests for the original app's defects | 13 | 6 |
+| AI | The optional menu import: the flag, what is sent, bad and hostile replies, the length cap, the allergen confirmation, the rate limit. The plan lists AI-01 to AI-05; AI-06 and AI-07 were added during the build | 45 | |
+| UX and A11Y | Colour contrast of the design tokens, form markup, the axe scan | 7 | 4 |
+| E2E | The six browser journeys | | 6 |
+| HEALTH and OPS | The health endpoint and an idempotent bootstrap | 2 | |
+| No plan ID | Supporting tests that close coverage gaps | 52 | |
+| **Total** | | **340** | **18** |
+
+To recount a family, list the tests and filter by prefix. This prints 93:
+
+```sh
+docker compose --profile test run --rm tests pytest --collect-only -q | grep -c '::test_book_'
+```
+
+CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no path filters, a 30-minute timeout, actions pinned by commit SHA and images pinned by digest. In order, it runs:
+
+1. gitleaks over the full history, then a denylist scan that prints locations and never the matched text.
+2. A gate that fails a pull request that touches `legacy/`, unless it carries the `legacy-change` label, and a checksum check of that folder.
+3. `make lint`: ruff, djlint, codespell, eight static checks (for example no raw SQL, no `|safe`, every form control labelled) and a link check of these docs.
+4. `make sast`: bandit and pip-audit.
+5. Django's migration check and `check --deploy` with production settings.
+6. The unit and integration tests with the coverage gate.
+7. The image build and a Trivy scan for HIGH and CRITICAL findings.
+8. `make demo && make smoke`: seven checks against the real containers, including that `web` is not root, that each service sees only its own secrets, and that data survives a restart.
+9. The browser tests.
+
+### How it was built
+
+- **Plan first.** [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) was written before any code: the audit of the 2008 files, the data model, the test catalogue and a phased roadmap. It was reviewed before work started, and its review log (section 13) records 46 findings and what changed for each.
+- **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Ten of the twelve pull request descriptions link a green CI run; #3 and #4 do not.
+- **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: each of the twelve merged pull requests carries a summary comment with the number of review rounds, how many reviewers passed and failed in each round, and the final result. Every review took two or three rounds and ended with all reviewers passing, and on eleven of the twelve at least one reviewer failed the first round. The reviewers' full verdicts are kept privately and are not in this repository.
+- **Who did what.** AI coding agents wrote the code from the plan, one builder per phase on its own branch, with a coordinator that integrated and verified the work. I set the scope, made the decisions recorded in plan section 10.3 and approve what is published here.
+
+| Phase | Pull request |
+|---|---|
+| 0 Repository, redacted legacy import, public-safety scans | first commit, [`723beb9`](https://github.com/gitchrisqueen/campus-chefs/commit/723beb9) |
+| 1 Skeleton, Docker demo, CI, CSP and htmx trial | [#1](https://github.com/gitchrisqueen/campus-chefs/pull/1) |
+| 2 Data model, constraints, seed | [#2](https://github.com/gitchrisqueen/campus-chefs/pull/2) |
+| 10a Static "before" evidence | [#3](https://github.com/gitchrisqueen/campus-chefs/pull/3) |
+| 3 Accounts: registration, login, account page | [#4](https://github.com/gitchrisqueen/campus-chefs/pull/4) |
+| 8 Design system (part 1) | [#5](https://github.com/gitchrisqueen/campus-chefs/pull/5) |
+| 4 Kitchen, menu, meals, cook page | [#6](https://github.com/gitchrisqueen/campus-chefs/pull/6) |
+| 5 Search | [#7](https://github.com/gitchrisqueen/campus-chefs/pull/7) |
+| 6 Bookings and grocery cost-sharing | [#8](https://github.com/gitchrisqueen/campus-chefs/pull/8) |
+| 7 Reviews | [#9](https://github.com/gitchrisqueen/campus-chefs/pull/9) |
+| 8 Browser tests, accessibility gate, design pass (part 2) | [#10](https://github.com/gitchrisqueen/campus-chefs/pull/10) |
+| 9 Security hardening and coverage | [#11](https://github.com/gitchrisqueen/campus-chefs/pull/11) |
+| 12 Optional AI menu import, off by default | [#12](https://github.com/gitchrisqueen/campus-chefs/pull/12) |
+| 11 This README, the screenshots and the docs | this change |
+
+### Design and accessibility
+
+The red, `#a40408`, is the original brand colour. The type is a system serif for headings and the system UI font for text, so no font files load. Dark mode follows the system setting.
+
+<p>
+  <img src="docs/screenshots/design/home-desktop-dark.png" width="590" alt="The home page in dark mode on a desktop: light text on a near-black background, red buttons, and coral for the links and the italic headline words.">
+  <img src="docs/screenshots/design/home-phone-dark.png" width="190" alt="The home page in dark mode on a phone.">
+</p>
+
+The accessibility gate is part of the browser tests: axe-core with its WCAG 2.0 A and AA, 2.1 AA and 2.2 AA rules on every main screen in both colour schemes, plus the keyboard-only journey and the 320 px check. [docs/design-plan.md](docs/design-plan.md) has the palette and the type scale.
+
+## Deliberately not built
+
+| Not built | Why |
+|---|---|
+| Payment processing, stored card or payout details, payment handles, tips, pricing for profit | Legal and card-data exposure, and student privacy. The app records what was agreed, and money moves between students outside it |
+| Messaging, notifications, email, password reset, email verification | A local demo has no mail transport. A real deployment would need verified campus email first |
+| Photo uploads, maps, delivery | Privacy and driving liability |
+| Full-text search | The seed has 48 dishes. A plain substring match is enough and simpler |
+| Cross-checks between dietary tags and allergens, such as vegan against milk | They are doubtful in the domain itself (honey, gelatin) and would give false assurance. Tags are labelled "cook-declared" |
+| A no-show status, a booking audit table, a cap on open requests per diner | The three-step story does not need them. The timeline comes from timestamps |
+| Rate limits on registration, search and booking | The demo is local, and per-IP limits misfire behind Docker's port publishing. Only failed logins and the optional menu import are limited |
+| A scheduled dependency-audit workflow | Dependabot and the pip-audit step on every pull request cover it while the repository is active |
+| A recommender that suggests meals | Speculative |
+| A hosted public sign-up | A decision, not a gap: see [why this is a demo](#why-this-is-a-demo) |
+| A live demo of the original login exploit | Running an app with a known login bypass is not worth it. The exploit is explained from the code in [docs/before-after.md](docs/before-after.md) |
+
+The plan listed dark mode and an animated demo as stretch goals, and the AI menu import as an optional phase. All three were built.
+
+## What I would do next
+
+1. **Verified campus email and password reset.** This needs a mail transport, and it closes the two gaps the demo accepts: anyone can register someone else's address, and the registration form reveals whether an email has an account.
+2. **A hosted demo with sign-up off.** Demo logins only, a nightly reseed and real HTTPS. The settings for HTTPS already pass `check --deploy`.
+3. **Card payments in a provider's test mode,** behind a legal review. A checkout per booking and a webhook that marks the share received. The plan sketches it as one added table and a webhook that sets the existing "received" timestamp (plan section 3.5).
+4. **Counter-offers on custom terms.** Today a diner who wants different terms cancels and asks again, because there is no messaging.
+5. **An atomic failed-login counter,** and a lockout that an outsider cannot trigger for someone else's email.
+6. **Full-text search with an index** once there are more than a few hundred dishes.
+7. **Django 6.2 LTS** when it is released, before 6.1 leaves security support. The plan header records both dates as checked on 2026-11-18.
+8. **A first live run of the menu import,** after reading the API provider's data terms. Until then the feature stays off, and its API path has been tested only against a test double.
+
+## More to read
+
+| Doc | What is in it |
+|---|---|
+| [docs/walkthrough.md](docs/walkthrough.md) | The booking story step by step, with a picture of every screen |
+| [docs/architecture.md](docs/architecture.md) | Containers, the booking state machine, versions tested, deviations from the plan |
+| [docs/SECURITY.md](docs/SECURITY.md) | What is defended, what is not, and how to report a problem |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | The runbook: commands, admin account, moderation, the optional AI menu import, when it breaks |
+| [docs/before-after.md](docs/before-after.md) | The original code next to the fixes, defect by defect |
+| [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) | Where each original file's job lives now |
+| [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) | The plan, the test catalogue and the decisions |
+| [docs/design-plan.md](docs/design-plan.md) | Palette, type and layout |
+
+**Contributing:** CI's denylist step fails closed on pull requests from forks, because forks cannot read the secret it needs. A maintainer re-runs such a change from a branch.
+
+## Licence
+
+[MIT](LICENSE) for the new code. The `legacy/` folder is kept for historical reference only, and no licence is granted for it. The vendored axe-core file under `tests/e2e/vendor/` keeps its own MPL-2.0 licence.

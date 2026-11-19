@@ -174,11 +174,11 @@ def test_offering_create_and_edit_are_logged(client, cook, caplog):
 
 @pytest.mark.django_db
 def test_account_deletion_is_logged_by_id_only(client, diner, caplog):
-    diner.set_password("a-long-test-password-1")
+    diner.set_password("test-only-long-password-1")
     diner.save()
     client.force_login(diner)
     with caplog.at_level(logging.INFO):
-        response = client.post("/me/delete", {"password": "a-long-test-password-1"})
+        response = client.post("/me/delete", {"password": "test-only-long-password-1"})
     assert response.status_code == 302
     text = "\n".join(lines(caplog))
     assert f"account deleted: user {diner.pk}" in text
