@@ -75,7 +75,7 @@ The kitchen is where a cook keeps a menu and opens meals. Each meal shows the se
 
 You need:
 
-- Docker Engine with Compose v2. It was tested with Engine 29.9.3 and Compose v5.7.0.
+- Docker Engine with the Compose plugin (`docker compose`). It was tested with Engine 29.9.3 and Compose v5.7.0.
 - `make`, `curl` and `jq`.
 - About 3 GB of free disk space, and port 8000 free.
 
@@ -126,7 +126,7 @@ Sharing food between students carries legal and health risk that an app cannot r
 In short, with the evidence for each line:
 
 - **A legacy rescue with proof.** The original is 1,003 lines of PHP whose login could be bypassed with SQL injection. The plan lists 33 defects and 6 TODOs, and each fix that has behaviour names the test that proves it ([before and after](#before-and-after)).
-- **313 tests, green on `main`.** 295 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.61% line coverage against a 90% gate ([run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489)).
+- **313 tests, green on `main`.** 295 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.61% statement coverage against a 90% gate ([run 44464655489](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44464655489)).
 - **One command to run.** Four containers, secrets generated at first start, nothing secret in the repository ([architecture](#architecture)).
 - **Security decisions with their costs written down.** A strict content security policy, one secrets volume per service, a database role that cannot change the schema, and rules enforced by the database ([security and data decisions](#security-and-data-decisions)).
 - **Scope held on purpose.** No payments, no messaging, no uploads, and the reasons ([deliberately not built](#deliberately-not-built)).
@@ -311,7 +311,7 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 The red, `#a40408`, is the original brand colour. The type is a system serif for headings and the system UI font for text, so no font files load. Dark mode follows the system setting.
 
 <p>
-  <img src="docs/screenshots/design/home-desktop-dark.png" width="590" alt="The home page in dark mode on a desktop: light text on a near-black background, with the red listing card and buttons.">
+  <img src="docs/screenshots/design/home-desktop-dark.png" width="590" alt="The home page in dark mode on a desktop: light text on a near-black background, red buttons, and coral for the links and the italic headline words.">
   <img src="docs/screenshots/design/home-phone-dark.png" width="190" alt="The home page in dark mode on a phone.">
 </p>
 
@@ -338,8 +338,8 @@ The plan listed dark mode and an animated demo as stretch goals. Both were built
 ## What I would do next
 
 1. **Verified campus email and password reset.** This needs a mail transport, and it closes the two gaps the demo accepts: anyone can register someone else's address, and the registration form reveals whether an email has an account.
-2. **A hosted read-only demo.** Registration off, demo logins only, a nightly reseed and real HTTPS. The settings for HTTPS already pass `check --deploy`.
-3. **Card payments in a provider's test mode,** behind a legal review. A checkout per booking and a webhook that marks the share received. The plan sketches it as one added table that sets the existing "received" timestamp (plan section 3.5).
+2. **A hosted demo with sign-up off.** Demo logins only, a nightly reseed and real HTTPS. The settings for HTTPS already pass `check --deploy`.
+3. **Card payments in a provider's test mode,** behind a legal review. A checkout per booking and a webhook that marks the share received. The plan sketches it as one added table and a webhook that sets the existing "received" timestamp (plan section 3.5).
 4. **Counter-offers on custom terms.** Today a diner who wants different terms cancels and asks again, because there is no messaging.
 5. **An atomic failed-login counter,** and a lockout that an outsider cannot trigger for someone else's email.
 6. **Full-text search with an index** once there are more than a few hundred dishes.
