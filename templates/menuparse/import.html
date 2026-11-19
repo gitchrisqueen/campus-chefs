@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Paste a menu · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="card form-card">
+    <h1>Paste a menu</h1>
+    <p>
+      Paste your menu as plain text and we will draft your dishes. The text you paste is sent to an AI service, Anthropic's Claude API, to write the draft. This site does not store the pasted text. Anthropic receives it and may keep it for a limited time under its own terms. Nothing else about you is sent.
+    </p>
+    <p>
+      Paste dish names and descriptions only. Do not include names, phone numbers, addresses or health details.
+    </p>
+    <p>
+      The draft can be wrong, especially about allergens. You check and edit every dish before anything is saved.
+    </p>
+    {% if failure %}
+      <div class="error-summary" role="alert" tabindex="-1" autofocus>
+        <p>{{ failure }}</p>
+        <p>
+          <a href="{% url 'item_create' %}">Add a dish by hand</a>
+        </p>
+      </div>
+    {% endif %}
+    <form method="post" action="{% url 'menu_import' %}" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="btn-row">
+        <button class="btn btn-primary" type="submit">Draft my dishes</button>
+        <a class="btn btn-secondary" href="{% url 'kitchen' %}">Cancel</a>
+      </div>
+      <p class="small muted">This can take up to 20 seconds.</p>
+    </form>
+    <p class="small muted">
+      Prefer to type it in? <a href="{% url 'item_create' %}">Add a dish by hand</a>.
+    </p>
+  </section>
+{% endblock content %}

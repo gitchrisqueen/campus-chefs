@@ -33,3 +33,6 @@ staticfiles/
 
 # Tool caches
 graft/
+
+# Local compose override that mounts an API key file (docs/OPERATIONS.md)
+compose.override.yaml

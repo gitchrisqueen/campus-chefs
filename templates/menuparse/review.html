@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Check your draft · Campus Chefs{% endblock title %}
+{% block content %}
+  <section class="card form-card">
+    <h1>Check your draft</h1>
+    <p>
+      An AI service drafted these dishes from your text. It can get names, allergens and dietary tags wrong. Edit anything, and tick “Leave this dish out” for a dish you do not want. Nothing is saved until you confirm at the bottom.
+    </p>
+    {% if formset.non_form_errors or confirm_form.errors %}
+      <div class="error-summary" role="alert" tabindex="-1" autofocus>
+        <h2>Please fix these problems</h2>
+        <ul>
+          {% for error in formset.non_form_errors %}<li>{{ error }}</li>{% endfor %}
+          {% for error in confirm_form.allergens_complete.errors %}
+            <li>
+              <a href="#{{ confirm_form.allergens_complete.id_for_label }}">{{ error }}</a>
+            </li>
+          {% endfor %}
+          {% if formset.total_error_count and not formset.non_form_errors %}<li>One or more dishes need a change. They are marked below.</li>{% endif %}
+        </ul>
+      </div>
+    {% endif %}
+    <form method="post" action="{% url 'menu_import_confirm' %}" novalidate>
+      {% csrf_token %}
+      {{ formset.management_form }}
+      {% for form in formset %}
+        <fieldset class="card draft-dish">
+          <legend>Dish {{ forloop.counter }}</legend>
+          {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+          {% for field in form.visible_fields %}
+            {% include "partials/field.html" with field=field %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+        </fieldset>
+      {% endfor %}
+      {% include "partials/field.html" with field=confirm_form.allergens_complete %}
+      <div class="btn-row">
+        <button class="btn btn-primary" type="submit">Save these dishes</button>
+        <a class="btn btn-secondary" href="{% url 'menu_import' %}">Start over</a>
+      </div>
+    </form>
+  </section>
+{% endblock content %}

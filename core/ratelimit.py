@@ -33,6 +33,32 @@ def _key(email: str) -> str:
     return "login-fail:" + hashlib.sha256(folded.encode()).hexdigest()
 
 
+def take_slot(scope: str, ident: object, limits: tuple[tuple[str, int, int], ...]) -> str | None:
+    """Count one use against every (name, window seconds, max) limit, or refuse it.
+
+    Returns None when the use is allowed (and counted in every window), or the name of the first
+    limit that is full (and counts nothing). Unlike the login limiter this fails CLOSED when the
+    cache errors: it guards a paid API, so an unavailable counter must not mean unlimited calls.
+    Fixed windows that start at the first counted use. The get-then-incr is not atomic across workers.
+    """
+    cache = caches["ratelimit"]
+    keys = [(name, window, maximum, f"{scope}:{name}:{ident}") for name, window, maximum in limits]
+    try:
+        for name, _window, maximum, key in keys:
+            if cache.get(key, 0) >= maximum:
+                return name
+        for _name, window, _maximum, key in keys:
+            cache.add(key, 0, window)
+            try:
+                cache.incr(key)
+            except ValueError:  # the window expired between add and incr
+                cache.set(key, 1, window)
+    except Exception:
+        logger.exception("rate limiter unavailable; refusing the request (scope %s)", scope)
+        return "unavailable"
+    return None
+
+
 def limit_failed_logins(view):
     """Wrap a login view whose form posts the email as `username` (ours and the admin's)."""
 

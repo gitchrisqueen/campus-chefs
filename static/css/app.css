@@ -466,6 +466,19 @@
     gap: var(--cc-space-3);
   }
 
+  /* One drafted dish on the AI menu import review page. */
+  .draft-dish {
+    margin: 0 0 var(--cc-space-4);
+    box-shadow: none;
+    background: var(--cc-surface-sunk);
+  }
+
+  .draft-dish > legend {
+    font-family: var(--cc-font-display);
+    font-weight: 600;
+    padding-inline: var(--cc-space-2);
+  }
+
   /* Cards and panels. */
   .card {
     background: var(--cc-surface);
