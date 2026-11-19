@@ -4,18 +4,23 @@
 {% block content %}
   {% timezone offering.cook.user.campus.timezone %}
     <header class="page-head">
-      <span class="eyebrow">{{ offering.get_meal_type_display }} · {{ offering.get_fulfillment_display }}</span>
       <h1>{{ offering.title }}</h1>
       <p class="lede">
-        by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a> · {{ offering.cook.user.campus.name }}
+        by <a href="{% url 'cook_page' offering.cook_id %}">{{ offering.cook.user.public_name }}</a>
       </p>
+      <p class="muted">{{ offering.cook.user.campus.name }}</p>
+      {% if bookable %}
+        <p class="jump-to-booking">
+          <a class="btn btn-primary" href="#booking-panel">Request seats</a>
+        </p>
+      {% endif %}
     </header>
     {% if offering.status == "cancelled" %}
       <p class="callout">The cook cancelled this meal.</p>
     {% endif %}
     <div class="offer-layout">
       <div class="stack">
-        <section class="card" aria-labelledby="dishes-heading">
+        <section class="offer-section" aria-labelledby="dishes-heading">
           <h2 id="dishes-heading">Dishes</h2>
           <ul class="dish-list">
             {% for item in offering.items.all %}
@@ -31,43 +36,14 @@
             If you have a severe allergy, ask the cook before you book, or skip this meal. <a href="{% url 'safety' %}">Read the safety notes</a>.
           </p>
         </aside>
-      </div>
-      <div class="stack">
-        <section class="card" aria-labelledby="when-heading">
-          <h2 id="when-heading">When and where</h2>
-          <dl class="facts facts-stacked">
-            <dt>Serves</dt>
-            <dd>
-              {{ offering.serve_at|date:"l j F · g:i A" }}
-            </dd>
-            <dt>Requests close</dt>
-            <dd>
-              {{ offering.booking_cutoff_at|date:"l j F · g:i A" }}
-            </dd>
-            <dt>Seats left</dt>
-            <dd>
-              {{ offering.seats_left }} of {{ offering.capacity }}
-            </dd>
-            <dt>Pickup or dine-in</dt>
-            <dd>
-              {{ offering.get_fulfillment_display }}
-            </dd>
-            {% if show_pickup_note and offering.pickup_note %}
-              <dt>Pickup note</dt>
-              <dd>
-                {{ offering.pickup_note }}
-              </dd>
-            {% endif %}
-          </dl>
-        </section>
-        <section class="card" aria-labelledby="chip-heading">
+        <section class="offer-section" aria-labelledby="chip-heading">
           <h2 id="chip-heading">Chip in</h2>
           {% include "meals/_chip_in.html" %}
           {% if offering.is_free %}
             <p class="small muted">This meal is on the cook. Nothing to chip in.</p>
           {% elif offering.share_per_seat_cents %}
             <p class="small muted">
-              Pay the cook in person at pickup. The shares can never add up to more than the groceries cost ({{ offering.grocery_estimate_cents|money }}).
+              Pay the cook in person. The shares can never add up to more than the grocery cost ({{ offering.grocery_estimate_cents|money }}).
             </p>
           {% endif %}
           {% if offering.needs.all %}
@@ -82,14 +58,47 @@
             </ul>
           {% endif %}
         </section>
+      </div>
+      <div class="stack">
+        <section class="offer-section" aria-labelledby="when-heading">
+          <h2 id="when-heading">When and where</h2>
+          <dl class="facts facts-stacked">
+            <dt>Meal</dt>
+            <dd>
+              {{ offering.get_meal_type_display }}
+            </dd>
+            <dt>Serves</dt>
+            <dd>
+              {{ offering.serve_at|date:"l j F, g:i A" }}
+            </dd>
+            <dt>Requests close</dt>
+            <dd>
+              {{ offering.booking_cutoff_at|date:"l j F, g:i A" }}
+            </dd>
+            <dt>Seats left</dt>
+            <dd>
+              {{ offering.seats_left }} of {{ offering.capacity }}
+            </dd>
+            <dt>How you eat</dt>
+            <dd>
+              {{ offering.get_fulfillment_display }}
+            </dd>
+            {% if show_pickup_note and offering.pickup_note %}
+              <dt>Pickup note</dt>
+              <dd>
+                {{ offering.pickup_note }}
+              </dd>
+            {% endif %}
+          </dl>
+        </section>
         {% partialdef booking_panel inline %}
         <section id="booking-panel" class="card" aria-labelledby="booking-heading">
-          <h2 id="booking-heading">Request a seat</h2>
+          <h2 id="booking-heading">{% if is_cook %}Your meal{% else %}Request seats{% endif %}</h2>
           {% if form and is_cook or form and my_booking %}
             {{ form.non_field_errors }}
           {% endif %}
           {% if is_cook %}
-            <p>This is your meal.</p>
+            <p>Open a diner's booking to confirm or decline the request.</p>
             <a class="btn btn-secondary"
                href="{% url 'offering_edit' offering.pk %}">Edit this meal</a>
             <h3>Diners</h3>
@@ -98,8 +107,8 @@
                 {% for booking in diners %}
                   <li>
                     <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>
-                    · {{ booking.seats }} seat{{ booking.seats|pluralize }} · {{ booking.status_label }}
-                    <span class="small muted">{{ booking.contribution_text }}</span>
+                    <span class="badge">{{ booking.status_label }}</span>
+                    <span class="small muted">{{ booking.seats }} seat{{ booking.seats|pluralize }}, {{ booking.contribution_text }}</span>
                   </li>
                 {% endfor %}
               </ul>
@@ -111,7 +120,7 @@
               {% if new_booking %}
                 Request sent. The cook will confirm or decline it.
               {% else %}
-                You have a {{ my_booking.status_label|lower }} booking for {{ my_booking.seats }} seat{{ my_booking.seats|pluralize }}.
+                Your booking: {{ my_booking.status_label }}, {{ my_booking.seats }} seat{{ my_booking.seats|pluralize }}.
               {% endif %}
             </p>
             <p>{{ my_booking.contribution_text }}</p>
@@ -125,13 +134,26 @@
                   hx-swap="outerHTML"
                   novalidate>
               {% csrf_token %}
-              {% include "partials/form_fields.html" %}
+              {% include "partials/error_summary.html" %}
+              {% include "partials/field.html" with field=form.seats %}
+              {% if form.contribution %}
+                {% include "partials/field.html" with field=form.contribution %}
+              {% endif %}
+              {% comment %}The bring-list and custom-terms fields show only once their choice is picked (CSS :has); the server checks them either way.{% endcomment %}
+              {% if form.need %}
+                {% include "partials/field.html" with field=form.need extra="field-when-bring" hide_optional=True %}
+              {% endif %}
+              {% if form.terms %}
+                {% include "partials/field.html" with field=form.terms extra="field-when-custom" hide_optional=True %}
+                {% include "partials/field.html" with field=form.amount extra="field-when-custom" %}
+              {% endif %}
+              {% include "partials/field.html" with field=form.allergen_ack %}
               <button class="btn btn-primary" type="submit">Request seats</button>
             </form>
           {% elif bookable %}
             <p>
               <a class="btn btn-primary"
-                 href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to request a seat</a>
+                 href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to request seats</a>
             </p>
           {% elif offering.seats_left == 0 and offering.status == "open" %}
             <p class="muted">This meal is full.</p>

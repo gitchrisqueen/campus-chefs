@@ -1,6 +1,6 @@
 """Partial coverage of plan tests whose full versions land in later phases.
 
-A letter suffix (LEG-06a) marks the part of a plan test that phase 1 can already prove;
+A letter suffix (SEC-03a) marks the part of a plan test that phase 1 can already prove;
 the owning phase adds the rest under the plain ID.
 """
 
@@ -13,15 +13,31 @@ from accounts.models import User
 from tests import factories as f
 
 
-def test_leg_06a_healthz_503_when_db_unreachable(client, monkeypatch):
-    def boom():
-        raise OperationalError("connection refused")
+@pytest.fixture
+def db_unreachable(monkeypatch):
+    """Every connection attempt fails the way psycopg does when Postgres is down."""
 
-    monkeypatch.setattr(connection, "ensure_connection", boom)
-    response = client.get("/healthz")
-    assert response.status_code == 503
-    assert response.content == b"db unavailable"
-    assert b"psycopg" not in response.content and b"Traceback" not in response.content
+    def refuse():
+        raise OperationalError('psycopg.OperationalError: connection to server at "db" failed: Connection refused')
+
+    monkeypatch.setattr(connection, "ensure_connection", refuse)
+
+
+def test_leg_06_db_unreachable_gives_503_healthz_and_generic_500_page(client, settings, db_unreachable):
+    """The 2008 site printed the raw MySQL error. Now /healthz says 503 and pages show the 500 page."""
+    health = client.get("/healthz")
+    assert health.status_code == 503
+    assert health.content == b"db unavailable"
+
+    # A returning visitor has a session cookie, so / must read the session table and fails there.
+    client.raise_request_exception = False
+    client.cookies[settings.SESSION_COOKIE_NAME] = "a" * 32
+    home = client.get("/")
+    assert home.status_code == 500
+    html = home.content.decode("utf-8")
+    assert "Something went wrong in the kitchen." in html
+    for leak in (b"psycopg", b"Traceback", b"OperationalError", b"Connection refused"):
+        assert leak not in home.content and leak not in health.content
 
 
 def test_sec_03a_robots_disallows_everything(client):

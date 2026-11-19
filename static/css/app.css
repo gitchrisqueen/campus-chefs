@@ -42,8 +42,9 @@
     --cc-font-display: "Iowan Old Style", "Palatino Linotype", palatino, "Book Antiqua", georgia, serif;
     --cc-font-body: system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif;
 
-    /* Modular scale, ratio 1.25 (major third); the display step grows with the viewport. */
-    --cc-step--1: 0.8125rem;
+    /* Modular scale, ratio 1.25 (major third); the display step grows with the viewport.
+       The small step (meta and help text) is 1rem on a phone and drops to 13 px from 40rem. */
+    --cc-step--1: 1rem;
     --cc-step-0: 1rem;
     --cc-step-1: 1.25rem;
     --cc-step-2: 1.5625rem;
@@ -67,6 +68,12 @@
     --cc-max: 72rem;
     --cc-measure: 38rem;
     --cc-tap: 2.75rem;
+  }
+
+  @media (min-width: 40rem) {
+    :root {
+      --cc-step--1: 0.8125rem;
+    }
   }
 
   /* Colour: dark theme. Brand red on a dark page fails contrast, so links use a light coral
@@ -295,13 +302,39 @@
     height: auto;
   }
 
+  /* Phone: a two-column grid of four items, so no item sits alone on a row. Home is left out
+     there because the logo is the home link. From 40rem the items sit in one wrapping row. */
+  .site-nav {
+    flex: 1 1 100%;
+  }
+
   .site-nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--cc-space-1) var(--cc-space-2);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--cc-space-2);
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  .site-nav .nav-home {
+    display: none;
+  }
+
+  @media (min-width: 40rem) {
+    .site-nav {
+      flex: 0 1 auto;
+    }
+
+    .site-nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--cc-space-1) var(--cc-space-2);
+    }
+
+    .site-nav .nav-home {
+      display: list-item;
+    }
   }
 
   .site-nav a,
@@ -565,6 +598,20 @@
 
   .hero .lede {
     margin-bottom: var(--cc-space-5);
+  }
+
+  .cook-entry {
+    max-width: var(--cc-measure);
+    margin: var(--cc-space-4) 0 0;
+  }
+
+  .cook-entry a {
+    font-weight: 700;
+  }
+
+  .cook-entry span {
+    display: block;
+    color: var(--cc-muted);
   }
 
   .chip-in {
@@ -1227,7 +1274,9 @@
 
   input:focus-visible,
   select:focus-visible,
-  textarea:focus-visible {
+  textarea:focus-visible,
+  /* Tab also stops on a date input's picker button, in its shadow tree; only :focus-within marks the input then. */
+  input[type="date"]:focus-within {
     outline: 3px solid var(--cc-focus);
     outline-offset: 1px;
     border-color: var(--cc-focus);
@@ -1731,6 +1780,11 @@
     text-decoration: underline;
   }
 
+  /* In a row of actions a quiet button keeps its tap height but not the wide button padding. */
+  .row-actions .btn-quiet {
+    padding-inline: var(--cc-space-2);
+  }
+
   .link-button {
     padding: 0;
     border: 0;
@@ -1794,16 +1848,14 @@
   }
 
   .facts dt {
-    color: var(--cc-muted);
-    font-size: var(--cc-step--1);
+    color: var(--cc-text);
+    font-size: var(--cc-step-0);
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     flex-basis: auto;
   }
 
   .facts dd {
-    font-weight: 600;
+    font-weight: 400;
     margin-inline-end: var(--cc-space-3);
   }
 
@@ -1837,10 +1889,10 @@
 
   .menu-meal h4 {
     margin: var(--cc-space-4) 0 var(--cc-space-2);
-    color: var(--cc-muted);
-    font-size: var(--cc-step--1);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    color: var(--cc-text);
+    font-family: var(--cc-font-body);
+    font-size: var(--cc-step-0);
+    font-weight: 700;
   }
 
   .dish-list {
@@ -1943,9 +1995,9 @@
   }
 
   .offer-kind {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    color: var(--cc-muted);
+    font-size: var(--cc-step-0);
+    font-weight: 600;
   }
 
   .offer-title {
@@ -1993,6 +2045,37 @@
 
   .offer-layout h3 {
     margin-top: var(--cc-space-4);
+  }
+
+  /* Offering sections sit flat on the page background, divided by a rule; the booking panel
+     is the one raised card on the page. */
+  .offer-section {
+    padding-top: var(--cc-space-4);
+    border-top: 1px solid var(--cc-border);
+  }
+
+  .offer-section h2 {
+    font-size: var(--cc-step-2);
+  }
+
+  .offer-layout .callout {
+    margin-block: var(--cc-space-5);
+  }
+
+  /* Phone: the jump link to the booking panel sits under the title, so the booking action is on
+     the first screen. From 56rem the panel is in the right column and the link is not needed. */
+  .jump-to-booking {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 56rem) {
+    .jump-to-booking {
+      display: none;
+    }
+  }
+
+  #booking-panel {
+    scroll-margin-top: var(--cc-space-4);
   }
 
   .row-list + h3,
@@ -2047,7 +2130,31 @@
   .filters {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
-    gap: 0 var(--cc-space-4);
+    gap: var(--cc-space-4);
+    margin-top: var(--cc-space-3);
+  }
+
+  /* The allergen filter: the radio-group tiles of the design system, compact enough for nine options. */
+  .search-page-form .field-compact {
+    margin-top: var(--cc-space-3);
+  }
+
+  .field-compact .choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: var(--cc-space-2);
+  }
+
+  @media (min-width: 40rem) {
+    .field-compact .choices {
+      grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    }
+  }
+
+  .field-compact .choice {
+    min-height: var(--cc-tap);
+    padding-block: var(--cc-space-1);
+    font-weight: 500;
   }
 
   main form .filters > *,
@@ -2086,6 +2193,17 @@
 
   .booking-form .btn {
     justify-self: start;
+  }
+
+  /* The bring-list item and the custom terms show only once their choice is picked. Without :has()
+     support they stay visible, and the server checks them either way. */
+  .booking-form:not(:has(input[name="contribution"][value="ingredients"]:checked)) .field-when-bring,
+  .booking-form:not(:has(input[name="contribution"][value="custom"]:checked)) .field-when-custom {
+    display: none;
+  }
+
+  .booking-form .choices {
+    grid-template-columns: 1fr;
   }
 
   .contribution {

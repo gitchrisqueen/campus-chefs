@@ -1,0 +1,522 @@
+{
+ "url": "http://web:8000",
+ "at": "2026-11-19T01:30:05Z",
+ "viewports": [
+  "1280x800",
+  "390x844"
+ ],
+ "themes": [
+  "light",
+  "dark"
+ ],
+ "version": 1,
+ "complete": true,
+ "styled": true,
+ "blocked_hosts": {},
+ "captures": [
+  {
+   "key": "home-desktop-light",
+   "file": "home-desktop-light.png",
+   "url": "http://web:8000/",
+   "full_page": true
+  },
+  {
+   "key": "how-it-works-desktop-light",
+   "file": "how-it-works-desktop-light.png",
+   "url": "http://web:8000/how-it-works",
+   "full_page": true
+  },
+  {
+   "key": "safety-desktop-light",
+   "file": "safety-desktop-light.png",
+   "url": "http://web:8000/safety",
+   "full_page": true
+  },
+  {
+   "key": "login-desktop-light",
+   "file": "login-desktop-light.png",
+   "url": "http://web:8000/login",
+   "full_page": true
+  },
+  {
+   "key": "register-desktop-light",
+   "file": "register-desktop-light.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "search-desktop-light",
+   "file": "search-desktop-light.png",
+   "url": "http://web:8000/search?q=pancakes",
+   "full_page": true
+  },
+  {
+   "key": "cook-desktop-light",
+   "file": "cook-desktop-light.png",
+   "url": "http://web:8000/cooks/137",
+   "full_page": true
+  },
+  {
+   "key": "offering-desktop-light",
+   "file": "offering-desktop-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "register-errors-desktop-light",
+   "file": "register-errors-desktop-light.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "home-search-desktop-light",
+   "file": "home-search-desktop-light.png",
+   "url": "http://web:8000/",
+   "full_page": false
+  },
+  {
+   "key": "me-diner-desktop-light",
+   "file": "me-diner-desktop-light.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "edit-desktop-light",
+   "file": "edit-desktop-light.png",
+   "url": "http://web:8000/me/edit",
+   "full_page": true
+  },
+  {
+   "key": "password-desktop-light",
+   "file": "password-desktop-light.png",
+   "url": "http://web:8000/me/password",
+   "full_page": true
+  },
+  {
+   "key": "delete-desktop-light",
+   "file": "delete-desktop-light.png",
+   "url": "http://web:8000/me/delete",
+   "full_page": true
+  },
+  {
+   "key": "offering-diner-desktop-light",
+   "file": "offering-diner-desktop-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-diner-desktop-light",
+   "file": "booking-diner-desktop-light.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "offering-errors-desktop-light",
+   "file": "offering-errors-desktop-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "me-cook-desktop-light",
+   "file": "me-cook-desktop-light.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "kitchen-desktop-light",
+   "file": "kitchen-desktop-light.png",
+   "url": "http://web:8000/kitchen",
+   "full_page": true
+  },
+  {
+   "key": "offering-cook-desktop-light",
+   "file": "offering-cook-desktop-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-cook-desktop-light",
+   "file": "booking-cook-desktop-light.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "home-phone-light",
+   "file": "home-phone-light.png",
+   "url": "http://web:8000/",
+   "full_page": true
+  },
+  {
+   "key": "how-it-works-phone-light",
+   "file": "how-it-works-phone-light.png",
+   "url": "http://web:8000/how-it-works",
+   "full_page": true
+  },
+  {
+   "key": "safety-phone-light",
+   "file": "safety-phone-light.png",
+   "url": "http://web:8000/safety",
+   "full_page": true
+  },
+  {
+   "key": "login-phone-light",
+   "file": "login-phone-light.png",
+   "url": "http://web:8000/login",
+   "full_page": true
+  },
+  {
+   "key": "register-phone-light",
+   "file": "register-phone-light.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "search-phone-light",
+   "file": "search-phone-light.png",
+   "url": "http://web:8000/search?q=pancakes",
+   "full_page": true
+  },
+  {
+   "key": "cook-phone-light",
+   "file": "cook-phone-light.png",
+   "url": "http://web:8000/cooks/137",
+   "full_page": true
+  },
+  {
+   "key": "offering-phone-light",
+   "file": "offering-phone-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "register-errors-phone-light",
+   "file": "register-errors-phone-light.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "home-search-phone-light",
+   "file": "home-search-phone-light.png",
+   "url": "http://web:8000/",
+   "full_page": false
+  },
+  {
+   "key": "me-diner-phone-light",
+   "file": "me-diner-phone-light.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "edit-phone-light",
+   "file": "edit-phone-light.png",
+   "url": "http://web:8000/me/edit",
+   "full_page": true
+  },
+  {
+   "key": "password-phone-light",
+   "file": "password-phone-light.png",
+   "url": "http://web:8000/me/password",
+   "full_page": true
+  },
+  {
+   "key": "delete-phone-light",
+   "file": "delete-phone-light.png",
+   "url": "http://web:8000/me/delete",
+   "full_page": true
+  },
+  {
+   "key": "offering-diner-phone-light",
+   "file": "offering-diner-phone-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-diner-phone-light",
+   "file": "booking-diner-phone-light.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "offering-errors-phone-light",
+   "file": "offering-errors-phone-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "me-cook-phone-light",
+   "file": "me-cook-phone-light.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "kitchen-phone-light",
+   "file": "kitchen-phone-light.png",
+   "url": "http://web:8000/kitchen",
+   "full_page": true
+  },
+  {
+   "key": "offering-cook-phone-light",
+   "file": "offering-cook-phone-light.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-cook-phone-light",
+   "file": "booking-cook-phone-light.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "home-desktop-dark",
+   "file": "home-desktop-dark.png",
+   "url": "http://web:8000/",
+   "full_page": true
+  },
+  {
+   "key": "how-it-works-desktop-dark",
+   "file": "how-it-works-desktop-dark.png",
+   "url": "http://web:8000/how-it-works",
+   "full_page": true
+  },
+  {
+   "key": "safety-desktop-dark",
+   "file": "safety-desktop-dark.png",
+   "url": "http://web:8000/safety",
+   "full_page": true
+  },
+  {
+   "key": "login-desktop-dark",
+   "file": "login-desktop-dark.png",
+   "url": "http://web:8000/login",
+   "full_page": true
+  },
+  {
+   "key": "register-desktop-dark",
+   "file": "register-desktop-dark.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "search-desktop-dark",
+   "file": "search-desktop-dark.png",
+   "url": "http://web:8000/search?q=pancakes",
+   "full_page": true
+  },
+  {
+   "key": "cook-desktop-dark",
+   "file": "cook-desktop-dark.png",
+   "url": "http://web:8000/cooks/137",
+   "full_page": true
+  },
+  {
+   "key": "offering-desktop-dark",
+   "file": "offering-desktop-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "register-errors-desktop-dark",
+   "file": "register-errors-desktop-dark.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "home-search-desktop-dark",
+   "file": "home-search-desktop-dark.png",
+   "url": "http://web:8000/",
+   "full_page": false
+  },
+  {
+   "key": "me-diner-desktop-dark",
+   "file": "me-diner-desktop-dark.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "edit-desktop-dark",
+   "file": "edit-desktop-dark.png",
+   "url": "http://web:8000/me/edit",
+   "full_page": true
+  },
+  {
+   "key": "password-desktop-dark",
+   "file": "password-desktop-dark.png",
+   "url": "http://web:8000/me/password",
+   "full_page": true
+  },
+  {
+   "key": "delete-desktop-dark",
+   "file": "delete-desktop-dark.png",
+   "url": "http://web:8000/me/delete",
+   "full_page": true
+  },
+  {
+   "key": "offering-diner-desktop-dark",
+   "file": "offering-diner-desktop-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-diner-desktop-dark",
+   "file": "booking-diner-desktop-dark.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "offering-errors-desktop-dark",
+   "file": "offering-errors-desktop-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "me-cook-desktop-dark",
+   "file": "me-cook-desktop-dark.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "kitchen-desktop-dark",
+   "file": "kitchen-desktop-dark.png",
+   "url": "http://web:8000/kitchen",
+   "full_page": true
+  },
+  {
+   "key": "offering-cook-desktop-dark",
+   "file": "offering-cook-desktop-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-cook-desktop-dark",
+   "file": "booking-cook-desktop-dark.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "home-phone-dark",
+   "file": "home-phone-dark.png",
+   "url": "http://web:8000/",
+   "full_page": true
+  },
+  {
+   "key": "how-it-works-phone-dark",
+   "file": "how-it-works-phone-dark.png",
+   "url": "http://web:8000/how-it-works",
+   "full_page": true
+  },
+  {
+   "key": "safety-phone-dark",
+   "file": "safety-phone-dark.png",
+   "url": "http://web:8000/safety",
+   "full_page": true
+  },
+  {
+   "key": "login-phone-dark",
+   "file": "login-phone-dark.png",
+   "url": "http://web:8000/login",
+   "full_page": true
+  },
+  {
+   "key": "register-phone-dark",
+   "file": "register-phone-dark.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "search-phone-dark",
+   "file": "search-phone-dark.png",
+   "url": "http://web:8000/search?q=pancakes",
+   "full_page": true
+  },
+  {
+   "key": "cook-phone-dark",
+   "file": "cook-phone-dark.png",
+   "url": "http://web:8000/cooks/137",
+   "full_page": true
+  },
+  {
+   "key": "offering-phone-dark",
+   "file": "offering-phone-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "register-errors-phone-dark",
+   "file": "register-errors-phone-dark.png",
+   "url": "http://web:8000/register",
+   "full_page": true
+  },
+  {
+   "key": "home-search-phone-dark",
+   "file": "home-search-phone-dark.png",
+   "url": "http://web:8000/",
+   "full_page": false
+  },
+  {
+   "key": "me-diner-phone-dark",
+   "file": "me-diner-phone-dark.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "edit-phone-dark",
+   "file": "edit-phone-dark.png",
+   "url": "http://web:8000/me/edit",
+   "full_page": true
+  },
+  {
+   "key": "password-phone-dark",
+   "file": "password-phone-dark.png",
+   "url": "http://web:8000/me/password",
+   "full_page": true
+  },
+  {
+   "key": "delete-phone-dark",
+   "file": "delete-phone-dark.png",
+   "url": "http://web:8000/me/delete",
+   "full_page": true
+  },
+  {
+   "key": "offering-diner-phone-dark",
+   "file": "offering-diner-phone-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-diner-phone-dark",
+   "file": "booking-diner-phone-dark.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  },
+  {
+   "key": "offering-errors-phone-dark",
+   "file": "offering-errors-phone-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "me-cook-phone-dark",
+   "file": "me-cook-phone-dark.png",
+   "url": "http://web:8000/me",
+   "full_page": true
+  },
+  {
+   "key": "kitchen-phone-dark",
+   "file": "kitchen-phone-dark.png",
+   "url": "http://web:8000/kitchen",
+   "full_page": true
+  },
+  {
+   "key": "offering-cook-phone-dark",
+   "file": "offering-cook-phone-dark.png",
+   "url": "http://web:8000/offerings/106",
+   "full_page": true
+  },
+  {
+   "key": "booking-cook-phone-dark",
+   "file": "booking-cook-phone-dark.png",
+   "url": "http://web:8000/bookings/163",
+   "full_page": true
+  }
+ ]
+}

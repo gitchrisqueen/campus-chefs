@@ -39,7 +39,7 @@
           <dd>{{ user.campus.name }}</dd>
         </div>
         <div>
-          <dt>Classification</dt>
+          <dt>Year</dt>
           <dd>{{ user.get_classification_display|default:"Not given" }}</dd>
         </div>
       </dl>
@@ -58,8 +58,8 @@
               <li class="row">
                 <div>
                   <p>
-                    <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>
-                    · {{ booking.seats }} seat{{ booking.seats|pluralize }} for {{ booking.offering.title }}
+                    <a href="{{ booking.get_absolute_url }}">{{ booking.diner.public_name }}</a>:
+                    {{ booking.seats }} seat{{ booking.seats|pluralize }} for {{ booking.offering.title }}
                   </p>
                   <p class="small muted">{{ booking.contribution_text }}</p>
                 </div>
@@ -110,10 +110,11 @@
               <span class="badge">{{ booking.status_label }}</span>
               <span class="small muted">
                 {% timezone booking.offering.cook.user.campus.timezone %}
-                  {{ booking.offering.serve_at|date:"D j M · g:i A" }}
+                  {{ booking.offering.serve_at|date:"D j M, g:i A" }}
                 {% endtimezone %}
-                · {{ booking.seats }} seat{{ booking.seats|pluralize }} with {{ booking.offering.cook.user.public_name }} · {{ booking.contribution_text }}
               </span>
+              <span class="small muted">{{ booking.seats }} seat{{ booking.seats|pluralize }} with {{ booking.offering.cook.user.public_name }}</span>
+              <span class="small muted">{{ booking.contribution_text }}</span>
             </li>
           {% endfor %}
         </ul>

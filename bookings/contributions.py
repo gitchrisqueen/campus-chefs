@@ -100,7 +100,8 @@ def _sum_shares(condition: Q) -> Coalesce:
 
 
 def with_totals(offerings):
-    """Annotate `expected_cents` and `received_cents` for "Expected $X · Received $Y · Groceries $Z" (CONTRIB-09)."""
+    """Annotate `expected_cents` (confirmed shares) and `received_cents` for the kitchen line
+    "Groceries $Z. Chip-ins received $Y of $X from confirmed diners." (CONTRIB-09)."""
     return offerings.annotate(
         expected_cents=_sum_shares(Q()),
         received_cents=_sum_shares(Q(contribution_received_at__isnull=False)),

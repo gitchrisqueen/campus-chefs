@@ -217,7 +217,8 @@ def test_book_13_request_after_cutoff_is_rejected(client, cook, diner):
         services.request_booking(offering, diner, 1, "share")
     client.force_login(diner)
     page = client.get(f"/offerings/{offering.pk}").content.decode()
-    assert "Requests for this meal are closed." in page and "Request seats" not in page
+    assert "Requests for this meal are closed." in page
+    assert 'type="submit">Request seats' not in page and 'href="#booking-panel"' not in page
     assert client.post(f"/offerings/{offering.pk}/book", BOOK).status_code == 200
     assert not Booking.objects.exists()
 

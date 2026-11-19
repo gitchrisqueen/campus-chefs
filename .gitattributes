@@ -5,3 +5,5 @@
 # The 2008 code is kept byte-for-byte (CRLF, ISO-8859-1): no normalization.
 # Must stay after the "* text=auto" line: later lines win.
 legacy/** -text linguist-vendored
+# Vendored third-party test assets stay byte-for-byte (their pinned integrity is in docs/architecture.md).
+tests/e2e/vendor/** -text linguist-vendored

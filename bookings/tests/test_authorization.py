@@ -89,7 +89,7 @@ def test_booking_page_shows_timeline_and_the_actions_each_side_may_take(client, 
     client.post(f"/bookings/{booking.pk}/transition", {"to": "cancelled"})
     html = client.get(f"/bookings/{booking.pk}").content.decode()
     assert "Cancelled by diner" in html and "Cancel booking" not in html
-    assert "Grocery share: $4.00" in html and "pay the cook at pickup" not in html
+    assert "Grocery share: $4.00" in html and "pay the cook in person" not in html
 
 
 @pytest.mark.django_db
