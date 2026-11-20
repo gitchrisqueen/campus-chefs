@@ -23,7 +23,7 @@ Campus Chefs matches students who want a home-cooked meal with students who like
 |---|---|
 | A student, or anyone curious about the product | [What a student sees](#what-a-student-sees) |
 | Someone who wants to click around | [Run the demo](#run-the-demo), one command |
-| A business owner with an old app to rescue | [Contact](#contact) |
+| A business owner evaluating a legacy-app rescue | [Work with me](#work-with-me) |
 | A developer or a hiring team | [For developers and hiring teams](#for-developers-and-hiring-teams) |
 
 ## What a student sees
@@ -378,9 +378,9 @@ The plan listed dark mode and an animated demo as stretch goals, and the AI menu
 7. **Django 6.2 LTS** when it is released, before 6.1 leaves security support. The plan header records both dates as checked on 2026-11-18.
 8. **A first live run of the menu import,** after reading the API provider's data terms. Until then the feature stays off, and its API path has been tested only against a test double.
 
-## Contact
+## Work with me
 
-The same method carries over to a client's legacy app: an audit by file and line, regression tests written before the fixes, a one-command local run and a runbook. Reach me through [my GitHub profile](https://github.com/gitchrisqueen).
+Start with an audit that lists defects by file and line. A scoped legacy-app rescue can include regression tests written before fixes, a one-command local run, and an operations runbook. Scope and timing are set after the audit; price is on request. The repository, tests and runbook are client-owned handoff materials. If a milestone is at risk, we agree on a revised date before the schedule changes; [contact CQC](https://christopherqueenconsulting.com/contact-us/) to discuss a project.
 
 ## More to read
 
