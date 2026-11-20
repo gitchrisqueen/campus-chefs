@@ -1,12 +1,12 @@
 # Walkthrough: one meal, from search to review
 
-This page follows one booking through the app, screen by screen. It is the same story the two main browser tests play on every CI run: **E2E-01** (a diner books and the cook confirms) and **E2E-02** (after the meal, the cook closes the booking and the diner reviews it). Both tests are in [`tests/e2e/test_e2e_flows.py`](../tests/e2e/test_e2e_flows.py).
+Follow one meal from search to review. A diner finds a pancake breakfast, asks for a seat and chips in toward the groceries. The cook confirms. After the meal, the diner writes a review.
 
-Every picture is an unedited 1120 x 700 screen of the seeded demo, captured by `scripts/capture_screenshots.py --walkthrough`. The dates in them are relative to the day they were captured. To follow along yourself, run `make demo` and open <http://127.0.0.1:8000> ([README, "Run the demo"](../README.md#run-the-demo)).
+Every picture is a screen of the demo with its made-up people and campuses. The dates in the pictures depend on the day they were taken. To follow along yourself, run `make demo` and open <http://127.0.0.1:8000> ([README, "Run the demo"](../README.md#run-the-demo)).
 
 The two people are seeded demo accounts. **Jordan K.** is the demo diner. **Marcus B.** is the demo cook. Neither has a password: you log in with the "Try as demo diner" and "Try as demo cook" buttons. Use two browser profiles, or one normal and one private window, to be both at once.
 
-## Part 1: book a seat (E2E-01)
+## Part 1: book a seat
 
 ### 1. Start on the home page
 
@@ -16,7 +16,7 @@ The home page says what the app does and shows an example listing. The yellow ba
 
 ### 2. Search for a dish
 
-Log in as the demo diner and type `pancakes` into the search box. The results appear under the box as you type. The server returns just the results, and htmx puts them on the page. With JavaScript off, the Search button loads the same results as a full page (E2E-05).
+Log in as the demo diner and type `pancakes` into the search box. The results appear under the box as you type. With JavaScript turned off, the Search button loads the same results as a full page.
 
 ![The Find a meal box with "pancakes" typed in. Under it, a note that allergens are declared by each cook, the line "1 meal matches pancakes", and a card for Pancake Breakfast by Marcus B. with a $4.00 grocery share per seat.](screenshots/walkthrough/02-search.png)
 
@@ -28,13 +28,13 @@ The meal page lists each dish with the allergens and dietary tags the cook decla
 
 ### 4. Choose how to chip in
 
-This meal's groceries cost $24.00 and it has six seats, so the cook set the share at $4.00 a seat. The diner can pay that share, bring an item from the bring list instead, or propose other terms. The request cannot be sent until the allergen box is ticked (BOOK-02).
+This meal's groceries cost $24.00 and it has six seats, so the cook set the share at $4.00 a seat. The diner can pay that share, bring an item from the bring list instead, or propose other terms. The request cannot be sent until the allergen box is ticked.
 
 ![The Chip in section, showing $4.00 grocery share per seat or bring an item, and the bring list of salsa and bananas. Beside it the Request seats form: 1 seat, "Grocery share: $4.00 per seat, paid to the cook in person" selected, and the box "I have read the allergens" ticked.](screenshots/walkthrough/04-form.png)
 
 ### 5. Send the request
 
-Press **Request seats**. The form is replaced in place by a confirmation, and the share is fixed at the amount shown. If the cook edits the meal later, this booking keeps its $4.00 (CONTRIB-03).
+Press **Request seats**. The form is replaced in place by a confirmation, and the share is fixed at the amount shown. If the cook edits the meal later, this booking keeps its $4.00.
 
 ![The Request seats panel now reads "Request sent. The cook will confirm or decline it." and "Grocery share: $4.00, pay the cook in person", with a View your booking button.](screenshots/walkthrough/05-request-sent.png)
 
@@ -46,19 +46,17 @@ In the other window, log in as the demo cook and open the booking from the accou
 
 ### 7. The cook confirms
 
-Press **Confirm**. Before it confirms, the app locks the meal's row and counts the confirmed seats again, so two confirmations at the same moment cannot overbook the meal (`bookings/services.py`). The cook now has a "Mark contribution received" button for later.
+Press **Confirm**. The app counts the confirmed seats again before it confirms, so a meal cannot be overbooked. The cook now has a "Mark contribution received" button for later.
 
 ![The same booking after confirming: a green message "Booking confirmed", status Confirmed, and a Mark contribution received button under the $4.00 grocery share.](screenshots/walkthrough/07-cook-confirmed.png)
 
 ### 8. The diner sees the confirmation
 
-Back in the diner's window, the booking is confirmed. The page says what to pay and that it is paid in person. A confirmed diner now also sees the cook's pickup note, which is hidden from everyone else (BOOK-14).
+Back in the diner's window, the booking is confirmed. The page says what to pay and that it is paid in person. A confirmed diner now also sees the cook's pickup note, which is hidden from everyone else.
 
 ![The diner's booking: status Confirmed, "1 seat with Marcus B.", "Grocery share: $4.00, pay the cook in person", "Not marked received yet. Money changes hands in person; nothing is paid on this site", a timeline with Requested and Confirmed, and the pickup note.](screenshots/walkthrough/08-diner-confirmed.png)
 
-That is the end of E2E-01. The test asserts the "Request sent" text, the cook's "Booking confirmed" message, the Confirmed badge on the diner's page and the exact contribution line.
-
-## Part 2: after the meal (E2E-02)
+## Part 2: after the meal
 
 A booking can be completed only after the meal's serving time, so this part uses a booking that is already in the seed: Jordan's confirmed seat at Marcus's **Steak Night**, served yesterday.
 
@@ -70,44 +68,66 @@ As the demo cook, open Steak Night from the kitchen's past meals and pick Jordan
 
 ### 10. Mark the share received
 
-Press **Mark contribution received**. This records the time. It is a field beside the booking's status, not a new status, and only the cook can set it (CONTRIB-07).
+Press **Mark contribution received**. This records the time. Only the cook can do it.
 
 ![A green message "Contribution marked received". The Chip in card now reads "Grocery share: $4.00" and "Received by the cook" with the date and time.](screenshots/walkthrough/10-share-received.png)
 
 ### 11. Mark the booking completed
 
-Press **Mark completed** in the "What you can do" card. Completing is allowed only after the serving time (BOOK-11).
+Press **Mark completed** in the "What you can do" card. Completing is allowed only after the serving time.
 
 ![A green message "Booking marked completed" and the status Completed on the Steak Night booking.](screenshots/walkthrough/11-completed.png)
 
 ### 12. The diner writes a review
 
-As the demo diner, open the same booking. A completed booking shows a review form for 14 days (REV-05). A review is a rating from 1 to 5 and two optional parts, "The good" and "The bad".
+As the demo diner, open the same booking. A completed booking shows a review form for 14 days. A review is a rating from 1 to 5 and two optional parts, "The good" and "The bad".
 
 ![The review form: five rating choices with "5 stars" selected, "The good" filled with "Steak cooked just right, and the herb butter was great", "The bad" filled with "Pickup ran ten minutes late", and a Post review button.](screenshots/walkthrough/12-review-form.png)
 
 ### 13. The review is posted
 
-Press **Post review**. A booking can be reviewed once (REV-03).
+Press **Post review**. A booking can be reviewed once.
 
 ![A green message "Thanks, your review is posted" above the completed Steak Night booking.](screenshots/walkthrough/13-review-posted.png)
 
 ### 14. The review is on the cook's page
 
-Follow the cook's name to their public page. The review is listed with the diner's first name and initial, the meal and the date, and it now counts in the cook's average (REV-01).
+Follow the cook's name to their public page. The review is listed with the diner's first name and initial, the meal and the date, and it now counts in the cook's average.
 
 ![The Reviews section of Marcus B.'s page: "5 out of 5", "Jordan K., Steak Night", then "The good: Steak cooked just right, and the herb butter was great" and "The bad: Pickup ran ten minutes late".](screenshots/walkthrough/14-review-on-cook-page.png)
 
-That is the end of E2E-02. The test asserts both of the cook's messages, the Completed badge, the "review is posted" message, and that the cook's page lists the review text exactly once with "5 out of 5".
+After clicking through by hand, run `make reseed` to put the demo data back.
 
-## Run the two tests
+## Developer note
 
-`make e2e` reseeds the demo data and runs every browser test. To run only these two:
+This story is what the two main browser tests play on every CI run. Both are in [`tests/e2e/test_e2e_flows.py`](../tests/e2e/test_e2e_flows.py).
+
+| Part | Test | What it asserts |
+|---|---|---|
+| 1 | E2E-01 | The "Request sent" text, the cook's "Booking confirmed" message, the Confirmed badge on the diner's page and the exact contribution line |
+| 2 | E2E-02 | Both of the cook's messages, the Completed badge, the "review is posted" message, and that the cook's page lists the review text exactly once with "5 out of 5" |
+
+The rules the story mentions each have a test, named by its ID in the [plan](MODERNIZATION_PLAN.md#7-test-strategy):
+
+| Step | Rule | Test |
+|---|---|---|
+| 2 | Search works with JavaScript off | E2E-05 |
+| 4 | No request without the allergen box | BOOK-02 |
+| 5 | The share is fixed when the request is sent | CONTRIB-03 |
+| 7 | Two confirmations at the same moment cannot overbook a meal: the app locks the meal's row and counts the confirmed seats again (`transition` and `check` in `bookings/services.py`) | No test races two confirmations. BOOK-06 races two requests for the last seat through the same row lock |
+| 8 | Only a confirmed diner sees the pickup note | BOOK-14 |
+| 10 | Only the cook marks a share received. It is a time beside the booking's status, not a new status | CONTRIB-07 |
+| 11 | No completing before the serving time | BOOK-11 |
+| 12 | The review form closes after 14 days | REV-05 |
+| 13 | One review per booking | REV-03 |
+| 14 | The review counts in the cook's average | REV-01 |
+
+In step 2 the server returns just the results and htmx puts them on the page. The pictures are 1120 x 700 screens captured by `scripts/capture_screenshots.py --walkthrough`, and `make screenshots` reseeds the demo data before and after it recaptures them.
+
+To run the two tests, start the demo (`make demo`), because the browser tests call the `web` container and do not start it. `make e2e` then reseeds the demo data and runs every browser test. To run only these two:
 
 ```sh
 make e2e K="e2e_01 or e2e_02"
 ```
 
 The last line reads `2 passed, 356 deselected` and a time.
-
-After clicking through by hand, run `make reseed` to put the demo data back. `make screenshots` does that for you when it recaptures these pictures.

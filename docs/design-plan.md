@@ -16,11 +16,11 @@ This plan covers the visual foundation that every later screen inherits. The tok
 |---|---|---|---|
 | `--cc-brand` | `#a40408` | `#b3161b` | The 2008 header red. Dark mode uses a slightly brighter red so it still reads on a dark page |
 | `--cc-accent` (links, the italic headline words) | `#a40408` | `#ff9c94` | Brand red fails contrast on a dark page (plan 4.2), so dark mode uses a light coral |
-| `--cc-bg` | `#e5ecf3` | `#121417` | The 2008 blue-grey page background |
+| `--cc-bg` | `#e5ecf3` | `#121417` | The 2008 blue-gray page background |
 | `--cc-surface`, `--cc-surface-sunk`, `--cc-border` | white, `#f2f5f9`, `#c9d3de` | `#1c2026`, `#171a1f`, `#343b45` | Panels, the footer and hairlines |
 | `--cc-text`, `--cc-muted` | `#1a1a1a`, `#4a5563` | `#eceff3`, `#a9b3bf` | Plan 4.2 values in light mode |
 | `--cc-focus` | `#1f5fbf` | `#8ab4f8` | A blue that is clearly not the brand red |
-| Badge pairs | share, bring, free, diet, allergen | same names | Each badge carries text, so colour is never the only cue |
+| Badge pairs | share, bring, free, diet, allergen | same names | Each badge carries text, so color is never the only cue |
 
 ## Type
 
@@ -29,7 +29,7 @@ This plan covers the visual foundation that every later screen inherits. The tok
 - **Body:** `--cc-font-body`, the system UI stack.
 - **Scale:** a 1.25 modular scale (`--cc-step--1` to `--cc-step-5`). The two largest steps use `clamp()`, so the
   hero headline grows with the viewport.
-- No font files ship and nothing loads from a CDN, so there is no font licence to record. The two SVGs in
+- No font files ship and nothing loads from a CDN, so there is no font license to record. The two SVGs in
   `static/img/` are drawn for this repo and use no third-party artwork.
 
 ## Layout
@@ -61,21 +61,21 @@ The search button and the hero's "How it works" are outlined.
 
 ## The one bold element
 
-The hero: an oversized serif headline with two italic words in the accent colour, next to a tilted example
+The hero: an oversized serif headline with two italic words in the accent color, next to a tilted example
 listing on a red card. The listing is the bold part and it shows the product: a dish, a fictional cook, the
 grocery share, the bring-list option and the cook-declared allergens. Everything around it stays quiet: one
-red rule, white panels and the 2008 blue-grey.
+red rule, white panels and the 2008 blue-gray.
 
 ## Where each choice comes from
 
-There is no moodboard for this brand. Each choice comes from the 2008 artefacts in `legacy/img/` and from plan
+There is no moodboard for this brand. Each choice comes from the 2008 artifacts in `legacy/img/` and from plan
 section 4:
 
 - **Logo plate** (`static/img/logo.svg`): `logo2.jpg`, the white serif "Campus Chefs" on red, redrawn with
   rounded corners and a covered-dish mark.
 - **Numbered step tiles:** `welcome1-3.jpg`, red rounded squares with a white serif numeral. They are now drawn
   by a CSS counter on an `<ol>` (plan 4.3).
-- **Page background:** the 2008 `body` colour, `#e5ecf3`.
+- **Page background:** the 2008 `body` color, `#e5ecf3`.
 - **Rounded corners:** `--cc-radius` replaces the six corner JPGs (plan 1.3, #23).
 
 ## Anti-generic review
@@ -103,7 +103,7 @@ section 4:
 
 - **Field component** (`templates/partials/field.html`): label, then help, then error, then the control. Django
   links help and error to the control with `aria-describedby` (`<id>_helptext`, `<id>_error`); the error list
-  reads "Error:" to screen readers, and the field gets a red rail and a 2px red border, so colour is never the
+  reads "Error:" to screen readers, and the field gets a red rail and a 2px red border, so color is never the
   only cue.
 - **Placeholders** use `--cc-muted`, so their contrast is fixed in both themes. UX-01 already checks
   `--cc-muted` on `--cc-surface`, the input background.
@@ -119,6 +119,8 @@ section 4:
 - **Log out** is a reset button that reads as a nav item, with the same hover and focus ring as the links.
 - **Demo login** is a dashed invitation card: "Try it in one click", one line, a diner button (primary) and a
   cook text link. The cook link is a POST button styled as a link, so its accessible name stays "Try as demo cook".
+  On `/login` the diner button is outlined, like the home "How it works" button, so "Log in" is the only filled
+  button on that screen. On the home page it stays filled.
 - **/me** has an initials avatar (plan 4.4: initials only), the public name as the heading, a role badge, a
   ruled profile list and an empty-bookings state with a "Find a meal" button.
 - **Changed after pass 1:** the diner badge was invisible on the page background (now on white with a border);
@@ -165,6 +167,13 @@ section 4:
     and "Pickup or dine-in" reads "How you eat";
   - `scripts/capture_screenshots.py --design` also writes `manifest.json`, `styles.json` and `layout.json` for
     the art director; `layout.json` lists the filled buttons in each capture's first screen.
+
+- **Changed after the review of PR #13:**
+  - `/login`: the demo card's "Try as demo diner" button is outlined (see "Demo login" above), and `layout.json`
+    lists "Log in" as the only filled button in the first screen of the login captures;
+  - kitchen and the `/me` kitchen panel: a meal with no confirmed grocery share reads "No confirmed grocery shares
+    yet." in place of "Chip-ins received $0.00 of $0.00 from confirmed diners.";
+  - seed: the pickup note reads "Meet in the lobby of North Hall (Demo).", because the app has no messaging.
 
 ## Open points
 

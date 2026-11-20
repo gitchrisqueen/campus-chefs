@@ -1,6 +1,6 @@
 {
  "url": "http://web:8000",
- "at": "2026-11-19T01:30:05Z",
+ "at": "2026-11-19T12:53:30Z",
  "viewports": [
   "1280x800",
   "390x844"
@@ -53,13 +53,13 @@
   {
    "key": "cook-desktop-light",
    "file": "cook-desktop-light.png",
-   "url": "http://web:8000/cooks/137",
+   "url": "http://web:8000/cooks/45",
    "full_page": true
   },
   {
    "key": "offering-desktop-light",
    "file": "offering-desktop-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -101,19 +101,19 @@
   {
    "key": "offering-diner-desktop-light",
    "file": "offering-diner-desktop-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-diner-desktop-light",
    "file": "booking-diner-desktop-light.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
    "key": "offering-errors-desktop-light",
    "file": "offering-errors-desktop-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -131,13 +131,13 @@
   {
    "key": "offering-cook-desktop-light",
    "file": "offering-cook-desktop-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-cook-desktop-light",
    "file": "booking-cook-desktop-light.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
@@ -179,13 +179,13 @@
   {
    "key": "cook-phone-light",
    "file": "cook-phone-light.png",
-   "url": "http://web:8000/cooks/137",
+   "url": "http://web:8000/cooks/45",
    "full_page": true
   },
   {
    "key": "offering-phone-light",
    "file": "offering-phone-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -227,19 +227,19 @@
   {
    "key": "offering-diner-phone-light",
    "file": "offering-diner-phone-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-diner-phone-light",
    "file": "booking-diner-phone-light.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
    "key": "offering-errors-phone-light",
    "file": "offering-errors-phone-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -257,13 +257,13 @@
   {
    "key": "offering-cook-phone-light",
    "file": "offering-cook-phone-light.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-cook-phone-light",
    "file": "booking-cook-phone-light.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
@@ -305,13 +305,13 @@
   {
    "key": "cook-desktop-dark",
    "file": "cook-desktop-dark.png",
-   "url": "http://web:8000/cooks/137",
+   "url": "http://web:8000/cooks/45",
    "full_page": true
   },
   {
    "key": "offering-desktop-dark",
    "file": "offering-desktop-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -353,19 +353,19 @@
   {
    "key": "offering-diner-desktop-dark",
    "file": "offering-diner-desktop-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-diner-desktop-dark",
    "file": "booking-diner-desktop-dark.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
    "key": "offering-errors-desktop-dark",
    "file": "offering-errors-desktop-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -383,13 +383,13 @@
   {
    "key": "offering-cook-desktop-dark",
    "file": "offering-cook-desktop-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-cook-desktop-dark",
    "file": "booking-cook-desktop-dark.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
@@ -431,13 +431,13 @@
   {
    "key": "cook-phone-dark",
    "file": "cook-phone-dark.png",
-   "url": "http://web:8000/cooks/137",
+   "url": "http://web:8000/cooks/45",
    "full_page": true
   },
   {
    "key": "offering-phone-dark",
    "file": "offering-phone-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -479,19 +479,19 @@
   {
    "key": "offering-diner-phone-dark",
    "file": "offering-diner-phone-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-diner-phone-dark",
    "file": "booking-diner-phone-dark.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   },
   {
    "key": "offering-errors-phone-dark",
    "file": "offering-errors-phone-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
@@ -509,13 +509,13 @@
   {
    "key": "offering-cook-phone-dark",
    "file": "offering-cook-phone-dark.png",
-   "url": "http://web:8000/offerings/106",
+   "url": "http://web:8000/offerings/42",
    "full_page": true
   },
   {
    "key": "booking-cook-phone-dark",
    "file": "booking-cook-phone-dark.png",
-   "url": "http://web:8000/bookings/163",
+   "url": "http://web:8000/bookings/54",
    "full_page": true
   }
  ]

@@ -33,7 +33,7 @@ This map covers every file in `legacy/`. The modules on the right are the target
 |---|---|---|
 | `dbconnection/db_information.php` | `root` with an empty password, in a web-readable file | Generated secrets read from `*_FILE`, least-privilege DB roles |
 | `css/styles.css` | Fixed 1024px layout, invalid `//` comments, `float: rightt` | `static/css/app.css` with tokens, responsive, WCAG 2.2 AA |
-| `tests/control.php`, `tests/db_test.php` | Echo scripts with no assertions | pytest suites, about 116 behavioural tests |
+| `tests/control.php`, `tests/db_test.php` | Echo scripts with no assertions | pytest suites, about 116 behavioral tests |
 
 ## Images (`legacy/img/`)
 

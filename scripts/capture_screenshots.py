@@ -48,7 +48,8 @@ on the same day writes the same pictures. Run `make reseed` first.
 1120 x 700 picture per step to docs/screenshots/walkthrough/ (01-home.png to 14-review-on-cook-page.png).
 docs/walkthrough.md shows them in order. It books a seat, confirms it, marks a share received,
 completes a booking and posts a review, so run `make reseed` before and after it.
-scripts/build-hero-gif.sh joins pictures 01 to 08 into docs/screenshots/after/hero.gif.
+scripts/build-hero-gif.sh joins pictures 02, 04, 05 and 08 into docs/screenshots/after/hero.gif (it plays
+once) and pictures 01 to 08 into docs/screenshots/after/booking-loop.gif (it loops; the README links to it).
 `make screenshots` runs the whole sequence.
 
 Playwright writes PNGs with no EXIF, XMP or text chunks; scripts/check-image-metadata.sh checks

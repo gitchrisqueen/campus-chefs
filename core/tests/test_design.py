@@ -211,7 +211,8 @@ def test_home_keeps_live_search_hooks_and_chip_in_line(client):
 @pytest.mark.django_db
 def test_home_design_review_fixes(client, settings):
     """Art-director fixes: no middle-dot strings in the listing card or the footer, no tracked
-    eyebrows except the hero's, one filled button in the demo card, and a descriptive title."""
+    eyebrows except the hero's, one filled button in the demo card, and a descriptive title.
+    On /login the demo diner button is outlined, so "Log in" is that page's only filled button."""
     settings.CC_DEMO_MODE = True  # the demo card renders only in demo mode; CI runs with it off
     html = client.get("/").content.decode("utf-8")
     ticket = html[html.index('<article class="ticket"') : html.index("</article>")]
@@ -224,6 +225,12 @@ def test_home_design_review_fixes(client, settings):
     assert demo.count("btn-primary") == 1 and 'class="link-button">Try as demo cook' in demo
     assert "Campus Chefs · Home-cooked meals made by students" in html[: html.index("</title>")]
     assert "Cook's first name, dish or ingredient" in html
+    login = client.get("/login").content.decode("utf-8")
+    card = login[login.index('class="demo-login') : login.index("</section>", login.index('class="demo-login'))]
+    assert "home-demo" not in card and "btn-primary" not in card
+    assert 'class="btn btn-secondary">Try as demo diner</button>' in card
+    assert 'class="link-button">Try as demo cook' in card
+    assert login.count("btn-primary") == 1 and 'class="btn btn-primary">Log in</button>' in login
 
 
 @pytest.mark.django_db

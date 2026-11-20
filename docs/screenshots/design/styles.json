@@ -4849,7 +4849,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -4875,7 +4875,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    }
   },
@@ -5007,7 +5007,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -5033,7 +5033,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    }
   },
@@ -5167,7 +5167,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -5193,7 +5193,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    }
   },
@@ -5325,7 +5325,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -5351,7 +5351,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Thu 19 Nov, 9:00 AM",
+    "text": "Fri 20 Nov, 9:00 AM",
     "text-transform": "none"
    }
   },
@@ -5403,7 +5403,19 @@
     "text": "Log in",
     "text-transform": "none"
    },
-   "button_secondary": null,
+   "button_secondary": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color-hex": "#00000000",
+    "color": "rgb(236, 239, 243)",
+    "color-hex": "#eceff3",
+    "element": "button.btn.btn-secondary",
+    "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif",
+    "font-size": "16px",
+    "font-weight": "700",
+    "letter-spacing": "normal",
+    "text": "Try as demo diner",
+    "text-transform": "none"
+   },
    "eyebrow": null,
    "h1": {
     "background-color": "rgba(0, 0, 0, 0)",
@@ -5521,7 +5533,19 @@
     "text": "Log in",
     "text-transform": "none"
    },
-   "button_secondary": null,
+   "button_secondary": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color-hex": "#00000000",
+    "color": "rgb(26, 26, 26)",
+    "color-hex": "#1a1a1a",
+    "element": "button.btn.btn-secondary",
+    "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif",
+    "font-size": "16px",
+    "font-weight": "700",
+    "letter-spacing": "normal",
+    "text": "Try as demo diner",
+    "text-transform": "none"
+   },
    "eyebrow": null,
    "h1": {
     "background-color": "rgba(0, 0, 0, 0)",
@@ -5641,7 +5665,19 @@
     "text": "Log in",
     "text-transform": "none"
    },
-   "button_secondary": null,
+   "button_secondary": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color-hex": "#00000000",
+    "color": "rgb(236, 239, 243)",
+    "color-hex": "#eceff3",
+    "element": "button.btn.btn-secondary",
+    "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif",
+    "font-size": "16px",
+    "font-weight": "700",
+    "letter-spacing": "normal",
+    "text": "Try as demo diner",
+    "text-transform": "none"
+   },
    "eyebrow": null,
    "h1": {
     "background-color": "rgba(0, 0, 0, 0)",
@@ -5759,7 +5795,19 @@
     "text": "Log in",
     "text-transform": "none"
    },
-   "button_secondary": null,
+   "button_secondary": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color-hex": "#00000000",
+    "color": "rgb(26, 26, 26)",
+    "color-hex": "#1a1a1a",
+    "element": "button.btn.btn-secondary",
+    "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif",
+    "font-size": "16px",
+    "font-weight": "700",
+    "letter-spacing": "normal",
+    "text": "Try as demo diner",
+    "text-transform": "none"
+   },
    "eyebrow": null,
    "h1": {
     "background-color": "rgba(0, 0, 0, 0)",
@@ -6636,7 +6684,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -6662,7 +6710,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    }
   },
@@ -6790,7 +6838,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -6816,7 +6864,7 @@
     "font-size": "13px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    }
   },
@@ -6947,7 +6995,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -6973,7 +7021,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    }
   },
@@ -7101,7 +7149,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    },
    "nav_link": {
@@ -7127,7 +7175,7 @@
     "font-size": "16px",
     "font-weight": "400",
     "letter-spacing": "normal",
-    "text": "Tue 17 Nov, 6:00 PM",
+    "text": "Wed 18 Nov, 6:00 PM",
     "text-transform": "none"
    }
   },

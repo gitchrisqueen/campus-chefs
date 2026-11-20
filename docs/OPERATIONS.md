@@ -7,7 +7,11 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 - Docker Engine with Compose v2. Phase 1 was tested on Engine 29.9.3 with Compose v5.7.0 (`docs/architecture.md`).
 - `make`, `curl` and `jq`.
 - About 3 GB of free disk space. The runtime image is 207 MB; the test image with Chromium is 1.97 GB.
-- For `make sast` only: `uv` on the host. For `make screenshots` only: `exiftool` on the host. `make screenshots` and `make docs-check` also pull two pinned tool images, about 130 MB and 590 MB.
+- Most `make` targets run inside the `tests` container and need nothing more on the host. The exceptions:
+  - `make demo` needs `jq`, and `make smoke` needs `curl` and `jq`.
+  - `make sast` needs `uv`, and network access to PyPI and the OSV database.
+  - `make docs-check` needs `python3` (3.9 or newer, standard library only) and pulls a pinned mermaid-cli image, about 590 MB.
+  - `make screenshots` needs `exiftool` and `jq`, and pulls a pinned ffmpeg image, about 130 MB.
 
 ## Everyday commands
 
@@ -22,11 +26,12 @@ The demo runs locally with Docker Compose. Seeded offerings are timed relative t
 | Use another port | `WEB_PORT=8010 make demo` |
 | Reseed the demo data | `make reseed` wipes and recreates the synthetic data, timed relative to now. It runs in one transaction, so a failure part-way leaves the old data in place. Staff accounts and their campuses are kept |
 | Check the seeded data | `docker compose exec web python manage.py shell -c "from meals.models import Offering; from bookings.models import Booking, Review; print(Offering.objects.count(), Booking.objects.count(), Review.objects.count())"` prints `16 26 12` on a fresh seed |
-| Run the tests | `make test` (unit and integration), `make e2e` (browser; reseeds first) |
-| Run one test by its plan ID | `make test K="auth_07"`, `make e2e K="e2e_01"` |
+| Run the tests | `make test` (unit and integration). `make e2e` (browser) needs the demo running, so run `make demo` first: the browser tests call the `web` container, and the `tests` service does not start it. `make e2e` reseeds first |
+| Run the coverage gate | `make test COV=1` adds statement coverage to the unit and integration run and fails below 90%, as CI does |
+| Run one test by its plan ID | `make test K="auth_07"`, or `make e2e K="e2e_01"` with the demo running |
 | Lint, static checks and the docs link check | `make lint` |
 | Check the docs | `make docs-check` checks links, image paths and alt text, then renders every Mermaid diagram in `README.md` and `docs/architecture.md` with a pinned mermaid-cli image. Its last line is `render-mermaid: 2 file(s) rendered` |
-| Recapture the README and walkthrough pictures | `make screenshots`, with the demo running. It reseeds, captures `docs/screenshots/after/` and `docs/screenshots/walkthrough/`, rebuilds `hero.gif`, reseeds again and checks every image for metadata. Review the pictures before you commit them: the dates in them move with the day you run it |
+| Recapture the README and walkthrough pictures | `make screenshots`, with the demo running. It reseeds, captures `docs/screenshots/after/` and `docs/screenshots/walkthrough/`, rebuilds `hero.gif` and `booking-loop.gif`, reseeds again and checks every image for metadata. Review the pictures before you commit them: the dates in them move with the day you run it |
 
 ## Admin account
 
@@ -45,7 +50,7 @@ Only a staff account (see "Admin account") can hide a review, and only through t
 - **Hide:** open `/admin/bookings/review/`, tick the review, choose "Hide selected reviews" and press Go. A hidden review disappears from the cook page and from the average. The action writes an entry in the admin history of each review and shows "Hid N review(s)." The server log gets one line with ids only (`review hidden: review <id> by staff <id>`).
 - **Un-hide:** open the review (`/admin/bookings/review/<id>/change/`), clear the "Hidden at" date and time, and save. The booking and the rating are read-only there, so a staff member cannot change what the diner wrote.
 - **Not undoable from the app:** account deletion. It anonymizes the user and blanks their free text for good, so the only way back is a database snapshot. The demo has no backups (see the top of this page), so treat a deletion as final.
-- **`make e2e` wipes the demo data:** it runs `make reseed` first, which deletes and recreates every synthetic row. Use `NO_RESEED=1 make e2e` to keep the data, and expect a reseed to remove any review you hid by hand.
+- **`make e2e` needs the demo running and wipes the demo data:** the browser tests call the `web` container, which `make demo` starts and `make e2e` does not. It runs `make reseed` first, which deletes and recreates every synthetic row. Use `NO_RESEED=1 make e2e` to keep the data, and expect a reseed to remove any review you hid by hand.
 - **Audit lines:** the app logs booking state changes, kitchen changes (meals and dishes), account deletions and review hides at INFO to stdout, with ids only and never a name, email or free text. Read them with `docker compose logs web`.
 
 ## What starts, in order
@@ -152,7 +157,7 @@ The first prints `CC_AI_ENABLED=false`. The second prints `404`. The flag check 
 | Login returns 429 "Too many failed logins for this email" | 5 failed logins for one email within 15 minutes. The lockout also blocks the correct password until the window ends. `docker compose logs web` shows `login locked for key <prefix>` (no email is logged). The counters live in the `cc_ratelimit` cache table | Wait 15 minutes, or clear every counter: `docker compose exec web python manage.py shell -c "from django.core.cache import caches; caches['ratelimit'].clear()"` |
 | `docker compose logs web` shows `rate limiter unavailable` | The `cc_ratelimit` table is missing or the database errored. The limiter fails open, so logins keep working but are not counted | Run `make demo` (`bootstrap_demo` recreates the table with `createcachetable`), then check `docker compose logs migrate` |
 | Port 8000 is in use | Another process holds the port | Run `WEB_PORT=8010 make demo` |
-| `make lint` ends with `check_docs: N failure(s)` | A relative link, image path or heading anchor in `README.md` or `docs/*.md` points at nothing, an image has no alt text, or the container diagram no longer names something in `compose.yaml` | Each line above the summary gives the file, the line and the target. Fix the path, or update the diagram in both `README.md` and `docs/architecture.md` |
+| `make lint` ends with `check_docs: N failure(s)` | A relative link, image path or heading anchor in `README.md` or `docs/*.md` points at nothing, an image has no alt text, an embedded GIF loops or moves for more than 5 seconds, or the container diagram no longer names something in `compose.yaml` | Each line above the summary gives the file, the line and the target. Fix the path, or update the diagram in both `README.md` and `docs/architecture.md`. For a GIF, rebuild it with `scripts/build-hero-gif.sh`, or link to it instead of embedding it |
 | `make docs-check` fails inside `render-mermaid.sh` | A Mermaid diagram does not parse, or Docker could not pull the mermaid-cli image | Read the parse error printed above the failure and fix the diagram. For a pull failure, check the network and run it again |
 | `make screenshots` stops with a Playwright timeout | The demo is not running, or its data is not the fresh seed the capture expects | Run `make demo`, then `make screenshots` again. It reseeds first |
 | CI fails on "Public-safety denylist" for a pull request from a fork | Fork PRs cannot read the `PUBLIC_DENYLIST_REGEX` secret, so the step fails closed on purpose | A maintainer re-runs the change from a branch in this repository |

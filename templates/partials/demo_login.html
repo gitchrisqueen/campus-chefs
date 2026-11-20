@@ -8,7 +8,7 @@
     <div class="demo-actions">
       <form class="inline-form" method="post" action="{% url 'demo_login' 'diner' %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Try as demo diner</button>
+        <button type="submit" class="btn {% if home %}btn-primary{% else %}btn-secondary{% endif %}">Try as demo diner</button>
       </form>
       <form class="inline-form" method="post" action="{% url 'demo_login' 'cook' %}">
         {% csrf_token %}

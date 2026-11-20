@@ -1,26 +1,29 @@
 # Campus Chefs
 
-[![ci](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml?query=branch%3Amain)
+[![CI status on main](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gitchrisqueen/campus-chefs/actions/workflows/ci.yml?query=branch%3Amain)
 
 **Home-cooked meals, made by students who love to cook.**
 
 <p>
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/screenshots/walkthrough/01-home.png">
-    <img src="docs/screenshots/after/hero.gif" alt="A booking in the running demo, shown as eight screens in a loop: the home page; a live search for &quot;pancakes&quot; with one result; the Pancake Breakfast page with its dishes and allergens; the request form with the $4.00 grocery share picked and the allergen box ticked; &quot;Request sent&quot;; the cook's view with Confirm and Decline buttons; &quot;Booking confirmed&quot;; and the diner's confirmed booking, which reads &quot;Grocery share: $4.00, pay the cook in person&quot;. With reduced motion turned on, only the first screen, the home page, is shown.">
+    <img src="docs/screenshots/after/hero.gif" alt="Four screens of a booking in the running demo: a search for pancakes, the request form, &quot;Request sent&quot;, and the confirmed booking with its $4.00 grocery share.">
   </picture>
 </p>
 
-[The walkthrough](docs/walkthrough.md) shows each of these screens as a still picture. The loop above is eight unedited screens of the running demo and lasts about 14 seconds. If your system is set to reduce motion, you get a still of the first screen instead.
+The walkthrough shows the eight booking screens, and six more from after the meal, as still pictures: [open the walkthrough](docs/walkthrough.md).
 
 Campus Chefs matches students who want a home-cooked meal with students who like to cook. A cook posts a meal: the dishes, the time, the seats and what the groceries cost. A diner asks for a seat and chips in toward those groceries with a share of the cost, an item from the cook's bring list, or terms the two of them agree on. The cook gets help with the grocery bill and never a profit.
 
 **This is a portfolio demo, not a live service.** The people, campuses and meals are made up, and no money moves through the app. [Why this is a demo](#why-this-is-a-demo) has the details.
 
+**For hiring teams:** I set the scope and made the decisions, and AI coding agents wrote the code from a plan I reviewed, one phase per pull request. The outcome is 358 tests green on `main` ([run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607)), 98.19% statement coverage, and the original code's SQL-injection login bypass closed with a regression test ([For developers and hiring teams](#for-developers-and-hiring-teams)).
+
 | If you are | Start here |
 |---|---|
 | A student, or anyone curious about the product | [What a student sees](#what-a-student-sees) |
 | Someone who wants to click around | [Run the demo](#run-the-demo), one command |
+| A business owner evaluating a legacy-app rescue | [Work with me](#work-with-me) |
 | A developer or a hiring team | [For developers and hiring teams](#for-developers-and-hiring-teams) |
 
 ## What a student sees
@@ -69,10 +72,10 @@ Your account page keeps your bookings in one place. Your email is shown only to 
 
 ### 4. Cook for other students
 
-The kitchen is where a cook keeps a menu and opens meals. Each meal shows the seats left, the grocery estimate, the share per seat and how much of the chip-ins has been received. The form suggests a share of the estimate divided by the seats plus one, because the cook eats too. It refuses a share that would add up to more than the groceries cost.
+The kitchen is where a cook keeps a menu and opens meals. Each meal shows the seats left, the grocery estimate, the share per seat and how much of the chip-ins have been received. The form suggests the grocery estimate divided by the number of seats plus one, because the cook eats too. It refuses a share that would add up to more than the groceries cost.
 
 <p>
-  <img src="docs/screenshots/after/kitchen-menu.png" width="590" alt="The demo cook's kitchen on a desktop: the upcoming Pancake Breakfast with 4 of 6 seats left, groceries $24.00 and a $4.00 share per seat; the past Steak Night with chip-ins received $0.00 of $4.00; and the menu in Breakfast, Lunch and Dinner columns with Edit and Remove links on each dish.">
+  <img src="docs/screenshots/after/kitchen-menu.png" width="590" alt="The demo cook's kitchen on a desktop: the upcoming Pancake Breakfast with 4 of 6 seats left, groceries $24.00, a $4.00 share per seat and no confirmed grocery shares yet; the past Steak Night with chip-ins received $0.00 of $4.00; and the menu in Breakfast, Lunch and Dinner columns with Edit and Remove links on each dish.">
   <img src="docs/screenshots/after/phone-kitchen.png" width="190" alt="The kitchen on a phone: the cook's bio, the Open a meal button and the Pancake Breakfast card with its grocery numbers.">
 </p>
 
@@ -111,7 +114,7 @@ Both buttons are on the home page and on the login page. The seeded accounts hav
 | Use another port | `WEB_PORT=8010 make demo` |
 | Follow the app log | `docker compose logs -f web` |
 | Unit and integration tests | `make test` |
-| Browser tests (they reseed first) | `make e2e` |
+| Browser tests. The demo must be running (`make demo`), because they call the `web` container and do not start it. They reseed first | `make e2e` |
 | Lint and static checks | `make lint` |
 
 The seed is 3 campuses, 8 cooks, 14 diners, 48 dishes, 16 meals, 26 bookings and 12 reviews, all fictional. Meal times are set relative to the first start, so after about a week no meal is in the future: run `make reseed`. [docs/OPERATIONS.md](docs/OPERATIONS.md) covers the admin account, moderation and what to do when something breaks.
@@ -130,12 +133,15 @@ Sharing food between students carries legal and health risk that an app cannot r
 
 In short, with the evidence for each line:
 
-- **A legacy rescue with proof.** The original is 1,003 lines of PHP whose login could be bypassed with SQL injection. The plan lists 33 defects and 6 TODOs, and each fix that has behaviour names the test that proves it ([before and after](#before-and-after)).
+- **A legacy rescue with proof.** The original is 1,003 lines of PHP. Read from the code, its login can be bypassed with SQL injection; the original app is never run, so the bypass was not reproduced. The plan lists 33 defects and 6 TODOs, and each fix that has behavior names the test that proves it ([before and after](#before-and-after)).
 - **358 tests, green on `main`.** 340 unit and integration tests against real PostgreSQL and 18 browser tests, with 98.19% statement coverage against a 90% gate ([run 44521109607](https://github.com/gitchrisqueen/campus-chefs/actions/runs/44521109607)).
 - **One command to run.** Four containers, secrets generated at first start, nothing secret in the repository ([architecture](#architecture)).
 - **Security decisions with their costs written down.** A strict content security policy, one secrets volume per service, a database role that cannot change the schema, and rules enforced by the database ([security and data decisions](#security-and-data-decisions)).
 - **An AI feature behind a flag.** An optional menu import that is off by default, sends only the pasted text, and treats the model's reply as untrusted input ([AI menu import](#ai-menu-import-optional)).
 - **Scope held on purpose.** No payments, no messaging, no uploads, and the reasons ([deliberately not built](#deliberately-not-built)).
+- **Methods that carry over to a client app.** Start with file-and-line evidence, add regression tests for fixed behavior, keep a one-command local run, and hand off a runbook. Each client app needs its own scope and release checks; this demo's results do not predict another app's outcome.
+
+IDs such as AUTH-07 and CHK-04 name a test or a static check in the [plan](docs/MODERNIZATION_PLAN.md#7-test-strategy), and each test function carries its ID in its name.
 
 | Layer | What it uses |
 |---|---|
@@ -147,6 +153,8 @@ In short, with the evidence for each line:
 | Optional menu import | The anthropic SDK 2.5.0 and pydantic 2.14.2. The SDK is installed in the image and imported only when the flag is on and a cook submits a menu |
 
 ### Architecture
+
+The diagram in words: the browser reaches only `web` on a loopback port, `web`, `migrate` and `tests` reach `db` over an internal network, and `keygen` writes the secrets into three volumes, one per consumer.
 
 ```mermaid
 flowchart LR
@@ -213,7 +221,7 @@ This project began as a student web app written in 2008 in PHP 5. The original c
 
 | 2008 defect | 2026 fix | Proof |
 |---|---|---|
-| Login bypass: SQL built by pasting strings together (`legacy/src/sqlQueries.php:58`). The email `' OR 1=1 -- ` logged anyone in | No SQL strings. The ORM binds every value, and a static check fails the build on raw SQL | AUTH-07, SRCH-03, CHK-04 |
+| Login bypass: SQL built by pasting strings together (`legacy/src/sqlQueries.php:58`). Read from the code, the email `' OR 1=1 -- ` would log anyone in; the 2008 app is never run, so this was not reproduced | No SQL strings. The ORM binds every value, and a static check fails the build on raw SQL | AUTH-07, SRCH-03, CHK-04 |
 | Passwords stored and compared as plain text | Argon2id hashes | REG-01 |
 | Login and registration sent by GET, so passwords sat in the URL | POST only, with a CSRF token | AUTH-03, REG-08, AUTH-10 |
 | The "email" was compared with the `first_name` column, and no session was created | Email login; the session key changes at login | AUTH-07, AUTH-01 |
@@ -226,7 +234,7 @@ This project began as a student web app written in 2008 in PHP 5. The original c
 | Fixed 1024 px layout; images without alt text; labels not tied to inputs | Responsive from 320 px; WCAG 2.2 AA checked by axe in light and dark mode | E2E-04, A11Y-01, CHK-02 |
 | A photo of a real person and real names in test strings | Replaced before the first commit; a denylist scan runs in CI and before every push | SEC-06 |
 
-[docs/before-after.md](docs/before-after.md) has the full table of 29 rows, the code excerpts, and why `htmlentities()` did not stop the injection. [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) maps each 2008 file to its new home.
+[docs/before-after.md](docs/before-after.md) has the full table of 29 rows, the code excerpts, and why `htmlentities()` did not stop the injection. The plan counts 33 defects and 6 TODOs, and that table has 29 rows, because three rows join two entries each and seven entries have no row (defects 14, 22, 26, 27, 30 and 33, and TODO T5). [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) maps each 2008 file to its new home.
 
 ### Security and data decisions
 
@@ -280,7 +288,7 @@ The numbers below are from [run 44521109607](https://github.com/gitchrisqueen/ca
 | SEC | Security headers, cookies, the database role, deploy check, denylist, demo switches | 11 | |
 | LEG | Regression tests for the original app's defects | 13 | 6 |
 | AI | The optional menu import: the flag, what is sent, bad and hostile replies, the length cap, the allergen confirmation, the rate limit. The plan lists AI-01 to AI-05; AI-06 and AI-07 were added during the build | 45 | |
-| UX and A11Y | Colour contrast of the design tokens, form markup, the axe scan | 7 | 4 |
+| UX and A11Y | Color contrast of the design tokens, form markup, the axe scan | 7 | 4 |
 | E2E | The six browser journeys | | 6 |
 | HEALTH and OPS | The health endpoint and an idempotent bootstrap | 2 | |
 | No plan ID | Supporting tests that close coverage gaps | 52 | |
@@ -296,7 +304,7 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 
 1. gitleaks over the full history, then a denylist scan that prints locations and never the matched text.
 2. A gate that fails a pull request that touches `legacy/`, unless it carries the `legacy-change` label, and a checksum check of that folder.
-3. `make lint`: ruff, djlint, codespell, eight static checks (for example no raw SQL, no `|safe`, every form control labelled) and a link check of these docs.
+3. `make lint`: ruff, djlint, codespell, eight static checks (for example no raw SQL, no `|safe`, every form control labeled) and a link check of these docs.
 4. `make sast`: bandit and pip-audit.
 5. Django's migration check and `check --deploy` with production settings.
 6. The unit and integration tests with the coverage gate.
@@ -306,10 +314,12 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 
 ### How it was built
 
-- **Plan first.** [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) was written before any code: the audit of the 2008 files, the data model, the test catalogue and a phased roadmap. It was reviewed before work started, and its review log (section 13) records 46 findings and what changed for each.
+- **Plan first.** [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) was written before any code: the audit of the 2008 files, the data model, the test catalog and a phased roadmap. It was reviewed before work started, and its review log (section 13) records 44 numbered findings and two owner change requests (rows R3-1 and R3-2), with what changed for each.
 - **One pull request per phase.** A phase was done when its exit commands passed and CI was green. Ten of the twelve pull request descriptions link a green CI run; #3 and #4 do not.
-- **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: each of the twelve merged pull requests carries a summary comment with the number of review rounds, how many reviewers passed and failed in each round, and the final result. Every review took two or three rounds and ended with all reviewers passing, and on eleven of the twelve at least one reviewer failed the first round. The reviewers' full verdicts are kept privately and are not in this repository.
-- **Who did what.** AI coding agents wrote the code from the plan, one builder per phase on its own branch, with a coordinator that integrated and verified the work. I set the scope, made the decisions recorded in plan section 10.3 and approve what is published here.
+- **Reviews that try to break it.** The working rule is that reviewers with different jobs read each pull request before it merges: one checks every claim against its evidence, one tries to run it with no help, one attacks the security. Changes to screens also get a design and accessibility review on screenshots at phone and desktop width, in light and dark mode. What the public record shows: each of the twelve merged pull requests carries a summary comment with the number of review rounds, how many reviewers passed and failed in each round, and the final result. A later round re-runs only the reviewers that failed the round before, so its tally is smaller than the first round's. Every review took two or three rounds and ended with all reviewers passing, and on eleven of the twelve at least one reviewer failed the first round. The reviewers' full verdicts are kept privately and are not in this repository.
+- **Who did what.** AI coding agents wrote the code from the plan, one builder per phase on its own branch, with a coordinator that integrated and verified the work. I set the scope, reviewed the plan (my two change requests are rows R3-1 and R3-2 of its review log), made the decisions recorded in plan section 10.3 and approve what is published here.
+
+The rows are in merge order, which is not phase order.
 
 | Phase | Pull request |
 |---|---|
@@ -326,18 +336,18 @@ CI is one job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), with no
 | 8 Browser tests, accessibility gate, design pass (part 2) | [#10](https://github.com/gitchrisqueen/campus-chefs/pull/10) |
 | 9 Security hardening and coverage | [#11](https://github.com/gitchrisqueen/campus-chefs/pull/11) |
 | 12 Optional AI menu import, off by default | [#12](https://github.com/gitchrisqueen/campus-chefs/pull/12) |
-| 11 This README, the screenshots and the docs | this change |
+| 11 This README, the screenshots and the docs | [#13](https://github.com/gitchrisqueen/campus-chefs/pull/13) |
 
 ### Design and accessibility
 
-The red, `#a40408`, is the original brand colour. The type is a system serif for headings and the system UI font for text, so no font files load. Dark mode follows the system setting.
+The red, `#a40408`, is the original brand color. The type is a system serif for headings and the system UI font for text, so no font files load. Dark mode follows the system setting.
 
 <p>
   <img src="docs/screenshots/design/home-desktop-dark.png" width="590" alt="The home page in dark mode on a desktop: light text on a near-black background, red buttons, and coral for the links and the italic headline words.">
   <img src="docs/screenshots/design/home-phone-dark.png" width="190" alt="The home page in dark mode on a phone.">
 </p>
 
-The accessibility gate is part of the browser tests: axe-core with its WCAG 2.0 A and AA, 2.1 AA and 2.2 AA rules on every main screen in both colour schemes, plus the keyboard-only journey and the 320 px check. [docs/design-plan.md](docs/design-plan.md) has the palette and the type scale.
+The accessibility gate is part of the browser tests: axe-core with its WCAG 2.0 A and AA, 2.1 AA and 2.2 AA rules on every main screen in both color schemes, plus the keyboard-only journey and the 320 px check. [docs/design-plan.md](docs/design-plan.md) has the palette and the type scale.
 
 ## Deliberately not built
 
@@ -347,13 +357,13 @@ The accessibility gate is part of the browser tests: axe-core with its WCAG 2.0 
 | Messaging, notifications, email, password reset, email verification | A local demo has no mail transport. A real deployment would need verified campus email first |
 | Photo uploads, maps, delivery | Privacy and driving liability |
 | Full-text search | The seed has 48 dishes. A plain substring match is enough and simpler |
-| Cross-checks between dietary tags and allergens, such as vegan against milk | They are doubtful in the domain itself (honey, gelatin) and would give false assurance. Tags are labelled "cook-declared" |
+| Cross-checks between dietary tags and allergens, such as vegan against milk | They are doubtful in the domain itself (honey, gelatin) and would give false assurance. Tags are labeled "cook-declared" |
 | A no-show status, a booking audit table, a cap on open requests per diner | The three-step story does not need them. The timeline comes from timestamps |
 | Rate limits on registration, search and booking | The demo is local, and per-IP limits misfire behind Docker's port publishing. Only failed logins and the optional menu import are limited |
 | A scheduled dependency-audit workflow | Dependabot and the pip-audit step on every pull request cover it while the repository is active |
 | A recommender that suggests meals | Speculative |
 | A hosted public sign-up | A decision, not a gap: see [why this is a demo](#why-this-is-a-demo) |
-| A live demo of the original login exploit | Running an app with a known login bypass is not worth it. The exploit is explained from the code in [docs/before-after.md](docs/before-after.md) |
+| A live demo of the original login exploit | Running an app whose code has a login bypass is not worth the risk. The bypass is read from the code and was not reproduced: [docs/before-after.md](docs/before-after.md#2-the-login-bypass) shows the query and the SQL the payload would build |
 
 The plan listed dark mode and an animated demo as stretch goals, and the AI menu import as an optional phase. All three were built.
 
@@ -368,6 +378,10 @@ The plan listed dark mode and an animated demo as stretch goals, and the AI menu
 7. **Django 6.2 LTS** when it is released, before 6.1 leaves security support. The plan header records both dates as checked on 2026-11-18.
 8. **A first live run of the menu import,** after reading the API provider's data terms. Until then the feature stays off, and its API path has been tested only against a test double.
 
+## Work with me
+
+Start with an audit that lists defects by file and line. A scoped legacy-app rescue can include regression tests written before fixes, a one-command local run, and an operations runbook. Scope and timing are set after the audit; price is on request. The repository, tests and runbook are client-owned handoff materials. If a milestone is at risk, we agree on a revised date before the schedule changes; [contact CQC](https://christopherqueenconsulting.com/contact-us/) to discuss a project.
+
 ## More to read
 
 | Doc | What is in it |
@@ -378,11 +392,11 @@ The plan listed dark mode and an animated demo as stretch goals, and the AI menu
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | The runbook: commands, admin account, moderation, the optional AI menu import, when it breaks |
 | [docs/before-after.md](docs/before-after.md) | The original code next to the fixes, defect by defect |
 | [docs/LEGACY-MAP.md](docs/LEGACY-MAP.md) | Where each original file's job lives now |
-| [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) | The plan, the test catalogue and the decisions |
+| [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md) | The plan, the test catalog and the decisions |
 | [docs/design-plan.md](docs/design-plan.md) | Palette, type and layout |
 
 **Contributing:** CI's denylist step fails closed on pull requests from forks, because forks cannot read the secret it needs. A maintainer re-runs such a change from a branch.
 
-## Licence
+## License
 
-[MIT](LICENSE) for the new code. The `legacy/` folder is kept for historical reference only, and no licence is granted for it. The vendored axe-core file under `tests/e2e/vendor/` keeps its own MPL-2.0 licence.
+[MIT](LICENSE) for the new code. The `legacy/` folder is kept for historical reference only, and no license is granted for it. The vendored axe-core file under `tests/e2e/vendor/` keeps its own MPL-2.0 license.

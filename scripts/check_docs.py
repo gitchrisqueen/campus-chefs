@@ -6,6 +6,9 @@
 - Every `<source srcset>` inside a `<picture>` points at a file in the repository.
 - Every animated image (`.gif`) sits inside a `<picture>` whose
   `<source media="(prefers-reduced-motion: reduce)">` offers a still picture.
+- No embedded GIF (`<img src>`, `<source srcset>` or `![...](...)`) loops forever or moves for more
+  than 5 seconds in total (WCAG 2.2.2). The GIF's own blocks are read: the frame delays and the
+  NETSCAPE loop extension. A GIF that is only linked is exempt, because the reader starts it.
 - The first Mermaid diagram in README.md and in docs/architecture.md names every service,
   network and volume that compose.yaml declares.
 
@@ -15,6 +18,7 @@ Run: python scripts/check_docs.py   (part of `make lint`)
 """
 
 import re
+import struct
 import sys
 from pathlib import Path
 from urllib.parse import unquote
@@ -28,6 +32,7 @@ PICTURE = re.compile(r"<picture\b.*?</picture>", re.S | re.I)
 GIF_IMAGE = re.compile(r"(?:\bsrc\s*=\s*\"|!\[[^\]]*\]\(\s*<?)([^\")\s>]+\.gif)\b", re.I)
 REDUCED_MOTION = re.compile(r"prefers-reduced-motion\s*:\s*reduce", re.I)
 ATTR = re.compile(r"([a-zA-Z-]+)\s*=\s*\"([^\"]*)\"")
+MAX_MOTION_SECONDS = 5.0  # WCAG 2.2.2: motion that starts by itself must stop within 5 seconds
 HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 
 
@@ -86,6 +91,96 @@ def check_motion(path: Path, failures: list[str]) -> None:
     uncovered = PICTURE.sub(lambda m: "" if offers_still(m.group(0)) else m.group(0), text)
     for raw in GIF_IMAGE.findall(uncovered):
         failures.append(f"{path.relative_to(ROOT)}: animated image without a reduced-motion still: {raw}")
+
+
+def gif_motion(data: bytes) -> tuple:
+    """Read a GIF's blocks. Returns (frames, seconds for one pass, loop count).
+
+    The loop count is None when the file has no NETSCAPE loop extension (it plays once and stops
+    on its last frame), 0 when it loops forever, and otherwise the number of repeats.
+    Raises ValueError if the bytes are not a well-formed GIF.
+    """
+    if data[:6] not in (b"GIF87a", b"GIF89a"):
+        raise ValueError("not a GIF")
+    pos = 13
+    if data[10] & 0x80:  # global color table
+        pos += 3 * 2 ** ((data[10] & 0x07) + 1)
+
+    def skip_sub_blocks(at: int) -> int:
+        while data[at]:
+            at += data[at] + 1
+        return at + 1
+
+    frames, centiseconds, loops, delay = 0, 0, None, 0
+    try:
+        while True:
+            block = data[pos]
+            if block == 0x3B:  # trailer
+                break
+            if block == 0x21:  # extension
+                label = data[pos + 1]
+                if label == 0xF9:  # graphic control: the delay of the frame that follows
+                    delay = struct.unpack_from("<H", data, pos + 4)[0]
+                elif label == 0xFF and data[pos + 3 : pos + 14] in (b"NETSCAPE2.0", b"ANIMEXTS1.0"):
+                    if data[pos + 14] >= 3 and data[pos + 15] == 1:
+                        loops = struct.unpack_from("<H", data, pos + 16)[0]
+                pos = skip_sub_blocks(pos + 2)
+            elif block == 0x2C:  # image descriptor, then an optional local color table, then the pixels
+                packed = data[pos + 9]
+                pos += 10
+                if packed & 0x80:
+                    pos += 3 * 2 ** ((packed & 0x07) + 1)
+                pos = skip_sub_blocks(pos + 1)
+                frames += 1
+                centiseconds += delay if delay >= 2 else 10  # browsers show a 0 or 1 delay as 10
+                delay = 0
+            else:
+                raise ValueError(f"unknown block 0x{block:02x}")
+    except (IndexError, struct.error) as error:  # `as` keeps the parentheses, so the host's older python3 parses this
+        raise ValueError(f"truncated GIF ({type(error).__name__})") from None
+    return frames, centiseconds / 100, loops
+
+
+def embedded_gifs(path: Path) -> list[str]:
+    """Every GIF path that `path` embeds: <img src>, <source srcset> and Markdown images. Not links."""
+    found: list[str] = []
+    for _, line in prose_lines(path):
+        text = INLINE_CODE.sub("", line)
+        found += [raw for bang, _, raw in MD_LINK.findall(text) if bang]
+        for tag, attrs in HTML_TAG.findall(text):
+            given = dict((k.lower(), v) for k, v in ATTR.findall(attrs))
+            if tag.lower() == "img" and "src" in given:
+                found.append(given["src"])
+            elif tag.lower() == "source":
+                found += srcset_paths(given.get("srcset", ""))
+    return [raw for raw in found if raw.split("?")[0].split("#")[0].lower().endswith(".gif")]
+
+
+def check_gif_timing(path: Path, failures: list[str]) -> None:
+    """An embedded GIF must stop by itself within MAX_MOTION_SECONDS, for every reader."""
+    rel = path.relative_to(ROOT)
+    for raw in embedded_gifs(path):
+        if re.match(r"^[a-z][a-z0-9+.-]*:", raw, re.I):
+            failures.append(f"{rel}: embedded GIF is not in the repository, so its motion cannot be checked: {raw}")
+            continue
+        target = (path.parent / unquote(raw.split("?")[0].split("#")[0])).resolve()
+        if not target.is_file():
+            continue  # check_file reports the missing target
+        try:
+            frames, seconds, loops = gif_motion(target.read_bytes())
+        except ValueError as error:
+            failures.append(f"{rel}: cannot read embedded GIF {raw}: {error}")
+            continue
+        if frames < 2:
+            continue
+        if loops == 0:
+            failures.append(f"{rel}: embedded GIF loops forever: {raw} (link to it, or export it to play once)")
+            continue
+        total = seconds * (1 if loops is None else loops + 1)
+        if total > MAX_MOTION_SECONDS:
+            failures.append(
+                f"{rel}: embedded GIF moves for {total:.1f} s, over the {MAX_MOTION_SECONDS:.0f} s limit: {raw}"
+            )
 
 
 def check_file(path: Path, failures: list[str]) -> int:
@@ -162,6 +257,7 @@ def main() -> int:
     checked = sum(check_file(f, failures) for f in files)
     for f in files:
         check_motion(f, failures)
+        check_gif_timing(f, failures)
     for diagram in (ROOT / "README.md", ROOT / "docs" / "architecture.md"):
         check_diagram(diagram, failures)
     for failure in failures:

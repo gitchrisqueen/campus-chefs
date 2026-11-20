@@ -20,7 +20,7 @@ This supplements the food budget of a student who likes to cook. It is cost-shar
 ## Source of truth
 
 - [docs/MODERNIZATION_PLAN.md](docs/MODERNIZATION_PLAN.md), revision 3, holds:
-  - the architecture, data model and test catalogue (test IDs);
+  - the architecture, data model and test catalog (test IDs);
   - CI, Docker, the phased roadmap and the decisions.
 - The owner's answers are in plan 10.3, "Recorded owner answers":
   - **Answered:** D1 Django, D2 redacted legacy, D3 no live harness, D5 not hosted, D6 public repo, D10 record-only grocery money, D11 MIT license (not for `legacy/`).
@@ -74,7 +74,8 @@ Versions were checked on 2026-11-18. Verify them again when a phase starts. Neve
   - A no-profit CHECK caps shares at the grocery estimate.
   - DATA-02 bans card, payout and handle columns.
 - **Commands:** `make demo`, `make test`, `make e2e`, `make lint`, `make sast`, `make smoke`, `make reseed`, `make deploy-check` (plan 6.3).
-  - `make screenshots` recaptures the README and walkthrough pictures and the hero GIF. It needs the running demo and reseeds it.
+  - `make screenshots` recaptures the README and walkthrough pictures, the play-once hero GIF and the linked loop. It needs the running demo and reseeds it.
+  - `make e2e` also needs the running demo: the browser tests call the `web` container and do not start it.
   - `make docs-check` checks the docs' links, images and alt text, then renders every Mermaid diagram.
 
 ## `legacy/` rules

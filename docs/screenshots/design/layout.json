@@ -309,8 +309,7 @@
  },
  "login-desktop-dark": {
   "fold_filled_buttons": [
-   "Log in",
-   "Try as demo diner"
+   "Log in"
   ],
   "horizontal_overflow": false,
   "overflowing": [],
@@ -320,8 +319,7 @@
  },
  "login-desktop-light": {
   "fold_filled_buttons": [
-   "Log in",
-   "Try as demo diner"
+   "Log in"
   ],
   "horizontal_overflow": false,
   "overflowing": [],

@@ -54,9 +54,9 @@
 
 Campus Chefs is a campus meal-sharing marketplace, run as a **portfolio demo**.
 - A student who cooks publishes a menu: breakfast, lunch and dinner, each split into mains and sides, plus one specialty per meal. The cook then opens dated meal slots called "offerings".
-- A student who wants a home-cooked meal searches by a cook's first name or by dish or ingredient. They request seats with an allergen acknowledgement, choose how they will **chip in toward the groceries** (a per-seat grocery share, or an item from the cook's bring list), and they eat once the cook confirms.
+- A student who wants a home-cooked meal searches by a cook's first name or by dish or ingredient. They request seats with an allergen acknowledgment, choose how they will **chip in toward the groceries** (a per-seat grocery share, or an item from the cook's bring list), and they eat once the cook confirms.
 - The cook gets help with the grocery bill, never a profit. A DB constraint caps the diners' total share at the cook's grocery estimate.
-- Afterwards the diner leaves a review in two parts, "The good" and "The bad". This is the 2008 `theGood`/`theBad` idea from `src/cook_main.php:118-124`.
+- Afterward the diner leaves a review in two parts, "The good" and "The bad". This is the 2008 `theGood`/`theBad` idea from `src/cook_main.php:118-124`.
 
 **Ground rules:**
 - the app never moves money: it records grocery shares and bring-list claims, and the students settle up in person (D10);
@@ -68,10 +68,10 @@ Campus Chefs is a campus meal-sharing marketplace, run as a **portfolio demo**.
 
 | 2008 step | 2026 MVP feature |
 |---|---|
-| **1 Register** | POST registration with email, password and confirmation, first and last name, a campus `<select>`, optional classification, an 18+ attestation and a role radio ("I want to eat" / "I also cook"). Cooks also tick a food-safety acknowledgement. The form says "Use made-up details." `CC_REGISTRATION_OPEN` (default `true`) can switch registration off. Login and logout are POST. Session auth. A `/me` dashboard, account edit, password change and account deletion. Changing the email or password, or deleting the account, requires the current password. |
+| **1 Register** | POST registration with email, password and confirmation, first and last name, a campus `<select>`, optional classification, an 18+ attestation and a role radio ("I want to eat" / "I also cook"). Cooks also tick a food-safety acknowledgment. The form says "Use made-up details." `CC_REGISTRATION_OPEN` (default `true`) can switch registration off. Login and logout are POST. Session auth. A `/me` dashboard, account edit, password change and account deletion. Changing the email or password, or deleting the account, requires the current password. |
 | **1 (cook)** | Kitchen: bio, and menu-item CRUD with meal type, course, ingredients, dietary tags and a specialty flag. Allergens need an explicit "list is complete" confirmation and are locked while active bookings exist. Offering CRUD covers serve time, booking cutoff, capacity, fulfillment and a private pickup note. |
 | **2 Search** | `/search` matches a cook's first name, or a dish's name, description or ingredients (`icontains`). Filters: campus, meal type, date, dietary tag, and exclude-allergen. The exclude filter carries the note "cook-declared, not a safety guarantee". Results update live through htmx and also work without JavaScript. The public cook page shows specialties, a menu grid (meal type by course), upcoming offerings and reviews. |
-| **3 Book it and eat** | A booking request is for 1 to 4 seats and needs the allergen acknowledgement. The cook confirms or declines. Either side can cancel within the rules. The cook marks the booking completed after serve time. The timeline comes from timestamp columns. |
+| **3 Book it and eat** | A booking request is for 1 to 4 seats and needs the allergen acknowledgment. The cook confirms or declines. Either side can cancel within the rules. The cook marks the booking completed after serve time. The timeline comes from timestamp columns. |
 | **3 Chip in** | The cook sets a grocery estimate and a per-seat share (the form suggests estimate ÷ (capacity + 1), because the cook eats too), and can add a "bring list" of ingredients. When booking, the diner picks "grocery share" or claims one bring-list item. A free offering skips this step. The share is snapshotted onto the booking. The cook marks it received. See 3.5. |
 | **3 (after)** | A diner can review a completed booking within 14 days: 1 to 5 stars, "The good" and "The bad". Staff can hide a review in the admin. |
 | **Demo layer** | A banner. "Try as demo cook" and "Try as demo diner" buttons, shown only when `CC_DEMO_MODE=true`. `/how-it-works`, `/safety` and `/privacy` pages. `noindex` on every page. `/healthz`. |
@@ -83,8 +83,8 @@ Section 12 gives the full file:line inventory. Section 7 defines the test and ch
 
 | # | Defect / TODO | Decision | How / proof |
 |---|---|---|---|
-| 1 | SQL injection everywhere (`sqlQueries.php:40-43,58,87`). It is directly exploitable: PHP 5 `htmlentities()` defaults to `ENT_COMPAT`, which leaves `'` unescaped, so the email `' OR 1=1 -- ` logs in | **Fixed** | ORM only. AUTH-07, SRCH-03, CHK-04 |
-| 2 | `htmlentities()` used to sanitize input (`login.php:7-8`, `registration_form.php:13-25`, `successful.php:23-27`). The other half of the bug: `cook_main.php:36-41` echoes DB values with no output escaping, so input encoding was the only defence | **Fixed** | Store raw values and escape on output (autoescape). REG-09, LEG-05, CHK-05 |
+| 1 | SQL injection everywhere (`sqlQueries.php:40-43,58,87`). Read from the code (the app is never run), it is directly exploitable: PHP 5 `htmlentities()` defaults to `ENT_COMPAT`, which leaves `'` unescaped, so the email `' OR 1=1 -- ` would log in | **Fixed** | ORM only. AUTH-07, SRCH-03, CHK-04 |
+| 2 | `htmlentities()` used to sanitize input (`login.php:7-8`, `registration_form.php:13-25`, `successful.php:23-27`). The other half of the bug: `cook_main.php:36-41` echoes DB values with no output escaping, so input encoding was the only defense | **Fixed** | Store raw values and escape on output (autoescape). REG-09, LEG-05, CHK-05 |
 | 3 | Plaintext passwords, stored and compared | **Fixed** | Argon2id. REG-01 |
 | 4 | Credentials sent over GET (`header.php:11`, `registration_form.php:29`) | **Fixed** | POST-only views with CSRF. AUTH-03, REG-08, AUTH-10 |
 | 5 | DB user `root` with an empty password (`db_information.php:4-5`) | **Fixed** | Generated secrets, kept apart per service. The app role can only run DML. SEC-04, SEC-05, SEC-08, CHK-06 |
@@ -131,7 +131,7 @@ Section 12 gives the full file:line inventory. Section 7 defines the test and ch
 | Messaging, notifications, email sending, password reset, email verification | A local demo has no mail transport. A real deployment would need `.edu` verification (documented in `SECURITY.md`) |
 | Photo uploads, maps, delivery | Privacy and driving liability |
 | Postgres full-text search and a GIN index | About 48 rows; `icontains` is enough and simpler |
-| Cross-checks between dietary tags and allergens (for example vegan against milk) | They are doubtful on the domain itself (honey, gelatin) and give false assurance. Tags are labelled "cook-declared" |
+| Cross-checks between dietary tags and allergens (for example vegan against milk) | They are doubtful on the domain itself (honey, gelatin) and give false assurance. Tags are labeled "cook-declared" |
 | A no-show status, a booking audit table, a cap on each diner's open requests | The 1-2-3 story does not need them. The timeline comes from timestamps |
 | Rate limits beyond login | The demo is local, and per-IP limits misfire behind Docker's port publishing (5.2) |
 | Dark mode, a scheduled audit workflow, a demo GIF | **Stretch goals.** The tokens are laid out so that dark mode is one `@media` block later |
@@ -316,14 +316,14 @@ Removed compared with 2008: gender, age, car, profileType, rating and residence.
 | `course` | `main` or `side` |
 | `allergens` | `ArrayField(varchar(24))` with CHECK `<@ ARRAY[milk, egg, fish, crustacean_shellfish, tree_nuts, peanuts, wheat, soy, sesame]` (the 9 major US allergens) |
 | `allergens_confirmed_at` | timestamptz NOT NULL |
-| `dietary_tags` | `ArrayField` with CHECK `<@ ARRAY[vegetarian, vegan, dairy_free, gluten_free]`; labelled "cook-declared, not verified" |
+| `dietary_tags` | `ArrayField` with CHECK `<@ ARRAY[vegetarian, vegan, dairy_free, gluten_free]`; labeled "cook-declared, not verified" |
 | `is_specialty` | bool |
 | `is_active` | bool, default true. Items are archived, and never hard-deleted once offered |
 
 Constraints and rules on `meals_menuitem`:
 - `UniqueConstraint(cook, Lower(name), meal_type, condition=Q(is_active=True))`.
 - `UniqueConstraint(cook, meal_type, condition=Q(is_specialty=True, is_active=True))`. This keeps the 2008 "Specialties: Breakfast / Lunch / Dinner" idea.
-- **Allergen lock:** the item form rejects allergen edits while the item belongs to an offering that has `requested` or `confirmed` bookings. A diner's acknowledgement therefore always refers to the list they saw (MENU-05).
+- **Allergen lock:** the item form rejects allergen edits while the item belongs to an offering that has `requested` or `confirmed` bookings. A diner's acknowledgment therefore always refers to the list they saw (MENU-05).
 
 **`meals_offering`**
 
@@ -497,7 +497,7 @@ The contrast figures were computed by hand with the WCAG formula. UX-01 and axe 
 | `--cc-brand` | `#A40408` | 2008 header red (`styles.css:55`); white text on it ≈ 8.1:1 |
 | `--cc-brand-strong` | `#7F0306` | hover; white ≈ 10.9:1 |
 | `--cc-accent` | `#A40408` | links; ≈ 6.8:1 on `--cc-bg` |
-| `--cc-bg` | `#E5ECF3` | 2008 body blue-grey (`styles.css:4`) |
+| `--cc-bg` | `#E5ECF3` | 2008 body blue-gray (`styles.css:4`) |
 | `--cc-surface` | `#FFFFFF` | |
 | `--cc-text` | `#1A1A1A` | |
 | `--cc-muted` | `#4A5563` | ≈ 7.6:1 on white, ≈ 6.4:1 on bg |
@@ -508,7 +508,7 @@ The contrast figures were computed by hand with the WCAG formula. UX-01 and axe 
 | `--cc-space-1..7` | 4/8/12/16/24/32/48 px | |
 
 - The wordmark is redrawn as `static/img/logo.svg`, with a `<title>`.
-- Dark mode is a stretch goal. Brand red on a dark background would fail contrast (≈ 2.3:1), so dark mode would need its own accent colour.
+- Dark mode is a stretch goal. Brand red on a dark background would fail contrast (≈ 2.3:1), so dark mode would need its own accent color.
 
 ### 4.3 How the 1-2-3 steps survive
 
@@ -530,7 +530,7 @@ The contrast figures were computed by hand with the WCAG formula. UX-01 and axe 
   - The error summary has `role="alert"` and takes focus. Each field has `aria-describedby`.
 - **Status cues:**
   - The htmx results region is `aria-live="polite"`.
-  - Status and allergen badges carry text, never colour alone.
+  - Status and allergen badges carry text, never color alone.
   - Stars carry text, for example "4.5 out of 5 (12 reviews)".
 - **WCAG 2.2 criteria:**
   - 2.4.11: no sticky header.
@@ -586,7 +586,7 @@ A weekly scheduled audit workflow is a stretch goal. While the repo is active, D
 
 | 2008 field | 2026 decision | Reason |
 |---|---|---|
-| gender | **Dropped** | No feature uses it, it is sensitive, and the 2008 page labelled it wrongly |
+| gender | **Dropped** | No feature uses it, it is sensitive, and the 2008 page labeled it wrongly |
 | age | **Dropped**; replaced by `adult_attested_at` | Liability needs proof of adulthood, not a birth date |
 | car / transportation | **Moved** to `offering.fulfillment` | It describes the meal, not the person |
 | classification | Kept, optional | Low risk |
@@ -622,11 +622,11 @@ A weekly scheduled audit workflow is a stretch goal. While the repo is active, D
   - The banner shows while `CC_DEMO_MODE=true`.
   - The `noindex` meta tag, `robots.txt` (disallow all) and the `/safety` and `/privacy` pages are always on, whatever the demo mode.
   - `/safety` says five things: cottage-food rules vary by place, so this is not a real service; allergens are self-declared; anyone with a severe allergy should not rely on the site; nobody inspects the kitchens; and grocery shares are cost-sharing capped at the grocery cost, which some places may still treat as a sale of food (this is not legal advice).
-- **Acknowledgements:**
+- **Acknowledgments:**
   - The cook confirms `food_safety_ack_at`.
   - Every menu item needs `allergens_confirmed_at`.
   - Every booking needs `allergen_ack_at`.
-  - These are UI acknowledgements, not legal compliance, and the README says so.
+  - These are UI acknowledgments, not legal compliance, and the README says so.
 - **Exposure controls:**
   - `CC_REGISTRATION_OPEN=false` turns sign-up off for any hosted demo (D5).
   - The registration form asks for made-up details.
@@ -864,7 +864,7 @@ smoke:    ; scripts/smoke.sh
 - The same recipes work locally and in CI. In CI, `uv run` puts the locked venv on `PATH`. The dev image has `/bin/uv` and `/opt/venv/bin` on `PATH`. The dev stage sets `RUFF_NO_CACHE=true` because `/src` is read-only.
 - `e2e` reseeds first unless `NO_RESEED=1` is passed. Phase 1 passes it, because `seed_demo` arrives in phase 2.
 - `tests/conftest.py` maps the `BASE_URL` environment variable to pytest-playwright's `base_url`.
-- `.env.example` lists optional overrides only, each empty or set to its default: `WEB_PORT=8000`, `CC_DEMO_MODE=true`, `CC_REGISTRATION_OPEN=true`, `CC_AI_ENABLED=false`, `CC_AI_MODEL=`, `ANTHROPIC_API_KEY=` and `CC_FEEDBACK_URL=`. A comment says that `keygen` generates the secrets, and that secrets must never be added to this file.
+- `.env.example` lists optional overrides only, each empty or set to its default: `WEB_PORT=8000`, `CC_DEMO_MODE=true`, `CC_REGISTRATION_OPEN=true`, `CC_AI_ENABLED=false`, `CC_AI_MODEL=` and `CC_FEEDBACK_URL=`. A comment says that `keygen` generates the secrets, and that secrets must never be added to this file. A second comment says that the Anthropic API key never goes in this file: it goes in a file of its own, named by `ANTHROPIC_API_KEY_FILE` (`docs/OPERATIONS.md`, "AI menu import").
 
 ### 6.4 "Before" evidence and the optional live legacy harness
 
@@ -882,7 +882,7 @@ smoke:    ; scripts/smoke.sh
   - `legacy-web`: `php:5.6-apache` plus `docker-php-ext-install mysql`. It mounts `../../legacy` read-only at `/var/www/html/workspace/CampusChefs`. Healthcheck: `curl -f http://127.0.0.1/workspace/CampusChefs/view/welcome.php` (verify that curl is in the image).
   - `legacy-db`: `mysql:5.7` with `platform: linux/amd64` and `MYSQL_ALLOW_EMPTY_PASSWORD=yes`, to match the frozen config. MySQL 5.7 still uses `mysql_native_password`, which `mysql_connect` needs. Healthcheck: `mysqladmin ping -h 127.0.0.1`.
   - The two containers share a `mysqld-sock` volume at `/var/run/mysqld`. `db_information.php:2` says `localhost`, which makes `mysql_connect` use a unix socket.
-- **Data:** `schema.sql` holds the `user_info` DDL inferred from the code, labelled "inferred". `seed.sql` holds one synthetic row with `id=1`.
+- **Data:** `schema.sql` holds the `user_info` DDL inferred from the code, labeled "inferred". `seed.sql` holds one synthetic row with `id=1`.
 - **Port:** `127.0.0.1:${LEGACY_PORT:-80}:80`. The hardcoded links assume `http://localhost/…`, so they work only on port 80. On any other port the pages and the exploit still work, but the nav links break.
 - **Prerequisites:**
   - a free port 80 (rootless Docker on Linux cannot bind it);
@@ -936,9 +936,9 @@ smoke:    ; scripts/smoke.sh
 - **Coverage gate:** `--cov=accounts --cov=meals --cov=bookings --cov=core --cov-fail-under=90`, plus `menuparse` if phase 12 ships.
 - **Naming:** each test name starts with its zero-padded ID (`test_auth_07_…`), so `-k auth_07` selects exactly that test. E2E tests carry `@pytest.mark.e2e`.
 
-### 7.2 Behavioural tests
+### 7.2 Behavioral tests
 
-There are 116 behavioural tests (121 with the AI tests), plus 9 static checks and 3 ops checks.
+There are 116 behavioral tests (121 with the AI tests), plus 9 static checks and 3 ops checks.
 
 **Auth (11)**
 - AUTH-01 - given a registered user, when they POST `/login` with the correct email and password, then they get a 302 to `/me`, `request.user.id` is theirs, and the session key differs from the one before login.
@@ -965,7 +965,7 @@ There are 116 behavioural tests (121 with the AI tests), plus 9 static checks an
 - REG-03 - given `ava.r@larkspur.example` exists, when someone registers `AVA.R@Larkspur.example`, then "already registered" shows and the user count is unchanged.
 - REG-04 - given an 11-character password, or `password1234`, when it is POSTed, then a validator error shows.
 - REG-05 - given a tampered campus id 99999, when it is POSTed, then a campus field error shows.
-- REG-06 - given role=cook without the food-safety acknowledgement, when it is POSTed, then an error shows. With the acknowledgement, a `CookProfile` exists. With role=eat, none exists.
+- REG-06 - given role=cook without the food-safety acknowledgment, when it is POSTed, then an error shows. With the acknowledgment, a `CookProfile` exists. With role=eat, none exists.
 - REG-07 - given the 18+ box unchecked, when it is POSTed, then an error shows and no user is created.
 - REG-08 - given full registration parameters in a query string, when someone GETs `/register?...`, then no user is created.
 - REG-09 - given the name `O'Brien`, when it is registered and the profile is viewed, then the DB stores it raw and the HTML contains `O&#x27;Brien` exactly once.
@@ -1075,7 +1075,7 @@ There are 116 behavioural tests (121 with the AI tests), plus 9 static checks an
 - A11Y-01 [e2e] - home, search, register, login, a cook page, an offering, a booking, `/me` and the menu form each have 0 axe violations.
 - A11Y-02 [e2e] - when the register form is submitted empty, focus moves to the error summary and `aria-describedby` links each error to its field.
 - A11Y-03 [e2e] - the home steps are an `<ol>` of 3 `<li>` holding "Register.", "Search." and "Eat!", with no digit images.
-- E2E-01 [e2e] - given a freshly reseeded stack, when the demo diner searches "pancakes", books 1 seat choosing the grocery share with the allergen acknowledgement, and the demo cook confirms, then the diner's booking page shows "Confirmed" and "Grocery share: $X.XX, pay the cook at pickup".
+- E2E-01 [e2e] - given a freshly reseeded stack, when the demo diner searches "pancakes", books 1 seat choosing the grocery share with the allergen acknowledgment, and the demo cook confirms, then the diner's booking page shows "Confirmed" and "Grocery share: $X.XX, pay the cook at pickup".
 - E2E-02 [e2e] - given the seeded confirmed booking on yesterday's offering, when the demo cook marks its $4.00 share received and marks it completed, and the demo diner reviews it, then the cook page shows the review under "The good".
 - E2E-03 [e2e] - using only the keyboard, registering and booking both succeed, and every focused element has a visible outline.
 - E2E-04 [e2e] - at a 320×800 viewport, every public page has `scrollWidth <= 320`.
@@ -1448,7 +1448,7 @@ Then a review record URL must show every reviewer passing, and the owner approve
 
 | Risk | Mitigation |
 |---|---|
-| Legal exposure from food sharing, and from money | No payment processing, the no-profit CHECK on grocery shares, the banner, `/safety`, three acknowledgements, the allergen lock, `noindex`, a switch that turns registration off, and no hosting by default |
+| Legal exposure from food sharing, and from money | No payment processing, the no-profit CHECK on grocery shares, the banner, `/safety`, three acknowledgments, the allergen lock, `noindex`, a switch that turns registration off, and no hosting by default |
 | A real person's photo, and possibly real names, in the 2008 code | Allowlist copy, placeholders, redaction, stripped metadata, and a denylist that never prints what it matched (SEC-06) |
 | An attacker who takes over `web` escalating into the DB | One secrets volume per service (SEC-08), an app role limited to DML (SEC-04, SEC-05), and the DB on an internal network |
 | htmx 4 is new (npm `latest` is still 2.0.11) | Pin 4.0.1, which is at least 14 days old. Use only `hx-get`, `hx-post`, `hx-target` and `hx-swap`. E2E-05 proves the app works without JS, so falling back to 2.0.11 means swapping one file. The CSP spike runs in phase 1 |
@@ -1662,7 +1662,7 @@ Then a review record URL must show every reviewer passing, and the owner approve
 | 17 | operator | major | The venv link across stages, the `CC_BUILD` path, and tests copied into the runtime image | **Fixed.** `UV_PYTHON_DOWNLOADS=never`, the same image digest in both stages, an import check in the runtime stage, `CC_BUILD` removed, and only app directories copied |
 | 18 | operator | major | `up --wait` with one-shot services; no minimum Compose version | **Fixed.** `make demo` polls through `wait-healthy.sh`; phase 1 records the tested versions and how `--wait` behaves; a prerequisites section was added |
 | 19 | operator | major | The legacy harness was not reproducible (port 80, emulation, no healthchecks) | **Fixed.** Healthchecks, the `LEGACY_PORT` caveat and the prerequisites. The static evidence in 10a is required and is the accepted exit; 10b is optional |
-| 20 | operator | major | CI ran as the `ci` superuser, so role behaviour went untested | **Fixed.** CI creates the roles with the same script, and tests run as the owner role, which is not a superuser. SEC-04 and SEC-05 run as the app role and cannot skip silently. The E2E path still differs between local and CI; this is documented |
+| 20 | operator | major | CI ran as the `ci` superuser, so role behavior went untested | **Fixed.** CI creates the roles with the same script, and tests run as the owner role, which is not a superuser. SEC-04 and SEC-05 run as the app role and cannot skip silently. The E2E path still differs between local and CI; this is documented |
 | 21 | operator | major | `$T` does not word-split in zsh; the mermaid, `file` and denylist checks were broken | **Fixed.** Makefile targets; mermaid writes inside the mount and uses a puppeteer config; the placeholders are checked by hash; the denylist file is listed as a prerequisite. `uvx tool@ver` is valid uv syntax, but this no longer matters, because the tools moved into the locked dev group |
 | 22 | operator | major | No prerequisites or runbook; a WEB_PORT and CSRF concern | **Fixed / partly rejected.** Section 6.5 and `OPERATIONS.md`; gunicorn timeouts and `stop_grace_period`. Deriving `CSRF_TRUSTED_ORIGINS` was rejected: Django's origin check includes the port and `ALLOWED_HOSTS` ignores it, and OPS-03 proves this |
 | 23 | operator | minor | CSP and htmx names unverified; the count of 82 tests was wrong | **Fixed.** Phase 1 spike plus E2E-06; recounted (7.2) |
@@ -1671,10 +1671,10 @@ Then a review record URL must show every reviewer passing, and the owner approve
 | 26 | hiring-manager | major | Phase exits ran tests from later phases; no phase owned `/me` | **Fixed.** Each phase lists exact test IDs; the `/me` shell lands in phase 3, the kitchen panel in phase 4, and bookings in phase 6 |
 | 27 | hiring-manager | major | Scope too big; hours too optimistic | **Mostly accepted.** Cut: FTS and GIN, the diet and allergen cross-CHECKs, the audit table, no-show, the open-request cap, per-IP and non-login limits, dark mode, audit.yml and the GIF. Added section 1.4 and a 35% buffer (about 77 h). Kept the 5-state machine and Trivy (which can be cut) as core evidence |
 | 28 | hiring-manager | major | E2E-01 needed time travel | **Fixed.** Split into E2E-01 (request and confirm on a future offering) and E2E-02 (complete and review a seeded confirmed booking on a past offering). The services accept an injected `now` |
-| 29 | hiring-manager | minor | The test count was wrong | **Fixed.** 104 behavioural tests (109 with AI) |
+| 29 | hiring-manager | minor | The test count was wrong | **Fixed.** 104 behavioral tests (109 with AI) |
 | 30 | hiring-manager | minor | 403 and 409 used inconsistently | **Fixed.** One rule in 3.3: a non-participant gets 404, a wrong actor on an existing edge gets 403, and a bad edge or failed time guard gets 409 |
 | 31 | hiring-manager | minor | Grep checks counted as regression tests | **Fixed.** Moved to CHK-01..09 in the lint step, and not counted |
-| 32 | hiring-manager | minor | CI superuser; transactions in BOOK-06; fork PRs | **Fixed.** Same as #20; BOOK-06 is marked `transaction=True`; the fail-closed behaviour on fork PRs is documented |
+| 32 | hiring-manager | minor | CI superuser; transactions in BOOK-06; fork PRs | **Fixed.** Same as #20; BOOK-06 is marked `transaction=True`; the fail-closed behavior on fork PRs is documented |
 | 33 | hiring-manager | minor | `Review.cook_id` and `author` duplicated data; the SET_NULL claim was false | **Fixed.** Review keeps only the booking; author and cook are derived from it; deletion anonymizes the user |
 | 34 | hiring-manager | minor | Version claims; the CSP spike came too late | **Fixed.** Versions checked again, with sources; the CSP and htmx spike moved to phase 1 |
 | 35 | hiring-manager | minor | The "before" evidence lived only in a phase that could be cut; the screenshot check only counted files | **Fixed.** The static evidence in 10a is required; screenshots are checked by name; mermaid-cli is pinned and uses a puppeteer config |
