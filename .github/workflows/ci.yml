@@ -59,7 +59,7 @@ jobs:
           -e POSTGRES_USER=ci -e POSTGRES_DB=campuschefs
           "${{ job.services.postgres.id }}" sh -s < docker/postgres-init/01-roles.sh
 
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d  # v10.4.0
         with: { enable-cache: true, python-version: "3.14" }
       - run: uv sync --locked
       - run: make lint
